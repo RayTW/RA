@@ -1,0 +1,33 @@
+{
+  "accessTokens": [
+    {
+      "department": "RD",
+      "accessToken": "aabbcc"
+    },
+    {
+      "department": "AI",
+      "accessToken": "ddeeff"
+    }
+  ],
+  "commandsAuthorization": [
+    {
+      "command": "/v1/server/configuration/reload",
+      "department": [
+        "RD"
+      ]
+    },
+    {
+      "command": "/v1/server/echo",
+      "department": [
+        "RD"
+      ]
+    },
+    {
+      "command": "/v1/server/user/get",
+      "department": [
+        "AI",
+        "RD"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "config": {
+    "socketPort": 12345,
+    "serverAlias": "myTest",
+    "serverLogPath": "../log/ccc"
+  },
+  "config2": {
+    "yourName": "name",
+    "birthday": "1900-01-01"
+  }
+}

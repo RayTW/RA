@@ -1,0 +1,87 @@
+package ra.db.connection;
+
+import java.net.ConnectException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import ra.db.DatabaseConnection;
+import ra.db.parameter.DatabaseParameters;
+
+/**
+ * 沒有keep資料庫連線機制，亦不會每5秒query "SELECT 1"，所有的查詢、新增等等行為是非執行緒安全.
+ *
+ * @author Ray Li
+ */
+public class OnceConnection implements DatabaseConnection {
+  private DatabaseParameters param;
+  private Connection connection = null;
+  private volatile boolean isLive = false;
+
+  public OnceConnection(DatabaseParameters param) {
+    this.param = param;
+    loadDriveInstance(param);
+  }
+
+  @Override
+  public DatabaseParameters getParam() {
+    return param;
+  }
+
+  @Override
+  public Connection getConnection() {
+    return connection;
+  }
+
+  @Override
+  public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
+    return consumer.applay(connection);
+  }
+
+  /**
+   * 連線到 DB.
+   *
+   * @return 連線成功回傳1，失敗回傳0
+   */
+  @Override
+  public boolean connect() {
+    try {
+      DatabaseParameters param = getParam();
+      Connection connectionTemp = null;
+
+      if (connection == null) {
+        connectionTemp = tryGetConnection(param);
+        connection = connectionTemp;
+      } else {
+        synchronized (connection) {
+          connectionTemp = tryGetConnection(param);
+          connection = connectionTemp;
+        }
+      }
+      isLive = true;
+      return true;
+    } catch (Exception e) {
+      isLive = false;
+
+      return false;
+    }
+  }
+
+  @Override
+  public boolean isLive() {
+    return isLive;
+  }
+
+  @Override
+  public void keep() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void close() {
+    isLive = false;
+    try {
+      getConnection().close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "config": {
+    "socketPort": 12345,
+    "serverAlias": "unitest",
+    "serverLogPath": "../log/test",
+    "longValue": 1111111,
+    "shortValue": 12,
+    "booleanValue": true,
+    "floatValue": 0.25,
+    "doubleValue": 0.25,
+    "json": {
+      "name": "aaa"
+    },
+    "jsonarray": [
+      {
+        "name": "aaa"
+      },
+      {
+        "name": "bbb"
+      }
+    ]
+  }
+}

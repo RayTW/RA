@@ -1,0 +1,26 @@
+{
+  "serverSettings": {
+    "socketPort": 12345,
+    "serverAlias": "myTest",
+    "serverLogPath": "../log/ttt"
+  },
+  "dbSettings": {
+    "name": "database",
+    "host": "1.2.3.4",
+    "count": 5
+  },
+  "jsonSettings": {
+    "name": "name",
+    "object": {
+      "key": "value"
+    },
+    "array": [
+      {
+        "key1": "value1"
+      },
+      {
+        "key2": "value2"
+      }
+    ]
+  }
+}
