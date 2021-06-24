@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 import org.junit.Test;
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorText;
-import ra.net.processor.NetServiceCommandProvider;
+import ra.net.processor.NetCommandProvider;
 import ra.net.request.TextRequest;
 import ra.ref.Reference;
 import test.UnitTestUtils;
@@ -69,7 +69,7 @@ public class NetServiceTest {
     NetService service = builder.build();
 
     service.setCommandProcessorProvider(
-        new NetServiceCommandProvider() {
+        new NetCommandProvider() {
           @Override
           public void receivedRequest(TextRequest request) {
             request.getSender().send(request.getText());
@@ -109,7 +109,7 @@ public class NetServiceTest {
     NetService service = builder.build();
 
     service.setCommandProcessorProvider(
-        new NetServiceCommandProvider() {
+        new NetCommandProvider() {
           @Override
           public void receivedRequest(TextRequest request) {
             request.getSender().sendClose(request.getText());
@@ -151,7 +151,7 @@ public class NetServiceTest {
     CountDownLatch letch = new CountDownLatch(1);
 
     service.setCommandProcessorProvider(
-        new NetServiceCommandProvider() {
+        new NetCommandProvider() {
           @Override
           public void receivedRequest(TextRequest request) {
             request.getSender().sendClose(request.getText());
@@ -195,7 +195,7 @@ public class NetServiceTest {
 
     // server
     service.setCommandProcessorProvider(
-        new NetServiceCommandProvider() {
+        new NetCommandProvider() {
           @Override
           public void receivedRequest(TextRequest request) {
             request.getSender().sendClose(request.getText());
@@ -213,7 +213,7 @@ public class NetServiceTest {
             .setPort(serverSocket.getLocalPort())
             .setIndex(0)
             .setCommandProcessorProvider(
-                new NetServiceCommandProvider() {
+                new NetCommandProvider() {
                   @Override
                   public CommandProcessorListener<String> createCommand() {
                     return new CommandProcessorText() {

@@ -7,7 +7,7 @@ import ra.net.request.TextRequest;
  *
  * @author Ray Li
  */
-public class NetServiceCommandProvider implements CommandProcessorProvider<String> {
+public class NetCommandProvider implements CommandProcessorProvider<String> {
 
   @Override
   public CommandProcessorListener<String> createCommand() {

@@ -18,7 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import ra.net.NetServerApplication;
-import ra.net.processor.DataNetServiceCommandProvider;
+import ra.net.processor.DataNetCommandProvider;
 import ra.net.request.DataRequest;
 import ra.ref.Reference;
 import ra.util.annotation.Configuration;
@@ -219,13 +219,13 @@ public class DataNetServiceTest {
     assertArrayEquals(Files.readAllBytes(Paths.get(filePath)), resultRef.get());
   }
 
-  private DataNetServiceCommandProvider generateCmdProcProvider() {
+  private DataNetCommandProvider generateCmdProcProvider() {
     return generateCommandProvider(null);
   }
 
-  private DataNetServiceCommandProvider generateCommandProvider(Consumer<DataRequest> consumer) {
-    DataNetServiceCommandProvider provider =
-        new DataNetServiceCommandProvider() {
+  private DataNetCommandProvider generateCommandProvider(Consumer<DataRequest> consumer) {
+    DataNetCommandProvider provider =
+        new DataNetCommandProvider() {
           @Override
           public void receivedRequest(DataRequest request) {
             consumer.accept(request);

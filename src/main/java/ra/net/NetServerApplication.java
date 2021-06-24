@@ -14,8 +14,8 @@ import ra.net.nio.DataNetService;
 import ra.net.nio.PackageHandleOutput;
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorProvider;
-import ra.net.processor.DataNetServiceCommandProvider;
-import ra.net.processor.NetServiceCommandProvider;
+import ra.net.processor.DataNetCommandProvider;
+import ra.net.processor.NetCommandProvider;
 import ra.util.annotation.Configuration;
 import ra.util.annotation.ServerApplication;
 
@@ -209,12 +209,12 @@ public class NetServerApplication implements NetServiceProvider {
       throw new RuntimeException(
           "The provider class '" + commandProviderClass + "' constructor is a mismatch.");
     }
-    if (NetServiceCommandProvider.class.isAssignableFrom(commandProviderClass)) {
+    if (NetCommandProvider.class.isAssignableFrom(commandProviderClass)) {
       application.runNetService(
-          serverSocket, port, poolSize, (NetServiceCommandProvider) providerObject);
-    } else if (DataNetServiceCommandProvider.class.isAssignableFrom(commandProviderClass)) {
+          serverSocket, port, poolSize, (NetCommandProvider) providerObject);
+    } else if (DataNetCommandProvider.class.isAssignableFrom(commandProviderClass)) {
       application.runNetDataService(
-          serverSocket, port, poolSize, (DataNetServiceCommandProvider) providerObject);
+          serverSocket, port, poolSize, (DataNetCommandProvider) providerObject);
     } else {
       throw new RuntimeException(
           "The provider class '"
@@ -237,7 +237,7 @@ public class NetServerApplication implements NetServiceProvider {
       ServerSocket serverSocket,
       int port,
       int poolSize,
-      NetServiceCommandProvider commandProvider) {
+      NetCommandProvider commandProvider) {
     this.serverSocket = serverSocket;
     threadPool = Executors.newFixedThreadPool(poolSize);
 
@@ -253,7 +253,7 @@ public class NetServerApplication implements NetServiceProvider {
       builder.setIndex(i);
       service = builder.build();
       service.setCommandProcessorProvider(
-          new NetServiceCommandProvider() {
+          new NetCommandProvider() {
             @Override
             public CommandProcessorListener<String> createCommand() {
               return commandProvider.createCommand();
@@ -287,7 +287,7 @@ public class NetServerApplication implements NetServiceProvider {
       ServerSocket serverSocket,
       int port,
       int poolSize,
-      DataNetServiceCommandProvider commandProvider) {
+      DataNetCommandProvider commandProvider) {
     this.serverSocket = serverSocket;
     threadPool = Executors.newFixedThreadPool(poolSize);
 
@@ -296,7 +296,7 @@ public class NetServerApplication implements NetServiceProvider {
             .setSendExecutor(threadPool)
             .setServerSocket(serverSocket)
             .setCommandProcessorProvider(
-                new DataNetServiceCommandProvider() {
+                new DataNetCommandProvider() {
                   @Override
                   public CommandProcessorListener<Data> createCommand() {
                     return commandProvider.createCommand();

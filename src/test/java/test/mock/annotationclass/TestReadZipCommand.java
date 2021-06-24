@@ -1,6 +1,6 @@
 package test.mock.annotationclass;
 
-import ra.net.processor.DataNetServiceCommandProvider;
+import ra.net.processor.DataNetCommandProvider;
 import ra.net.request.DataRequest;
 
 /**
@@ -8,7 +8,7 @@ import ra.net.request.DataRequest;
  *
  * @author Ray Li
  */
-public class TestReadZipCommand extends DataNetServiceCommandProvider {
+public class TestReadZipCommand extends DataNetCommandProvider {
   @Override
   public void receivedRequest(DataRequest request) {
     request.getSender().send(request.getData());

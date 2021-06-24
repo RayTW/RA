@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import ra.net.processor.NetServiceCommandProvider;
+import ra.net.processor.NetCommandProvider;
 
 /** Test class. */
 public class NetSocketWriterKeepTest {
@@ -18,7 +18,7 @@ public class NetSocketWriterKeepTest {
             .setHost("127.0.0.1")
             .setPort(9958)
             .setIndex(0)
-            .setCommandProcessorProvider(new NetServiceCommandProvider())
+            .setCommandProcessorProvider(new NetCommandProvider())
             .build();
 
     obj.setRegeditCode("999");
@@ -36,7 +36,7 @@ public class NetSocketWriterKeepTest {
 
     new NetSocketWriterKeep.Builder()
         .setHost(null)
-        .setCommandProcessorProvider(new NetServiceCommandProvider())
+        .setCommandProcessorProvider(new NetCommandProvider())
         .build();
   }
 
@@ -47,7 +47,7 @@ public class NetSocketWriterKeepTest {
 
     new NetSocketWriterKeep.Builder()
         .setHost("")
-        .setCommandProcessorProvider(new NetServiceCommandProvider())
+        .setCommandProcessorProvider(new NetCommandProvider())
         .build();
   }
 
@@ -59,7 +59,7 @@ public class NetSocketWriterKeepTest {
     new NetSocketWriterKeep.Builder()
         .setPort(-1)
         .setHost("127.0.0.1")
-        .setCommandProcessorProvider(new NetServiceCommandProvider())
+        .setCommandProcessorProvider(new NetCommandProvider())
         .build();
   }
 }

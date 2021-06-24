@@ -2,7 +2,7 @@ package test.mock;
 
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorText;
-import ra.net.processor.NetServiceCommandProvider;
+import ra.net.processor.NetCommandProvider;
 import ra.net.request.TextRequest;
 
 /**
@@ -10,7 +10,7 @@ import ra.net.request.TextRequest;
  *
  * @author Ray Li
  */
-public class MockNetServiceCommand extends NetServiceCommandProvider {
+public class MockNetServiceCommand extends NetCommandProvider {
   @Override
   public CommandProcessorListener<String> createCommand() {
     return new CommandProcessorText() {

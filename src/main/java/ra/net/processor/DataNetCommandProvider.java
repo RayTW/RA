@@ -8,7 +8,7 @@ import ra.net.request.DataRequest;
  *
  * @author Ray Li
  */
-public class DataNetServiceCommandProvider implements CommandProcessorProvider<Data> {
+public class DataNetCommandProvider implements CommandProcessorProvider<Data> {
 
   @Override
   public CommandProcessorListener<Data> createCommand() {

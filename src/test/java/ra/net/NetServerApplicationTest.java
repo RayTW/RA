@@ -12,8 +12,8 @@ import javax.naming.NamingException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import ra.net.processor.DataNetServiceCommandProvider;
-import ra.net.processor.NetServiceCommandProvider;
+import ra.net.processor.DataNetCommandProvider;
+import ra.net.processor.NetCommandProvider;
 import ra.util.annotation.Configuration;
 import ra.util.annotation.ServerApplication;
 import test.UnitTestUtils;
@@ -90,7 +90,7 @@ public class NetServerApplicationTest {
     exceptionRule.expectMessage(
         "Source 'class ra.net.NetServerApplicationTest$1TestRunNotConfiguration'"
             + " is not annotation @Configuration.");
-    @ServerApplication(serviceMode = NetServiceCommandProvider.class)
+    @ServerApplication(serviceMode = NetCommandProvider.class)
     class TestRunNotConfiguration {}
 
     NetServerApplication.run(TestRunNotConfiguration.class);
@@ -98,7 +98,7 @@ public class NetServerApplicationTest {
 
   @Test
   public void testRunNetServiceSuccess() throws NamingException, IOException {
-    @ServerApplication(serviceMode = NetServiceCommandProvider.class)
+    @ServerApplication(serviceMode = NetCommandProvider.class)
     @Configuration("unittest/temp.properties")
     class TestRunNetServiceSuccess {}
 
@@ -123,7 +123,7 @@ public class NetServerApplicationTest {
 
   @Test
   public void testRunDataNetServiceSuccess() throws NamingException, IOException {
-    @ServerApplication(serviceMode = DataNetServiceCommandProvider.class)
+    @ServerApplication(serviceMode = DataNetCommandProvider.class)
     @Configuration("unittest/temp2.properties")
     class TestRunDataNetServiceSuccess {}
 
