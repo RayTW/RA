@@ -56,12 +56,20 @@ public class LogEveryDay {
     this.logEnable = logEnable;
   }
 
-  /** 取得今天年、月、日(Not Thread-Safe). */
+  /**
+   * 取得今天年、月、日(Not Thread-Safe).
+   *
+   * @return current date
+   */
   public String getCurrentDate() {
     return simpleDateFormat.format(new Date());
   }
 
-  /** 以今天日期生成檔案名稱(Not Thread-Safe). */
+  /**
+   * 以今天日期生成檔案名稱(Not Thread-Safe).
+   *
+   * @return current date as file name
+   */
   public String generateFileName() {
     return getCurrentDate() + "." + compressionMode.getFilenameExtension();
   }

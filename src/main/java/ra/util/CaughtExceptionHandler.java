@@ -12,7 +12,7 @@ import ra.db.parameter.MysqlParameters;
  * @author Ray Li
  */
 public class CaughtExceptionHandler {
-  private static CaughtExceptionHandler sInstance;
+  private static CaughtExceptionHandler instance;
   private static final String LINE_SEPARATOR = System.lineSeparator();
   private PrintStream console;
   private PrintStream errLog;
@@ -56,17 +56,21 @@ public class CaughtExceptionHandler {
     System.setErr(errLog);
   }
 
-  /** 取得Singleton的CaughtExceptionHandler. */
+  /**
+   * 取得Singleton的CaughtExceptionHandler.
+   *
+   * @return Returns instance of {@link CaughtExceptionHandler}
+   */
   public static CaughtExceptionHandler get() {
-    if (sInstance == null) {
+    if (instance == null) {
       synchronized (CaughtExceptionHandler.class) {
-        if (sInstance == null) {
-          sInstance = new CaughtExceptionHandler();
+        if (instance == null) {
+          instance = new CaughtExceptionHandler();
         }
       }
     }
 
-    return sInstance;
+    return instance;
   }
 
   public void setCaughtExceptionHandler(Consumer<Throwable> listener) {
@@ -78,7 +82,7 @@ public class CaughtExceptionHandler {
    *
    * <pre>
    * 1.使用System.err.println(..)時
-   * 2.使用 {@link MysqlParameters.Builder#setProfileSql(Boolean)} 功能並且參數為true時
+   * 2.使用 {@link MysqlParameters.Builder#setProfileSql(boolean)} 功能並且參數為true時
    * </pre>
    *
    * @param listener 將console取得的訊息透過listener拋出
@@ -91,6 +95,7 @@ public class CaughtExceptionHandler {
    * 取得錯誤訊息的詳細資料.
    *
    * @param e 要被解折的Throwable
+   * @return stack trance
    */
   public String getThrowableDetail(Throwable e) {
     StringBuilder errStr = new StringBuilder(e + LINE_SEPARATOR);

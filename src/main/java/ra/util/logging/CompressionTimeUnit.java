@@ -19,7 +19,11 @@ public enum CompressionTimeUnit {
     dateFormatPattern = pattern;
   }
 
-  /** 日誌檔名格式. */
+  /**
+   * 日誌檔名格式.
+   *
+   * @return date format pattern
+   */
   public String getPattern() {
     return dateFormatPattern;
   }

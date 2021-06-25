@@ -72,6 +72,7 @@ public class LogRecord {
    * @param folderPath log的Folder路徑
    * @param fileName 檔名
    * @param charset 檔案的編碼格式
+   * @return initialize state
    */
   public boolean init(String folderPath, String fileName, String charset) {
     logFileFolder = new File(folderPath);
@@ -147,7 +148,11 @@ public class LogRecord {
     write(str + System.lineSeparator());
   }
 
-  /** 取得日誌檔名. */
+  /**
+   * 取得日誌檔名.
+   *
+   * @return file
+   */
   public File getLogFile() {
     return logFileName;
   }
@@ -166,7 +171,11 @@ public class LogRecord {
     maxFileSize = SpaceUnit.Bytes.convert(space, unit);
   }
 
-  /** 檢查日誌檔大小限制，是否還有剩餘空間可寫入.(預設無限制) */
+  /**
+   * 檢查日誌檔大小限制，是否還有剩餘空間可寫入.(預設無限制)
+   *
+   * @return Returns true when storage space remaining.
+   */
   public boolean hasRemaining() {
     if (maxFileSize == 0L || logFileName.length() < maxFileSize) {
       return true;

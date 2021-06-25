@@ -3,11 +3,10 @@ package ra.util.sql;
 /**
  * Ray Li(modified)
  *
- * <p>Mysql Utilities.
+ * <p>Mysql util.
  *
- * @author Ralph Ritoch rritoch@gmail.com
- * @copyright Ralph Ritoch 2011 ALL RIGHTS RESERVED
- * @link http://www.vnetpublishing.com
+ * @author Ralph Ritoch rritoch@gmail.com copyright Ralph Ritoch 2011 ALL RIGHTS RESERVED
+ *     http://www.vnetpublishing.com
  */
 public class EscapeString {
 
@@ -48,7 +47,7 @@ public class EscapeString {
    *
    * @param str 要進行SQL Injection的字串
    * @return 經過SQL Injection處理後的字串
-   * @throws Exception .
+   * @throws Exception Exception
    */
   public static String quote(String str) throws Exception {
     if (str == null) {

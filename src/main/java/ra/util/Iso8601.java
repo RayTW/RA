@@ -21,43 +21,59 @@ public final class Iso8601 {
         }
       };
 
-  /** Transform Date to ISO 8601 string. */
+  /**
+   * Transform Date to ISO 8601 string.
+   *
+   * @param date date
+   * @return data string
+   */
   public static String fromDate(Date date) {
     return fromDate(date, true);
   }
 
   /**
    * Transform Date to ISO 8601 string.<br>
-   * 若colon == true，回傳格式為"2018-11-15T09:36:27+08:00"<br>
-   * 若colon == false，回傳格式為"2018-11-15T09:36:27+0800"
+   * When colon == true, return format, etc : "2018-11-15T09:36:27+08:00"<br>
+   * When colon == false, return format, etc : "2018-11-15T09:36:27+0800"
    *
-   * @param date 日期物件
-   * @param colon true:時區加上":"，false:時區不加上":"
+   * @param date date
+   * @param colon true: zone append ":"，false: zone not append ":"
+   * @return data string
    */
   public static String fromDate(Date date, boolean colon) {
     String formatted = sThreadLocal.get().format(date);
     return formatted.substring(0, 22) + (colon ? ":" : "") + formatted.substring(22);
   }
 
-  /** Transform Calendar to ISO 8601 string. */
+  /**
+   * Transform Calendar to ISO 8601 string.
+   *
+   * @param calendar calendar
+   * @return calendar format
+   */
   public static String fromCalendar(Calendar calendar) {
     return fromCalendar(calendar, true);
   }
 
   /**
    * Transform Calendar to ISO 8601 string.<br>
-   * 若colon == true，回傳格式為"2018-11-15T09:36:27+08:00"<br>
-   * 若colon == false，回傳格式為"2018-11-15T09:36:27+0800"
+   * When colon == true, return format, etc : "2018-11-15T09:36:27+08:00"<br>
+   * When colon == false, return format, etc :"2018-11-15T09:36:27+0800"
    *
-   * @param calendar 日期物件
-   * @param colon true:時區加上":"，false:時區不加上":"
+   * @param calendar calendar
+   * @param colon true:zone append ":"，false: zone not append ":"
+   * @return date string
    */
   public static String fromCalendar(Calendar calendar, boolean colon) {
     Date date = calendar.getTime();
     return fromDate(date, colon);
   }
 
-  /** Get current date and time formatted as ISO 8601 string. */
+  /**
+   * Get current date and time formatted as ISO 8601 string.
+   *
+   * @return now date format string
+   */
   public static String now() {
     return now(true);
   }
@@ -65,13 +81,19 @@ public final class Iso8601 {
   /**
    * Get current date and time formatted as ISO 8601 string.
    *
-   * @param colon true:時區加上":"，false:時區不加上":"
+   * @param colon true: zone append ":"，false: zone not append ":"
+   * @return now date format string
    */
   public static String now(boolean colon) {
     return fromCalendar(Calendar.getInstance(), colon);
   }
 
-  /** Transform ISO 8601 string to Calendar. */
+  /**
+   * Transform ISO 8601 string to Calendar.
+   *
+   * @param iso8601string iso8601string
+   * @return Calendar
+   */
   public static Calendar toCalendar(String iso8601string) throws ParseException {
     Calendar calendar = Calendar.getInstance();
     String s = iso8601string.replace("Z", "+00:00");
@@ -90,7 +112,12 @@ public final class Iso8601 {
     return calendar;
   }
 
-  /** Transform ISO 8601 string to Date. */
+  /**
+   * Transform ISO 8601 string to Date.
+   *
+   * @param iso8601string iso8601string
+   * @return to {@link Date} object
+   */
   public static Date toDate(String iso8601string) throws ParseException {
     String s = iso8601string.replace("Z", "+00:00");
 

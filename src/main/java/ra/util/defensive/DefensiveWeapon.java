@@ -26,7 +26,7 @@ import ra.util.annotation.Optional;
  * @author Kevin Tsai
  */
 public class DefensiveWeapon {
-  private static DefensiveWeapon sInstance;
+  private static DefensiveWeapon instance;
   private List<DefensiveFunction> functions;
 
   private DefensiveWeapon() {
@@ -38,14 +38,14 @@ public class DefensiveWeapon {
 
   /** get the Singleton defensive tool. */
   public static DefensiveWeapon get() {
-    if (sInstance == null) {
+    if (instance == null) {
       synchronized (DefensiveWeapon.class) {
-        if (sInstance == null) {
-          sInstance = new DefensiveWeapon();
+        if (instance == null) {
+          instance = new DefensiveWeapon();
         }
       }
     }
-    return sInstance;
+    return instance;
   }
 
   /**

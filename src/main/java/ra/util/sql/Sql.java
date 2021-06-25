@@ -11,12 +11,12 @@ import ra.util.annotation.ExcludeIfNull;
 import ra.util.annotation.Quote;
 
 /**
- * .
+ * Sql class.
  *
  * @author Ray Li
  */
 public class Sql {
-  private static Sql sInstance;
+  private static Sql instance;
 
   private AutoIncrementFunction autoIncrementFunction;
   private StringFunction string;
@@ -31,19 +31,19 @@ public class Sql {
   }
 
   /**
-   * .
+   * Returns instance of sql.
    *
-   * <p>.
+   * @return {@link Sql}
    */
   public static Sql get() {
-    if (sInstance == null) {
+    if (instance == null) {
       synchronized (Sql.class) {
-        if (sInstance == null) {
-          sInstance = new Sql();
+        if (instance == null) {
+          instance = new Sql();
         }
       }
     }
-    return sInstance;
+    return instance;
   }
 
   public AutoIncrementFunction getAutoIncrementFunction() {
@@ -66,6 +66,7 @@ public class Sql {
    * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
    * 採用BigIntFunction、StringFunction.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    */
@@ -78,6 +79,7 @@ public class Sql {
    * 預設取SerializedName的alternate，若沒有alternate屬性就取value<br>
    * 採用BigIntFunction、StringFunction.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    * @param index alternate的索引值
@@ -93,6 +95,7 @@ public class Sql {
    * 將會處理annotation AutoIncremen，若不處理請改用 Sql#toInsert(String, Object, int).
    *
    * @see Sql#toInsert(String, Object, int)
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    * @param index alternate的索引值
@@ -110,10 +113,11 @@ public class Sql {
   /**
    * 將指定class有SerializedName標記的member串成insert xxx的sql語法.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
-   * @param listener .
-   * @param function .
+   * @param listener listener
+   * @param function function
    */
   public <T> String toInsert(
       String tableName,
@@ -186,6 +190,7 @@ public class Sql {
    * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
    * 採用AutoIncrementFunction、BigIntFunction、StringFunction.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    */
@@ -197,6 +202,7 @@ public class Sql {
    * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
    * 採用AutoIncrementFunction、BigIntFunction、StringFunction.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    * @param listener .
@@ -213,6 +219,7 @@ public class Sql {
    * 將會處理annotation AutoIncremen，若不處理請改用 Sql#toInsert(String, Object, int).
    *
    * @see Sql#toInsert(String, Object, int)
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    * @param index alternate的索引值
@@ -231,6 +238,7 @@ public class Sql {
    * 將指定class有SerializedName標記的member串成insert xxx的sql語法，若有field標記為@Quote時會跳脫"\"<br>
    * 採用QuoteJson、BigIntFunction、StringFunction.
    *
+   * @param <T> class type
    * @param tableName 資料表名稱
    * @param object 指定class創建的物件
    */

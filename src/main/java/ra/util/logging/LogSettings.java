@@ -62,7 +62,11 @@ public class LogSettings {
     return timeUnit;
   }
 
-  /** 取得日誌檔案存檔格式. */
+  /**
+   * 取得日誌檔案存檔格式.
+   *
+   * @return {@link CompressionMode}
+   */
   public CompressionMode getCompressionMode() {
     return mode;
   }
