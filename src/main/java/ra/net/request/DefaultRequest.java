@@ -18,10 +18,6 @@ public class DefaultRequest extends Request<String> {
 
   private long reciveTimestamp;
 
-  private int index;
-
-  private String ipAddress;
-
   /**
    * Initialize.
    *
@@ -75,14 +71,5 @@ public class DefaultRequest extends Request<String> {
 
   public void setJson(JSONObject json) {
     this.json = json;
-  }
-
-  @Override
-  public int getIndex() {
-    return index;
-  }
-
-  public String getIpAddress() {
-    return ipAddress;
   }
 }
