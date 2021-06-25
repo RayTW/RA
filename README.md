@@ -1,2 +1,2 @@
 # RA
-mysql, socket server, log
+The library provides mysql (CRUD), socket server, logging.
