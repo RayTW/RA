@@ -1,68 +1,54 @@
 package ra.net;
 
 /**
- * 成員介面.
+ * Abstraction layer for user.
  *
- * @author Kevin Tasi
+ * @author Ray Li,Kevin Tasi
  */
 public interface UserListener {
 
   /**
-   * 成員索引(net索引).
+   * Index of member in user pool.
    *
-   * @return 索引值
+   * @return index
    */
   public abstract int getIndex();
 
   /**
-   * 指定索引值.
+   * Assign index for the user.
    *
-   * @param index 成員索引值
+   * @param index index
    */
   public abstract void setIndex(int index);
 
   /**
-   * 使用的語系，預設UTF-8.
+   * Gets name of user.
    *
-   * @return 語系字串
-   */
-  public abstract String getLangx();
-
-  /**
-   * 設定語系.
-   *
-   * @param langx 語系
-   */
-  public abstract void setLangx(String langx);
-
-  /**
-   * 取得成員的識別名稱.
-   *
-   * @return 成員的識別名稱
+   * @return user name
    */
   public abstract String getName();
 
   /**
-   * 設定成員的識別名稱.
+   * Set name for the user.
    *
    * @param username 成員的識別名稱
    */
   public abstract void setName(String username);
 
   /**
-   * 取得成員的連線ip.
+   * Gets IP address of the user.
    *
-   * @return 成員的連線ip
+   * @return IP address
    */
   public abstract String getIp();
 
   /**
-   * 設定成員的連線ip.
+   * Set the IP address for the user.
    *
-   * @param ip 成員的連線ip
+   * @param ip IP address
    */
   public abstract void setIp(String ip);
 
-  /** 回收. */
+  /** Close. */
   public abstract void close();
 }

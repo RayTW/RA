@@ -1,10 +1,9 @@
 package ra.net;
 
-/** 連線的使用者. */
+/** User. */
 public class User implements UserListener {
   private int index = -1;
   private String ip;
-  private String langx;
   private String name = "";
 
   @Override
@@ -15,16 +14,6 @@ public class User implements UserListener {
   @Override
   public void setIndex(int index) {
     this.index = index;
-  }
-
-  @Override
-  public String getLangx() {
-    return this.langx;
-  }
-
-  @Override
-  public void setLangx(String langx) {
-    this.langx = langx;
   }
 
   @Override
@@ -50,7 +39,6 @@ public class User implements UserListener {
   @Override
   public void close() {
     ip = null;
-    langx = null;
     name = null;
   }
 }
