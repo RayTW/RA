@@ -5,8 +5,7 @@ import java.lang.reflect.Method;
 import java.util.EnumMap;
 
 /**
- * com.sun.management.OperatingSystemMXBean的代理類，
- * 因為直接使用OperatingSystemMXBean就要在eclipse設定忽略警告，改用此法就可避免設定.
+ * Proxy com.sun.management.OperatingSystemMXBean.
  *
  * @author Ray Li
  */
@@ -30,7 +29,7 @@ public class OperatingSystemProxy {
     }
   }
 
-  /** 戴入 method. */
+  /** Initialize. */
   public OperatingSystemProxy() {
     methodsCache = new EnumMap<>(MethodType.class);
 
@@ -55,6 +54,8 @@ public class OperatingSystemProxy {
   /**
    * Returns the amount of virtual memory that is guaranteed to be available to the running process
    * in bytes, or -1 if this operation is not supported.
+   *
+   * @return virtual memory
    */
   public long getCommittedVirtualMemory() {
     long result = 0;
@@ -69,7 +70,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** Returns the amount of free physical memory in bytes. */
+  /**
+   * Returns the amount of free physical memory in bytes.
+   *
+   * @return memory size
+   */
   public long getFreePhysicalMemorySize() {
     long result = 0;
 
@@ -83,7 +88,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** Returns the amount of free swap space in bytes. */
+  /**
+   * Returns the amount of free swap space in bytes.
+   *
+   * @return swap space
+   */
   public long getFreeSwapSpace() {
     long result = 0;
 
@@ -97,7 +106,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** 取得目前系統已使用的CPU百分比，若回傳-1.0表示取不到CPU狀態 */
+  /**
+   * Get system CPU status.
+   *
+   * @return When get no CPU status will return -1.0.
+   */
   public double getSystemCpuLoad() {
     double result = 0;
 
@@ -118,6 +131,8 @@ public class OperatingSystemProxy {
   /**
    * Returns the CPU time used by the process on which the Java virtual machine is running in
    * nanoseconds.
+   *
+   * @return When get no CPU time will return 0.
    */
   public long getProcessCpuTime() {
     long result = 0;
@@ -132,7 +147,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** 取得目前執行中Process佔用的CPU百分比，若回傳-1.0表示取不到CPU狀態 */
+  /**
+   * Returns the CPU percent used by the process.
+   *
+   * @return When get no CPU loading will return -1.0 .
+   */
   public double getProcessCpuLoad() {
     double result = 0;
 
@@ -150,7 +169,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** Returns the total amount of physical memory in bytes. */
+  /**
+   * Returns the total amount of physical memory in bytes.
+   *
+   * @return memory
+   */
   public long getTotalPhysicalMemory() {
     long result = 0;
 
@@ -164,7 +187,11 @@ public class OperatingSystemProxy {
     return result;
   }
 
-  /** Returns the total amount of swap space in bytes. */
+  /**
+   * Returns the total amount of swap space in bytes.
+   *
+   * @return memory
+   */
   public long getTotalSwapSpaceSize() {
     long result = 0;
 

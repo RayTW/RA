@@ -1,7 +1,7 @@
 package ra.util;
 
 /**
- * 轉換儲存空間單位.
+ * Convert storage space unit.
  *
  * @author Ray Li
  */
@@ -17,8 +17,9 @@ public enum SpaceUnit {
    * For example, to convert 2048 bytes to KB, use: <tt>SpaceUnit.KB.convert(2048L,
    * SpaceUnit.Bytes)</tt>.
    *
-   * @param value 容量的數量
-   * @param unit 容量的單位
+   * @param value space amount
+   * @param unit space unit
+   * @return convert amount
    */
   public long convert(long value, SpaceUnit unit) {
     int u = unit.ordinal() - ordinal();
@@ -48,8 +49,9 @@ public enum SpaceUnit {
    * For example, to convert 2048 bytes to KB, use: <tt>SpaceUnit.KB.convert(2048L,
    * SpaceUnit.Bytes)</tt>.
    *
-   * @param value 容量的數量
-   * @param unit 容量的單位
+   * @param value space amount
+   * @param unit space unit
+   * @return convert amount
    */
   public double convertDecimal(double value, SpaceUnit unit) {
     int u = unit.ordinal() - ordinal();
