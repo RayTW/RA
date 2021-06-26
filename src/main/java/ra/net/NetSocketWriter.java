@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 /**
- * 可指定host、port用socket進行單次連線發送、接收訊息.
+ * Provider socket write and read.
  *
  * @author Ray Li
  */
@@ -21,13 +21,13 @@ public class NetSocketWriter {
   private NetSocketWriter() {}
 
   /**
-   * 送出資料等待回應.
+   * Sent message synchronous.
    *
-   * @param message 發送的訊息
-   * @param connectTimeout 連線的timeout時間
-   * @return 回應的訊息
-   * @throws IOException io相關的error
-   * @throws UnknownHostException 無法識別host時拋出
+   * @param message message
+   * @param connectTimeout connection timeout
+   * @return Returns receive message
+   * @throws IOException IOException
+   * @throws UnknownHostException UnknownHostException
    */
   public String send(String message, int connectTimeout) throws UnknownHostException, IOException {
     String ret = "";
@@ -44,12 +44,12 @@ public class NetSocketWriter {
   }
 
   /**
-   * 送出資料等待回應.
+   * Sent message synchronous.
    *
    * @param message 發送的訊息
-   * @return 回應的訊息
-   * @throws IOException io相關的error
-   * @throws UnknownHostException 無法識別host時拋出
+   * @return Returns receive message.
+   * @throws IOException IOException
+   * @throws UnknownHostException UnknownHostException
    */
   public String send(String message) throws UnknownHostException, IOException {
     String ret = "";
@@ -66,11 +66,11 @@ public class NetSocketWriter {
   }
 
   /**
-   * 送出不等回應.
+   * Sent message asynchronous.
    *
-   * @param message 發送的訊息
-   * @throws IOException io相關的error
-   * @throws UnknownHostException 無法識別host時拋出
+   * @param message message
+   * @throws IOException Sent message asynchronous.
+   * @throws UnknownHostException UnknownHostException
    */
   public void sendAsync(String message) throws UnknownHostException, IOException {
     try (Socket socket = new Socket(host, port)) {
@@ -81,13 +81,17 @@ public class NetSocketWriter {
     }
   }
 
-  /** 建構NetSocketPrint. */
+  /** NetSocketPrint. */
   public static class Builder {
     private String host;
     private int port;
     private Integer sendTimeout = null; // second
 
-    /** Initialize. */
+    /**
+     * Initialize.
+     *
+     * @return {@link NetSocketWriter}
+     */
     public NetSocketWriter build() {
       NetSocketWriter obj = new NetSocketWriter();
 

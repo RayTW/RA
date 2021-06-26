@@ -3,9 +3,9 @@ package ra.net;
 import java.util.Map;
 
 /**
- * 發送訊息的工具.
+ * Tool class of sent message.
  *
- * @author Kevin Tasi
+ * @author Ray Li, Kevin Tasi
  */
 public class MessageSender {
   private NetServiceProvider serviceProvider;
@@ -15,22 +15,23 @@ public class MessageSender {
   }
 
   /**
-   * 廣播至所有線上成員.
+   * Broadcast message to all users.
    *
-   * @param obj 要廣播的訊息
+   * @param message message
    */
-  public void boardcast(String obj) {
-    boardcast(obj, this.serviceProvider.getUsers());
+  public void broadcast(String message) {
+    broadcast(message, this.serviceProvider.getUsers());
   }
 
   /**
-   * 廣播至所有線上成員.
+   * Broadcast message to all users.
    *
-   * @param obj 要廣播的訊息
-   * @param userlist 成員列表
+   * @param <T> {@link UserListener}
+   * @param message message
+   * @param userlist user list
    */
   @SuppressWarnings("unchecked")
-  public <T extends UserListener> void boardcast(String obj, Map<String, T> userlist) {
+  public <T extends UserListener> void broadcast(String message, Map<String, T> userlist) {
     userlist
         .entrySet()
         .parallelStream()
@@ -45,17 +46,17 @@ public class MessageSender {
   }
 
   /**
-   * 送出資料給成員.
+   * Sent message specific user.
    *
-   * @param obj 要發送的訊息
-   * @param index 成員的索引值
+   * @param message message
+   * @param index specific user
    */
   @SuppressWarnings("unchecked")
-  public void send(String obj, int index) {
+  public void send(String message, int index) {
     Serviceable<String> net = (Serviceable<String>) this.serviceProvider.getService(index);
 
     try {
-      net.send(obj);
+      net.send(message);
     } catch (Exception e) {
       e.printStackTrace();
       net.onClose();
@@ -63,17 +64,17 @@ public class MessageSender {
   }
 
   /**
-   * 送完資料給成員後關閉連線.
+   * After sending messages to specific user will close user connection.
    *
-   * @param obj 要發送的訊息
-   * @param index 成員的索引值
+   * @param message message
+   * @param index specific user
    */
   @SuppressWarnings("unchecked")
-  public void sendClose(String obj, int index) {
+  public void sendClose(String message, int index) {
     Serviceable<String> net = (Serviceable<String>) this.serviceProvider.getService(index);
 
     try {
-      net.sendClose(obj);
+      net.sendClose(message);
     } catch (Exception e) {
       net.onClose();
       e.printStackTrace();

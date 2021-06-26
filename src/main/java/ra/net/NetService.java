@@ -12,7 +12,7 @@ import ra.net.processor.CommandProcessorProvider;
 import ra.net.request.Request;
 
 /**
- * 使用ServerSocket 與 Socket處理發送與接收.
+ * Provider socket write and read.
  *
  * @author Ray Li, Kevin Tsai
  */
@@ -136,7 +136,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     }
   }
 
-  /** 關閉SendThread & 發送offline(). */
+  /** close. */
   @Override
   public void close() {
     try {
@@ -148,26 +148,19 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     offline();
   }
 
-  // 將資料送出
+  /** Send message. */
   @Override
-  public void send(String msg) {
-    sendProcessor.send(msg);
+  public void send(String message) {
+    sendProcessor.send(message);
   }
 
-  // 送完資料後自動斷線
+  /** Close connection after sending message. */
   @Override
-  public void sendClose(String msg) {
-    sendProcessor.sendClose(msg);
+  public void sendClose(String message) {
+    sendProcessor.sendClose(message);
   }
 
-  /**
-   * 預設UTF-8.
-   *
-   * @param serverSocket ServerSocket原型
-   * @param provider PolicyProvider
-   * @param cmdProvider 提供處理command的實體物件
-   * @param codeProvider 提供command編解碼、split的實體物件
-   */
+  /** builder. */
   public static class Builder {
     private ServerSocket serverSocket;
     private Executor sendPool;
@@ -175,7 +168,11 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     private int index;
     private Long socketSoTimeout;
 
-    /** build. */
+    /**
+     * build.
+     *
+     * @return build {@link NetService}
+     */
     public NetService build() {
       NetService service = new NetService();
 

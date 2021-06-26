@@ -9,39 +9,39 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 將要傳送的訊息排queue 每100毫秒檢查1次.
+ * Provide sent message from the queue.
  *
  * @author Ray Li, Kevin Tasi
  */
 public class SendProcessor extends Thread implements Sendable<String> {
-  private NetServiceable netEventListener;
+  private NetServiceable netServiceable;
   private boolean isRunning = true;
   private List<String> queue = Collections.synchronizedList(new ArrayList<String>());
   private Socket socket;
   private BufferedOutputStream bufferedOutputStream;
-  private int timeOut = 0; // 發送完訊息後，會對socket setSoTimeout(mTimeOut);
+  private int timeOut = 0;
   private boolean sendcompilete = false;
 
   /**
    * Initialize.
    *
-   * @param net 發送訊息的Listener
-   * @param socket Socket元件
-   * @param timeout timeout時間
-   * @throws IOException 建立BufferedOutputStream失敗時拋出
+   * @param service service
+   * @param socket socket
+   * @param timeout timeout
+   * @throws IOException IOException
    */
-  public SendProcessor(NetServiceable net, Socket socket, int timeout) throws IOException {
-    netEventListener = net;
+  public SendProcessor(NetServiceable service, Socket socket, int timeout) throws IOException {
+    netServiceable = service;
     this.socket = socket;
     this.timeOut = timeout;
     bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
   }
 
   public SendProcessor(NetServiceable net) {
-    netEventListener = net;
+    netServiceable = net;
   }
 
-  /** 清空未發送的訊息queue. */
+  /** Clear message in queue. */
   public void clearQue() {
     try {
       queue.clear();
@@ -50,7 +50,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
     }
   }
 
-  /** 清空queue並停止送訊息thread. */
+  /** Close and clear message in queue. */
   public void close() {
     isRunning = false;
     try {
@@ -70,12 +70,12 @@ public class SendProcessor extends Thread implements Sendable<String> {
         try {
 
           msg = queue.get(0);
-          sendDataThread(msg);
+          flushMessage(msg);
           queue.remove(0);
 
         } catch (Exception e) {
           close();
-          netEventListener.onClose();
+          netServiceable.onClose();
           e.printStackTrace();
           break;
         }
@@ -84,7 +84,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
       try {
         if (sendcompilete) {
           close();
-          netEventListener.onClose();
+          netServiceable.onClose();
         }
 
         synchronized (this) {
@@ -95,7 +95,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
       }
     }
 
-    flushQue(); // workaround，暫時解決sendthread因多緒搶進Sendcompilete=true之後，queue才被add訊息但無法送出
+    flushQue();
     clearQue();
 
     release();
@@ -119,7 +119,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
       bufferedOutputStream = null;
     }
 
-    netEventListener = null;
+    netServiceable = null;
   }
 
   /**
@@ -136,42 +136,44 @@ public class SendProcessor extends Thread implements Sendable<String> {
   }
 
   /**
-   * 送完資料後自動斷線.
+   * Close the connection after sent the message.
    *
-   * @param msg 訊息
+   * @param message message
    */
   @Override
-  public void sendClose(String msg) {
-    send(msg);
+  public void sendClose(String message) {
+    send(message);
     setSendcompilete(true);
   }
 
-  // 將資料送出
-  private void sendDataThread(String msg) throws Exception {
+  private void flushMessage(String msg) throws Exception {
     socket.setSoTimeout(10000);
 
-    bufferedOutputStream.write((msg + "\f\n").getBytes());
+    bufferedOutputStream.write(TransmissionEnd.appendFeedNewLine(msg).getBytes());
     bufferedOutputStream.flush();
     socket.setSoTimeout(timeOut);
   }
 
-  // 若socket還未斷線，將queue裡的訊息send
   private void flushQue() {
-    String msg;
+    String message;
     while (queue.size() > 0) {
       try {
-        msg = queue.get(0);
-        sendDataThread(msg);
+        message = queue.get(0);
+        flushMessage(message);
         queue.remove(0);
       } catch (Exception e) { // 若送出訊息發生IOException則不繼續執行清queue
         e.printStackTrace();
         break;
       }
-      msg = "";
+      message = "";
     }
   }
 
-  /** 取得連線IP位址. */
+  /**
+   * Returns IP address.
+   *
+   * @return IP address
+   */
   public String getIp() {
     if (socket != null) {
       return socket.getInetAddress().toString().replaceAll("/", "");
@@ -180,10 +182,10 @@ public class SendProcessor extends Thread implements Sendable<String> {
   }
 
   /**
-   * 設定timeout時間.
+   * Set timeout value.
    *
-   * @param timeout timeout時間
-   * @throws SocketException 設定失敗時拋出
+   * @param timeout timeout
+   * @throws SocketException SocketException
    */
   public void setSoTimeout(int timeout) throws SocketException {
     if (socket != null) {

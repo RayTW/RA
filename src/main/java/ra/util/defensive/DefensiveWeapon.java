@@ -36,7 +36,11 @@ public class DefensiveWeapon {
     addDefensive(new NormalMathFunction());
   }
 
-  /** get the Singleton defensive tool. */
+  /**
+   * get the Singleton defensive tool.
+   *
+   * @return Returns Instance of DefensiveWeapon
+   */
   public static DefensiveWeapon get() {
     if (instance == null) {
       synchronized (DefensiveWeapon.class) {

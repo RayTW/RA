@@ -15,7 +15,7 @@ import ra.util.logging.LogEveryDay;
  */
 public class SenderAdapter extends MessageSender {
   private static final String LOG_TAG_RESPONSE = "response";
-  private MessageSender send;
+  private MessageSender sender;
   private Optional<LogEveryDay> commonLog;
   private Optional<LogEveryDay> errorLog;
 
@@ -29,59 +29,59 @@ public class SenderAdapter extends MessageSender {
   }
 
   /**
-   * 若有給參數commonLog、errorLog且不為null，則會記錄log.
+   * If argument 'commonLog' and 'errorLog' not null will enable logging.
    *
-   * @param send 發送訊息的元件
-   * @param commonLog 記錄通用log
-   * @param errorLog 記錄錯誤log
+   * @param sender sender
+   * @param commonLog commonLog
+   * @param errorLog errorLog
    */
-  public SenderAdapter(MessageSender send, LogEveryDay commonLog, LogEveryDay errorLog) {
+  public SenderAdapter(MessageSender sender, LogEveryDay commonLog, LogEveryDay errorLog) {
     this.commonLog = Optional.ofNullable(commonLog);
     this.errorLog = Optional.ofNullable(errorLog);
-    this.send = send;
+    this.sender = sender;
   }
 
   @Override
-  public void boardcast(String obj) {
-    send.boardcast(obj);
-    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, obj));
+  public void broadcast(String message) {
+    sender.broadcast(message);
+    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message));
   }
 
   @Override
-  public <T extends UserListener> void boardcast(String obj, Map<String, T> userlist) {
-    send.boardcast(obj, userlist);
-    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, obj));
+  public <T extends UserListener> void broadcast(String message, Map<String, T> userlist) {
+    sender.broadcast(message, userlist);
+    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message));
   }
 
   @Override
-  public void send(String obj, int index) {
-    send.send(obj, index);
-    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, obj, index));
+  public void send(String message, int index) {
+    sender.send(message, index);
+    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message, index));
   }
 
   public void send(JSONObject json, int index) {
-    send.send(json.toString(), index);
+    sender.send(json.toString(), index);
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, "" + json, index));
   }
 
   @Override
-  public void sendClose(String obj, int index) {
-    send.sendClose(obj, index);
-    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, obj, index));
+  public void sendClose(String message, int index) {
+    sender.sendClose(message, index);
+    commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message, index));
   }
 
   public void sendClose(JSONObject json, int index) {
-    send.sendClose(json.toString(), index);
+    sender.sendClose(json.toString(), index);
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, "" + json, index));
   }
 
   /**
-   * 記錄錯誤的request log，發送錯誤訊息.
+   * Logging after sending error message.
    *
-   * @param request 收到的request內容
-   * @param code 錯誤的code碼
-   * @param message 錯誤訊息
-   * @param index 要發送對象的索引值
+   * @param request request
+   * @param code error code
+   * @param message message
+   * @param index target index
    */
   public void sendError(String request, int code, String message, int index) {
     JSONObject resJson = new JSONObject();
@@ -101,12 +101,12 @@ public class SenderAdapter extends MessageSender {
   }
 
   /**
-   * 記錄錯誤的request log，發送錯誤訊息並斷開client連線.
+   * Logging after sending error message and close connection.
    *
-   * @param request 收到的request內容
-   * @param code 錯誤的code碼
-   * @param message 錯誤訊息
-   * @param index 要發送對象的索引值
+   * @param request request
+   * @param code error code
+   * @param message message
+   * @param index target index
    */
   public void sendErrorClose(String request, int code, String message, int index) {
     JSONObject resJson = new JSONObject();

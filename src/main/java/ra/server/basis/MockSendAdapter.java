@@ -105,10 +105,10 @@ public class MockSendAdapter extends SenderAdapter {
   }
 
   @Override
-  public void boardcast(String obj) {}
+  public void broadcast(String obj) {}
 
   @Override
-  public <T extends UserListener> void boardcast(String obj, Map<String, T> userlist) {}
+  public <T extends UserListener> void broadcast(String obj, Map<String, T> userlist) {}
 
   public String getSendMessgae() {
     return sendMsg;

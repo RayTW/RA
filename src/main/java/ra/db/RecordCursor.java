@@ -28,6 +28,7 @@ public interface RecordCursor extends Closeable {
    * Get value of specific fields.
    *
    * @param index An index returns a value of position.
+   * @return value
    */
   public String field(int index);
 

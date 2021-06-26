@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import ra.db.connection.OnCreatedStatementListener;
 
 /**
- * SQL statement executor.
+ * SQL statement (CRUD) executor.
  *
  * @author Ray Li
  */
@@ -24,11 +24,14 @@ public class StatementExecutor {
     return connection.isLive();
   }
 
-  /** 資料庫執行語法，可接受 INSERT, UPDATE, DELETE... 的 SQL 語法. */
+  /**
+   * If the execution is successful, the return count.
+   *
+   * @return affected rows
+   */
   public int execute(String sql) {
     int ret = 0;
     if (!isLive()) {
-      System.out.println("[與DB主機無法連線]");
       return ret;
     }
 
@@ -36,16 +39,20 @@ public class StatementExecutor {
   }
 
   /**
-   * 資料庫執行語法，可接受 INSERT, UPDATE, DELETE... 的 SQL 語法.
+   * If the execution is successful, the return count.
    *
-   * @param sql 語法
-   * @param listener 執行語法時若拋出例外傾聽者
+   * @param sql SQL statements
+   * @param listener exception
+   * @return affected rows
    */
   public int execute(String sql, Consumer<Exception> listener) {
     int ret = 0;
     if (!isLive()) {
-      String msg = "[與DB主機無法連線]" + connection.getParam() + "--->" + connection.getConnection();
-      System.out.println(msg);
+      String msg =
+          "Connect to database failed : "
+              + connection.getParam()
+              + "--->"
+              + connection.getConnection();
 
       if (listener != null) {
         listener.accept(new ConnectException(msg));
@@ -77,25 +84,31 @@ public class StatementExecutor {
   }
 
   /**
-   * 測試執行INSERT、UPDATE、DELETE語法是否會成功.
+   * Try to execute SQL statement (CRUD).
    *
-   * @param sql 語法
+   * @param sql SQL statement
+   * @return affected rows
    */
   public int tryExecute(String sql) {
     return tryExecute(sql, null);
   }
 
   /**
-   * 測試執行INSERT、UPDATE、DELETE語法是否會成功.
+   * Try to execute SQL statement (CRUD).
    *
-   * @param sql 語法
-   * @param listener 執行發生錯誤拋出例外
+   * @param sql SQL statement
+   * @param listener exception
+   * @return affected rows
    */
   public int tryExecute(String sql, Consumer<Exception> listener) {
     int ret = 0;
 
     if (!isLive()) {
-      String msg = "[與DB主機無法連線]" + connection.getParam() + "--->" + connection.getConnection();
+      String msg =
+          "Connect to database failed :"
+              + connection.getParam()
+              + "--->"
+              + connection.getConnection();
       System.out.println(msg);
 
       if (listener != null) {
@@ -107,11 +120,15 @@ public class StatementExecutor {
     return connection.tryExecute(sql, listener);
   }
 
-  /** 接受 insert, delete, setAutoCommit................ 的 SQL 語法 */
+  /**
+   * Execute SQL statements.
+   *
+   * @param sql SQL statement
+   * @return affected rows
+   */
   public int executeCommit(List<String> sql) {
     int ret = 0;
     if (!isLive()) {
-      System.out.println("[與DB主機無法連線]");
       return ret;
     }
 
@@ -119,17 +136,21 @@ public class StatementExecutor {
   }
 
   /**
-   * 接受 insert, delete, setAutoCommit的 SQL 語法.
+   * Execute SQL statements.
    *
-   * @param sql 語法
-   * @param listener 執行語法時若拋出例外傾聽者
+   * @param sql SQL statement
+   * @param listener exception
+   * @return affected rows
    */
   public int executeCommit(List<String> sql, Consumer<Exception> listener) {
     int ret = 0;
 
     if (!isLive()) {
-      String msg = "[與DB主機無法連線]" + connection.getParam() + "--->" + connection.getConnection();
-      System.out.println(msg);
+      String msg =
+          "Connect to database failed :"
+              + connection.getParam()
+              + "--->"
+              + connection.getConnection();
 
       if (listener != null) {
         listener.accept(new ConnectException(msg));
@@ -154,7 +175,7 @@ public class StatementExecutor {
           int ret = 0;
 
           if (connection == null) {
-            throw new ConnectException("[與DB主機無法連線]");
+            throw new ConnectException("Connect to database failed.");
           }
           try {
             dbConnection.setAutoCommit(autoCommit);
@@ -187,25 +208,31 @@ public class StatementExecutor {
   }
 
   /**
-   * 新增一筆資料後，可取得最後新增的id.
+   * Return the last id after executing SQL statement.
    *
-   * @param sql 語法
+   * @param sql SQL statement
+   * @return last id
    */
   public int insert(String sql) {
     return insert(sql, null);
   }
 
   /**
-   * 新增一筆資料後，可取得最後新增的id.
+   * Return the last id after executing SQL statement.
    *
-   * @param sql 語法
-   * @param errorListener 若執行語法失敗時會拋出ConnectException或SQLException
+   * @param sql SQL statement
+   * @param errorListener exception
+   * @return affected rows
    */
   public int insert(String sql, Consumer<Exception> errorListener) {
     int ret = 0;
 
     if (!isLive()) {
-      String msg = "[與DB主機無法連線]" + connection.getParam() + "--->" + connection.getConnection();
+      String msg =
+          "Connect to database failed :"
+              + connection.getParam()
+              + "--->"
+              + connection.getConnection();
       System.out.println(msg);
 
       if (errorListener != null) {
@@ -230,12 +257,10 @@ public class StatementExecutor {
     return this.connection.getConnection(
         dbConnection -> {
           dbConnection.setAutoCommit(true);
-          // 採用新的try-close方式關閉Statement與ResultSet。 by Ray
           try (Statement st = dbConnection.createStatement()) {
             synchronized (st) {
               if (st.executeUpdate(sql) > 0) {
-                // 採用新的try-close方式關閉Statement與ResultSet。 by Ray
-                try (ResultSet rs = st.executeQuery("select last_insert_id() as lastid");
+                try (ResultSet rs = st.executeQuery("SELECT LAST_INSERT_ID() AS lastid");
                     RecordSet record = new RecordSet(rs); ) {
                   return Integer.parseInt(record.field("lastid"));
                 }
@@ -247,27 +272,28 @@ public class StatementExecutor {
   }
 
   /**
-   * 資料庫查詢，可接受 select ... 的 Query SQL 語法.
+   * Execute query, ex : SELECT * FROM table.
    *
-   * @param sql 查詢語法
+   * @param sql SQL statement
    * @return RecordCursor
-   * @throws SQLException 查詢語法有錯誤
-   * @throws ConnectException 資料庫沒有連線
+   * @throws SQLException SQL statement invalid
+   * @throws ConnectException Connect to database failed
    */
   public RecordCursor executeQuery(String sql) {
     return executeQuery(sql, null);
   }
 
   /**
-   * 資料庫查詢，可接受 select ... 的 Query SQL 語法.
+   * Execute query, ex : SELECT * FROM table.
    *
-   * @param sql 查詢語法
-   * @param exceptionListener SQLException 查詢語法有錯誤、ConnectException 資料庫沒有連線
+   * @param sql SQL statement
+   * @param exceptionListener SQLException statement invalid、ConnectException connect to database
+   *     failed
    */
   public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener) {
     if (!isLive()) {
       String msg =
-          "[與DB主機無法連線]"
+          "Connect to database failed :"
               + connection.getParam()
               + ",connect="
               + connection.getConnection()
@@ -303,11 +329,9 @@ public class StatementExecutor {
     return record;
   }
 
-  /** 資料庫查詢(transaction機制)，接受 select ... 的 Query SQL 語法. */
+  /** Execute query( transaction), ex : SELECT * FROM table. */
   public void multiQuery(Consumer<MultiQuery> listener) {
     if (!isLive()) {
-      System.out.println(
-          "[與DB主機無法連線]" + connection.getParam() + ",connect=" + connection.getConnection());
       return;
     }
 
@@ -323,11 +347,9 @@ public class StatementExecutor {
     }
   }
 
-  /** 資料庫查詢(transaction機制)，接受 select ... 的 Query SQL 語法. */
+  /** Execute query( transaction), ex : SELECT * FROM table. */
   public void multiQuery(Consumer<MultiQuery> listener, Consumer<Exception> exceptionListener) {
     if (!isLive()) {
-      System.out.println(
-          "[與DB主機無法連線]" + connection.getParam() + "--->" + connection.getConnection());
       return;
     }
 
@@ -345,12 +367,6 @@ public class StatementExecutor {
     }
   }
 
-  /**
-   * 執行查詢語法.
-   *
-   * @param listener 取得Statement
-   * @throws SQLException 執行語法錯誤時拋出
-   */
   private void query(OnCreatedStatementListener listener) throws SQLException, ConnectException {
     this.connection.getConnection(
         dbConnection -> {

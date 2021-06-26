@@ -7,21 +7,19 @@ import ra.util.logging.LogEveryDay;
 import ra.util.logging.LogSettings;
 
 /**
- * .
+ * Provide logging.
  *
  * @author Ray Li
- * @param <T> 定義傳送資料的型態
  */
 public class Global {
   private LogEveryDay logEveryDay;
   private LogEveryDay errorLogEveryDay;
   private LogDelete logDelete;
 
-  /** 創建. */
+  /** Initialize. */
   public Global() {
     logDelete = new LogDelete();
     logDelete.setCheckTime(Duration.ofHours(1));
-    // 啟動自動刪除過期log機制
     logDelete.start();
   }
 
@@ -30,9 +28,9 @@ public class Global {
   }
 
   /**
-   * 設置日誌檔案路徑、儲存期間.
+   * Set the log file path and storage period.
    *
-   * @param logSettings 寫檔元件需要的相關設定
+   * @param logSettings logging settings.
    */
   public void setServerLogEnable(LogSettings logSettings) {
     logEveryDay = new LogEveryDay(true, logSettings, "UTF-8");
@@ -46,9 +44,9 @@ public class Global {
   }
 
   /**
-   * 設置錯誤日誌檔案路徑、儲存期間.
+   * Set the error log file path and storage period.
    *
-   * @param logSettings 寫檔元件需要的相關設定
+   * @param logSettings logging settings.
    */
   public void setErrorLogEnable(LogSettings logSettings) {
     errorLogEveryDay = new LogEveryDay(true, logSettings, "UTF-8");

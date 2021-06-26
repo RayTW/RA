@@ -50,6 +50,9 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
    * Try get a database connection from database pool.
    *
    * @param param The connection database parameters.
+   * @return {@link Connection}
+   * @throws SQLException SQLException
+   * @throws ConnectException ConnectException
    */
   public default Connection tryGetConnection(DatabaseParameters param)
       throws SQLException, ConnectException {
@@ -60,7 +63,6 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
       connection = null;
     }
     String dbconn = param.getDatabaseUrl();
-    System.out.println("DBConn:" + dbconn);
     Connection connectionTemp = null;
 
     if (param.getUser() != null && param.getPassword() != null) {
@@ -87,11 +89,8 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
     Connection connection = getConnection();
 
     if (connection == null) {
-      String msg = "[與DB主機無法連線]" + getParam();
-      System.out.println(msg);
-
       if (listener != null) {
-        listener.accept(new ConnectException(msg));
+        listener.accept(new ConnectException("Connect to database failed." + getParam()));
       }
       return ret;
     }
@@ -116,6 +115,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   /**
    * If Database connection connected return {@link StatementExecutor}.
    *
+   * @param executor executor
    * @return If connected return true.
    */
   public default boolean connectIf(Consumer<StatementExecutor> executor) {

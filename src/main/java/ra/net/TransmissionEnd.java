@@ -35,4 +35,5 @@ public class TransmissionEnd {
   public static String appendFeedNewLine(String text) {
     return text.concat(FORM_FEED.string).concat(NEW_LINE.string);
   }
+  
 }

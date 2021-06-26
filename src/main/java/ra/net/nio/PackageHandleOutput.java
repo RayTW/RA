@@ -9,21 +9,21 @@ import java.io.IOException;
 import java.net.SocketException;
 
 /**
- * 處理將要傳送出去的資料轉為bytes，再用封包格式輸出.
+ * Process package structure before sending.
  *
- * <p>封包設計
+ * <p>package structure
  *
  * <pre>
- * |封包類型|封包長度|封包結尾|data|
+ * |header|length|  end|data       |
  * |2bytes|2bytes|1byte|65535 bytes|
  *
- * 封包類型 :
- * > 0x00 0x00 text
- * > 0x00 0x10 zip
+ * flag :
+ *  0x00 0x00 text
+ *  0x00 0x10 zip
  *
  * end of package :
- * > 0x00 封包結尾
- * > 0x01 還有封包
+ *  0x00 package end
+ *  0x01 has package
  * </pre>
  *
  * @author Ray Li
@@ -58,14 +58,14 @@ public class PackageHandleOutput implements Transfer {
         remainingLength = 0;
       }
 
-      // 放封包header
+      // put package header
       buffer[0] = (byte) (dataType >> 8);
       buffer[1] = (byte) dataType;
       buffer[2] = (byte) (packageLength >> 8);
       buffer[3] = (byte) (packageLength);
       buffer[4] = remainingLength > 0 ? PACKAGE : END_PACKAGE;
 
-      // 放入封包data
+      // put package data
       System.arraycopy(data, offset, buffer, HEADER_LENGTH, packageLength);
       offset += packageLength;
 

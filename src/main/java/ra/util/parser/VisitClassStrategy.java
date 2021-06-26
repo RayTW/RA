@@ -3,29 +3,25 @@ package ra.util.parser;
 import java.lang.reflect.Field;
 
 /**
- * .
+ * Visits class.
  *
  * @author Ray Li
  */
 public interface VisitClassStrategy {
   /**
+   * SQLStatementUtility.get().recursiveClassFields(MyObject.class, obj, (field) -> { Each field
+   * object can be obtained for the specified class. });
    *
-   *
-   * <pre>
-   * SQLStatementUtility.get().recursiveClassFields(MyObject.class, obj, (field) -> {
-   *   // 可對指定的class取得每個欄位物件
-   * });
-   * </pre>
-   *
-   * @param field .
-   * @throws IllegalAccessException .
+   * @param field target field.
+   * @throws IllegalAccessException IllegalAccessException.
    */
   public void shouldVisitField(Field field) throws IllegalAccessException;
 
   /**
-   * 覆寫後，可判斷clazz是否是想要跳過的class，回傳true，預設遇到Object時，就不再往super class訪問fields.
+   * Decide whether to skip access to the parent class.
    *
-   * @param clazz .
+   * @param clazz target class.
+   * @return If return true will skip visit parent class.
    */
   public default boolean shouldSkipClass(Class<?> clazz) {
     if (clazz == Object.class) {

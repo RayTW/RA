@@ -12,7 +12,7 @@ import test.mock.NetObject;
 public class MessageSenderTest {
 
   @Test
-  public void testBoardcast() throws NamingException {
+  public void testBroadcast() throws NamingException {
     String expected = "message";
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
@@ -32,7 +32,7 @@ public class MessageSenderTest {
         });
     application.putUser(user.getIndex(), user);
 
-    obj.boardcast(expected);
+    obj.broadcast(expected);
   }
 
   @Test

@@ -14,11 +14,11 @@ import ra.net.request.Request;
  * Socket connection output.
  *
  * <pre>{@code
- * 使用範例:
+ * example:
  * NetSocketPrintKeep obj = new NetSocketPrintKeep.Builder()
  * .setHost("127.0.0.1")
  * .setPort(1234)
- * .setCmdProcProvider(...)
+ * .setCommandProcessorProvider(...)
  * .build();
  *
  * obj.connectToSocket();
@@ -133,10 +133,10 @@ public class NetSocketWriterKeep extends Thread {
       offset = 0;
 
       for (int i = 0; i < readByteBuffer.position(); i++) {
-        // 找結束字元"\f"
+        // find finish character '\f'
         if (readByteBuffer.get(i) == TransmissionEnd.FORM_FEED.getByte()) {
           offset = 1;
-          // 找結束字元"\f"之後是否有"\n"
+          // find finish character '\n' after '\f'
           if ((i + 1) < len && readByteBuffer.get(i + 1) == TransmissionEnd.NEW_LINE.getByte()) {
             offset = 2;
           }
@@ -146,12 +146,12 @@ public class NetSocketWriterKeep extends Thread {
             readByteBuffer.get(appendBuffer, 0, i);
             readByteBuffer.compact();
             byteArray.write(appendBuffer, 0, i);
-            i = 0; // 因為compact()因為讀取過資料後，position會往前移(變小)，因此要重置i為0，從重開始尋找"\f"
+            i = 0; // find character '\f'
             String data = new String(byteArray.toString());
             byteArray.reset();
             listener.onReadLine(data);
           }
-          // 捨棄字串"\f"、"\n"
+          // remove character "\f"、"\n"
           if (offset > 0 && readByteBuffer.position() >= 2) {
             readByteBuffer.flip();
             readByteBuffer.get(appendBuffer, 0, offset);
@@ -201,8 +201,8 @@ public class NetSocketWriterKeep extends Thread {
     sendThreadKeep.send(msg);
   }
 
-  void send(String msg) throws IOException {
-    bufferedOutputStream.write((msg + "\f\n").getBytes());
+  void write(String msg) throws IOException {
+    bufferedOutputStream.write(TransmissionEnd.appendFeedNewLine(msg).getBytes());
     bufferedOutputStream.flush();
   }
 
@@ -218,7 +218,7 @@ public class NetSocketWriterKeep extends Thread {
     }
   }
 
-  /** 創建NetSocketPrintKeep. */
+  /** build NetSocketPrintKeep. */
   public static class Builder {
     private String host;
     private int port;
@@ -242,9 +242,10 @@ public class NetSocketWriterKeep extends Thread {
     }
 
     /**
-     * 是否啟用斷線後清空緩存訊息，預設為true(啟用).
+     * Whether to enable clearing of cached messages after disconnection.
      *
-     * @param enableClearQueue 清空緩存訊息開關標記
+     * @param enableClearQueue Default true
+     * @return Builder
      */
     public Builder enableClearQueue(boolean enableClearQueue) {
       this.enableClearQueue = enableClearQueue;
@@ -256,7 +257,11 @@ public class NetSocketWriterKeep extends Thread {
       return this;
     }
 
-    /** . */
+    /**
+     * Build NetSocketWriterKeep.
+     *
+     * @return {@link NetSocketWriterKeep}
+     */
     public NetSocketWriterKeep build() {
       if (host == null || host.isEmpty()) {
         throw new IllegalArgumentException("host == null or host.isEmpty()");

@@ -42,7 +42,11 @@ public class OnceDatabaseFactory {
     }
   }
 
-  /** Get the current connection count. */
+  /**
+   * Get the current connection count.
+   *
+   * @return connection count
+   */
   public long getCount() {
     return databaseCount.get();
   }

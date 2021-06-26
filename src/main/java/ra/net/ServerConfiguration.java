@@ -17,6 +17,7 @@ public class ServerConfiguration {
   /**
    * Load application.properties.
    *
+   * @param path path
    * @throws IOException Throws exception when Load configuration file.
    */
   public ServerConfiguration(String path) throws IOException {
@@ -26,6 +27,7 @@ public class ServerConfiguration {
   /**
    * Load application.properties.
    *
+   * @param path path
    * @throws IOException Throws exception when Load configuration file.
    */
   public ServerConfiguration(Path path) throws IOException {
@@ -40,6 +42,7 @@ public class ServerConfiguration {
    * Gets value that specifies key from application.properties.
    *
    * @param key key
+   * @return value
    */
   public String getProperty(String key) {
     return properties == null ? null : properties.getProperty(key);
@@ -50,6 +53,7 @@ public class ServerConfiguration {
    *
    * @param key key
    * @param defaultValue value
+   * @return value
    */
   public String getProperty(String key, String defaultValue) {
     return properties == null ? null : properties.getProperty(key, defaultValue);
@@ -76,6 +80,7 @@ public class ServerConfiguration {
    *
    * @param key key
    * @param defaultValue value
+   * @return value
    */
   public int getPropertyAsInt(String key, int defaultValue) {
     String result = properties.getProperty(key, null);
@@ -87,7 +92,11 @@ public class ServerConfiguration {
     }
   }
 
-  /** Get all properties. */
+  /**
+   * Get all properties.
+   *
+   * @return properties
+   */
   public Properties getProperties() {
     return properties;
   }

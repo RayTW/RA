@@ -8,13 +8,13 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 將要傳送的訊息排queue 每50毫秒檢查1次 不提供停止、關閉的功能.
+ * The queue of message.
  *
  * @author Ray Li
  */
 public class SendProcessorKeep extends Thread implements Sendable<String> {
   private NetSocketWriterKeep netSocketPrintKeep;
-  private boolean runThread = true;
+  private boolean isRunning = true;
   private List<String> queue = Collections.synchronizedList(new LinkedList<String>());
   private ReentrantLock lock = new ReentrantLock();
   private Condition condition = lock.newCondition();
@@ -24,7 +24,7 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
     netSocketPrintKeep = net;
   }
 
-  /** 清空緩存的訊息. */
+  /** Clear message. */
   public void clearQueue() {
     try {
       queue.clear();
@@ -34,7 +34,7 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
   }
 
   /**
-   * 是否啟用斷線後清空緩存訊息，預設為true(啟用).
+   * Whether to allow the check message to be cleared after disconnection.
    *
    * @param enable default true
    */
@@ -44,14 +44,14 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
 
   @Override
   public void run() {
-    while (runThread) {
-      String msg;
+    while (isRunning) {
+      String message;
 
       while (queue.size() > 0) {
         try {
-          msg = queue.get(0);
+          message = queue.get(0);
 
-          netSocketPrintKeep.send(msg);
+          netSocketPrintKeep.write(message);
           queue.remove(0);
         } catch (Exception e) {
           e.printStackTrace();
@@ -64,7 +64,7 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
             break;
           }
         }
-        msg = "";
+        message = "";
       }
 
       lock.lock();
@@ -96,7 +96,7 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
 
   /** Close sender. */
   public void close() {
-    runThread = false;
+    isRunning = false;
     lock.lock();
     try {
       condition.signalAll();

@@ -9,7 +9,8 @@ import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
 
 /**
- * 執行任何SQL語法皆無lock，執行 {@link #insert(String)}時，回傳的結果有機率是錯誤的.
+ * Provide execute SQL statement using a keep database connection, and the connection is not thread
+ * safe.
  *
  * @author Ray Li
  */
@@ -23,9 +24,9 @@ public class OriginalConnection implements DatabaseConnection {
   private DatabaseKeepAlive isLive;
 
   /**
-   * .
+   * Initialize.
    *
-   * @param param 資料庫連線相關參數
+   * @param param database connection settings.
    */
   public OriginalConnection(DatabaseParameters param) {
     this.param = param;
@@ -51,9 +52,9 @@ public class OriginalConnection implements DatabaseConnection {
   }
 
   /**
-   * 連線到 DB.
+   * Connect to database.
    *
-   * @return 連線成功回傳1，失敗回傳0
+   * @return If connect successful return true.
    */
   @Override
   public boolean connect() {

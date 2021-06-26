@@ -43,14 +43,15 @@ public class Utility {
   }
 
   /**
-   * 取得錯誤訊息的詳細資料.
+   * Return details of exception.
    *
-   * @param e 要解析的Throwable
+   * @param exception exception
+   * @return stack trace
    */
-  public String getThrowableDetail(Throwable e) {
-    StringBuilder errStr = new StringBuilder(e + System.lineSeparator());
+  public String getThrowableDetail(Throwable exception) {
+    StringBuilder errStr = new StringBuilder(exception + System.lineSeparator());
 
-    for (StackTraceElement s : e.getStackTrace()) {
+    for (StackTraceElement s : exception.getStackTrace()) {
       errStr.append(s.toString());
       errStr.append(System.lineSeparator());
     }
@@ -58,54 +59,58 @@ public class Utility {
   }
 
   /**
-   * 將例外訊息堆疊轉為字串.
+   * Converts exception stack trace to string.
    *
-   * @param e 要解析的Throwable
+   * @param exception exception
+   * @return stack trace
    */
-  public String toExceptionStackTrace(Throwable e) {
-    StringWriter errors = new StringWriter();
-    e.printStackTrace(new PrintWriter(errors));
-    return errors.toString();
+  public String toExceptionStackTrace(Throwable exception) {
+    StringWriter writer = new StringWriter();
+    exception.printStackTrace(new PrintWriter(writer));
+
+    return writer.toString();
   }
 
   /**
-   * 標準化浮點數輸出.
+   * Standardized floating point output.
    *
-   * @param points 小數點第幾位
-   * @param vals 要標準化的值
+   * @param points floating point
+   * @param value value
+   * @return Returns value of already formatted.
    */
-  public double sprintf(int points, double vals) {
-    return Arith.round(vals, points);
+  public double sprintf(int points, double value) {
+    return Arith.round(value, points);
   }
 
   /**
-   * 讓 double 數字從科學符號轉回數字.
+   * Numbers are converted from scientific symbols back to numbers.
    *
-   * @param a 要標準化的值
+   * @param value source value
+   * @return Returns value of already formatted.
    */
-  public String sformat(double a) {
+  public String sformat(double value) {
     DecimalFormat f = new DecimalFormat("########################.##");
-    return f.format(a);
+    return f.format(value);
   }
 
   /**
-   * 置換指定object的member成員.
+   * Replace specific member of the object.
    *
-   * @param obj 主物件
-   * @param name 位於主物件要被置換的參數名
-   * @param member 用來替換obj內與name符合的參數
+   * @param obj source object
+   * @param name member name
+   * @param member object member
    */
   public void replaceMember(Object obj, String name, Object member) {
     replaceObjectMember(obj.getClass(), obj, name, member);
   }
 
   /**
-   * 置換指定object的member成員.
+   * Replace specific member of the object.
    *
-   * @param clazz obj的類別
-   * @param obj 主物件
-   * @param name 位於主物件要被置換的參數名
-   * @param member 用來替換obj內與name符合的參數
+   * @param clazz class of object
+   * @param obj source object
+   * @param name member name
+   * @param member object member
    */
   private void replaceObjectMember(Class<?> clazz, Object obj, String name, Object member) {
     if (clazz == Object.class) {
@@ -128,16 +133,16 @@ public class Utility {
   }
 
   /**
-   * 列出指定物件全部的member與其member values.
+   * List object all member and value.
    *
-   * @param obj 要檢查的物件
+   * @param object target object
    */
-  public void showAll(Object obj) {
-    for (Field field : obj.getClass().getDeclaredFields()) {
+  public void showAll(Object object) {
+    for (Field field : object.getClass().getDeclaredFields()) {
       field.setAccessible(true);
 
       try {
-        System.out.println(field.getName() + " = " + field.get(obj));
+        System.out.println(field.getName() + " = " + field.get(object));
       } catch (IllegalArgumentException e) {
         e.printStackTrace();
       } catch (IllegalAccessException e) {
@@ -147,14 +152,14 @@ public class Utility {
   }
 
   /**
-   * 幫指定class 輸出get、set的method，下列範例.
+   * List object that setter, getter method and value.
    *
    * <pre>
    * <code>
    * code:
    * Utility.get().showSetterGetter(com.chungyo.external.kind24.WagersExtend.class)
    *
-   * 輸出:
+   * output:
    * public String getWagersID(){return mWagersID;}
    * public void setWagersID(String wagersid){mWagersID=wagersid;}
    * public long getRoundSerial(){return mRoundSerial;}
@@ -169,7 +174,7 @@ public class Utility {
    * </code>
    * </pre>
    *
-   * @param clazz 要輸出的類別
+   * @param clazz target class
    */
   public <T> void showSetterGetter(Class<T> clazz) {
     String get = "public %s get%s(){return %s;}";
@@ -242,10 +247,11 @@ public class Utility {
   }
 
   /**
-   * 用遞迴往super class取得class fields.
+   * Visit member of class.
    *
-   * @param clazz 要遍歷的類別
-   * @param strategy .
+   * @param clazz target
+   * @param strategy strategy
+   * @return Returns true will visit parent class.
    */
   public boolean recursiveClassFields(Class<?> clazz, VisitClassStrategy strategy) {
     Field[] fields = clazz.getDeclaredFields();
@@ -279,14 +285,15 @@ public class Utility {
   }
 
   /**
-   * 讀檔.
+   * Read file.
    *
-   * @param filePath 檔案路徑
-   * @param charsetName 檔案的編碼格式
+   * @param filePath file path
+   * @param charset Format of the file ​content.
+   * @return Returns file content.
    */
-  public String readFile(String filePath, String charsetName) {
+  public String readFile(String filePath, String charset) {
     try {
-      return new String(Files.readAllBytes(Paths.get(filePath)), charsetName);
+      return new String(Files.readAllBytes(Paths.get(filePath)), charset);
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -297,25 +304,21 @@ public class Utility {
   }
 
   /**
-   * .
+   * Read file and convert to {@link JSONObject}.
    *
-   * @param filePath 檔案路徑
-   * @param listener 接收讀取到的字串用
-   * @throws IOException 讀取失敗
+   * @param filePath file path
+   * @return JSON
    */
-  public void readFile(String filePath, java.util.function.Consumer<String> listener)
-      throws IOException {
-    try (Stream<String> lines = Files.lines(Paths.get(filePath))) {
-      lines.forEach(listener);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   public JSONObject readFileToJsonObject(String filePath) {
     return new JSONObject(readFile(filePath));
   }
 
+  /**
+   * Read file and convert to {@link JSONArray}.
+   *
+   * @param filePath file path
+   * @return JSON
+   */
   public JSONArray readFileToJsonArray(String filePath) {
     return new JSONArray(readFile(filePath));
   }
@@ -324,7 +327,7 @@ public class Utility {
    * A simple implementation to pretty-print JSON file.
    *
    * @param json JSONObject物件
-   * @return 排版後JSON字串
+   * @return Returns JSON of pretty.
    */
   public String prettyPrintJson(JSONObject json) {
     return prettyPrintJson(json.toString());
@@ -333,8 +336,8 @@ public class Utility {
   /**
    * A simple implementation to pretty-print JSON file.
    *
-   * @param jsonarray JSONArray物件
-   * @return 排版後JSON字串
+   * @param jsonarray JSONArray
+   * @return Returns JSON of pretty.
    */
   public String prettyPrintJson(JSONArray jsonarray) {
     return prettyPrintJson(jsonarray.toString());
@@ -343,8 +346,8 @@ public class Utility {
   /**
    * A simple implementation to pretty-print JSON file.
    *
-   * @param unformattedJsonString 未排版的JSON字串
-   * @return 排版後JSON字串
+   * @param unformattedJsonString JSON of not yet pretty.
+   * @return Returns JSON of pretty.
    */
   public String prettyPrintJson(String unformattedJsonString) {
     return prettyPrintJson(unformattedJsonString, space);
@@ -353,9 +356,9 @@ public class Utility {
   /**
    * A simple implementation to pretty-print JSON file.
    *
-   * @param unformattedJsonString 未排版的JSON字串
-   * @param space JSON間距隔的空白字元
-   * @return 排版後JSON字串
+   * @param unformattedJsonString JSON of not yet pretty.
+   * @param space JSON blank space
+   * @return Returns JSON of pretty.
    */
   public String prettyPrintJson(String unformattedJsonString, String space) {
     StringBuilder prettyJsonBuilder = new StringBuilder();
@@ -406,9 +409,9 @@ public class Utility {
   /**
    * Print a new line with indention at the beginning of the new line.
    *
-   * @param indentLevel .
-   * @param stringBuilder .
-   * @param space .
+   * @param indentLevel indentLevel.
+   * @param stringBuilder stringBuilder.
+   * @param space space.
    */
   private void appendIndentedNewLine(int indentLevel, StringBuilder stringBuilder, String space) {
     stringBuilder.append(System.lineSeparator());
@@ -418,10 +421,10 @@ public class Utility {
   }
 
   /**
-   * 解壓縮zip包.<br>
+   * File uncompression uses ZIP.<br>
    *
    * <pre>
-   * 範例: {
+   * example: {
    *   String zipPath = "C:/Users/ray_lee/Desktop/toJavaModel.zip";
    *   String filePath = "C:/Users/ray_lee/Desktop/";
    *
@@ -432,21 +435,21 @@ public class Utility {
    *   }
    * </pre>
    *
-   * @param zipFilePath  zip文件的全路徑
-   * @param unzipFolderPath 解壓後的文件保存的路徑
-   * @throws IOException io error
-   * @throws ZipException zip error
+   * @param zipFilePath  zip source file path
+   * @param unzipFolderPath unzip target path
+   * @throws IOException when read file failure
+   * @throws ZipException when unzipping file failure
    */
   public void unzip(String zipFilePath, String unzipFolderPath) throws ZipException, IOException {
     File zipFile = new File(zipFilePath);
-    // 創建解壓縮文件保存的路徑
+    // create output store path
     File unzipFileDir = new File(unzipFolderPath);
 
     if (!unzipFileDir.exists() || !unzipFileDir.isDirectory()) {
       unzipFileDir.mkdirs();
     }
 
-    // 開始解壓
+    // star unzip
     ZipEntry entry = null;
     String entryFilePath = null;
     String entryDirPath = null;
@@ -457,12 +460,12 @@ public class Utility {
     try (ZipFile zip = new ZipFile(zipFile)) {
       Enumeration<? extends ZipEntry> entries = zip.entries();
 
-      // 循環對壓縮包裡的每一個文件進行解壓
+      // Unzip each file.
       while (entries.hasMoreElements()) {
         entry = entries.nextElement();
-        // 構建壓縮包中一個文件解壓後保存的文件全路徑
+        // Unzip to target file path.
         entryFilePath = unzipFolderPath + File.separator + entry.getName();
-        // 構建解壓後保存的文件夾路徑
+        // Process unzip file name.
         index = entryFilePath.lastIndexOf(File.separator);
         if (index != -1) {
           entryDirPath = entryFilePath.substring(0, index);
@@ -470,21 +473,18 @@ public class Utility {
           entryDirPath = "";
         }
         entryDir = new File(entryDirPath);
-        // 如果文件夾路徑不存在，則創建文件夾
         if (!entryDir.exists() || !entryDir.isDirectory()) {
           entryDir.mkdirs();
         }
 
-        // 創建解壓文件
         entryFile = new File(entryFilePath);
 
-        // 若是資料夾就建立
         if (entry.isDirectory()) {
           entryFile.mkdir();
           continue;
         }
 
-        // 寫入文件
+        // Output to target file.
         try (InputStream is = zip.getInputStream(entry)) {
           Files.copy(is, entryFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
@@ -493,16 +493,16 @@ public class Utility {
   }
 
   /**
-   * 使用zip壓縮檔案、資料夾.<br>
-   * 使用範例:
+   * File compression uses ZIP.<br>
+   * example:
    *
    * <pre>
-   * // 壓縮檔案
+   * // Compression file:
    * Utility.get().zip("D:/myFiles/file.log", "D:/test/file.zip");
    * </pre>
    *
    * <pre>
-   * // 壓縮資料夾
+   * // Compression directory
    * Utility.get().zip("D:/myFolder", "D:/folder.zip");
    * </pre>
    *
@@ -551,18 +551,18 @@ public class Utility {
   }
 
   /**
-   * 刪除檔案或目錄(含子目錄、檔案).
+   * Delete files.
    *
-   * @param path 路徑
+   * @param path path
    */
   public void deleteFiles(String path) {
     deleteFiles(new File(path));
   }
 
   /**
-   * 刪除檔案或目錄(含子目錄、檔案).
+   * Delete deep files.
    *
-   * @param file 檔案
+   * @param file file
    */
   public void deleteFiles(File file) {
     Consumer<File> deleteFile =
@@ -583,54 +583,60 @@ public class Utility {
   }
 
   /**
-   * 取得RecordCursor的欄位值設置為obj有標記annation SerializedName對應的欄位值.
+   * Assign an object member value.
    *
-   * @param obj .
-   * @param record .
+   * @param object object.
+   * @param record record.
    */
-  public void setFieldsUsingSerializedName(Object obj, RecordCursor record) {
-    setAllFieldsValue(obj, record, o -> o.value());
-  }
-
-  public void setFieldsUsingAlternate(Object obj, RecordCursor record, int alternateIndex) {
-    setAllFieldsValue(
-        obj, record, o -> o.alternate().length > 0 ? o.alternate()[alternateIndex] : o.value());
+  public void setFieldsUsingSerializedName(Object object, RecordCursor record) {
+    setAllFieldsValue(object, record, o -> o.value());
   }
 
   /**
-   * 取得RecordCursor的欄位值設置為obj有標記annation SerializedName對應的欄位值.
+   * Assign an object member value.
    *
-   * @param obj .
-   * @param record .
-   * @param listener .
+   * @param object object
+   * @param record record
+   * @param alternateIndex alternate index
+   */
+  public void setFieldsUsingAlternate(Object object, RecordCursor record, int alternateIndex) {
+    setAllFieldsValue(
+        object, record, o -> o.alternate().length > 0 ? o.alternate()[alternateIndex] : o.value());
+  }
+
+  /**
+   * Assign value to object member from {@link RecordCursor}.
+   *
+   * @param object source object
+   * @param record The record of query from database.
+   * @param listener value
    */
   public void setAllFieldsValue(
-      Object obj, RecordCursor record, Function<SerializedName, String> listener) {
+      Object object, RecordCursor record, Function<SerializedName, String> listener) {
     recursiveClassFields(
-        obj.getClass(),
+        object.getClass(),
         (field) -> {
           SerializedName serializedName = field.getAnnotation(SerializedName.class);
           String value = record.field(listener.apply(serializedName));
 
-          setValue(obj, field, value);
+          setValue(object, field, value);
         });
   }
 
   /**
-   * 對代理物件的指定欄位賦值.
+   * Assign value to object member.
    *
-   * @param obj 被代理設值的物件.
-   * @param field 欄位.
-   * @param value 值.
-   * @throws NumberFormatException .
-   * @throws IllegalArgumentException .
-   * @throws IllegalAccessException .
+   * @param obj source object
+   * @param field member field
+   * @param value field value
+   * @throws NumberFormatException NumberFormatException
+   * @throws IllegalArgumentException IllegalArgumentException
+   * @throws IllegalAccessException IllegalAccessException
    */
   public void setValue(Object obj, Field field, String value)
       throws NumberFormatException, IllegalArgumentException, IllegalAccessException {
     Class<?> fieldType = field.getType();
 
-    // 基本型別(非class)
     if (fieldType.isPrimitive()) {
       if (int.class == fieldType) {
         field.setInt(obj, Integer.parseInt(value));

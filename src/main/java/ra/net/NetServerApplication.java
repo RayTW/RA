@@ -157,7 +157,6 @@ public class NetServerApplication implements NetServiceProvider {
    *
    * @param source source
    * @param args args
-   * @throws IOException IOException
    */
   @SuppressWarnings("resource")
   public static void run(Class<?> source, String... args) {
@@ -210,8 +209,7 @@ public class NetServerApplication implements NetServiceProvider {
           "The provider class '" + commandProviderClass + "' constructor is a mismatch.");
     }
     if (NetCommandProvider.class.isAssignableFrom(commandProviderClass)) {
-      application.runNetService(
-          serverSocket, port, poolSize, (NetCommandProvider) providerObject);
+      application.runNetService(serverSocket, port, poolSize, (NetCommandProvider) providerObject);
     } else if (DataNetCommandProvider.class.isAssignableFrom(commandProviderClass)) {
       application.runNetDataService(
           serverSocket, port, poolSize, (DataNetCommandProvider) providerObject);
@@ -234,10 +232,7 @@ public class NetServerApplication implements NetServiceProvider {
    * @param providerClass command provider
    */
   private void runNetService(
-      ServerSocket serverSocket,
-      int port,
-      int poolSize,
-      NetCommandProvider commandProvider) {
+      ServerSocket serverSocket, int port, int poolSize, NetCommandProvider commandProvider) {
     this.serverSocket = serverSocket;
     threadPool = Executors.newFixedThreadPool(poolSize);
 
@@ -284,10 +279,7 @@ public class NetServerApplication implements NetServiceProvider {
    * @param providerClass command provider
    */
   private void runNetDataService(
-      ServerSocket serverSocket,
-      int port,
-      int poolSize,
-      DataNetCommandProvider commandProvider) {
+      ServerSocket serverSocket, int port, int poolSize, DataNetCommandProvider commandProvider) {
     this.serverSocket = serverSocket;
     threadPool = Executors.newFixedThreadPool(poolSize);
 

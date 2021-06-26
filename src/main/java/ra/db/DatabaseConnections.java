@@ -27,9 +27,9 @@ public class DatabaseConnections {
   }
 
   /**
-   * Create Database Connect Object.
+   * Create database connection.
    *
-   * @param name Connect Object alias.
+   * @param name Connection alias.
    */
   public DatabaseConnections(String name) {
     this.name = name;
@@ -37,7 +37,11 @@ public class DatabaseConnections {
     lock = new StampedLock();
   }
 
-  /** Take Connect Object alias. */
+  /**
+   * Returns connection alias of database.
+   *
+   * @return name
+   */
   public String getName() {
     return name;
   }
@@ -47,7 +51,6 @@ public class DatabaseConnections {
    *
    * @param param Parameters of Database connect setting.
    * @param count Kept connections count by the same database.
-   * @throws ConnectException Throw the ConnectException when connect fail.
    */
   public void connectConcurrentConnection(DatabaseParameters param, int count) {
     try {
@@ -58,12 +61,10 @@ public class DatabaseConnections {
   }
 
   /**
-   * There is non lock when executes SQL, probable return error results when execute {@link
-   * #insert(String)}.
+   * There is non lock when executes SQL, probable return error results when execute insert.
    *
    * @param param Parameters of Database connect setting.
    * @param count Kept connections count by the same database.
-   * @throws ConnectException Throw the ConnectException when connect fail.
    */
   public void connectOriginalConnection(DatabaseParameters param, int count) {
     try {
@@ -100,7 +101,11 @@ public class DatabaseConnections {
     }
   }
 
-  /** Take StatementExecutor by round-robin, It's practical when had multi connections. */
+  /**
+   * Take StatementExecutor by round-robin, It's practical when had multi connections.
+   *
+   * @return {@link StatementExecutor}
+   */
   public StatementExecutor next() {
     int index = 0;
     long stamp = lock.writeLock();

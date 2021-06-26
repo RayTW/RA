@@ -27,7 +27,7 @@ public class SenderAdapterTest {
         };
     MockSend send = new MockSend(back);
     SenderAdapter sendAdapter = new SenderAdapter(send, mockLog, mockLog);
-    sendAdapter.boardcast(expected);
+    sendAdapter.broadcast(expected);
   }
 
   @Test
@@ -40,7 +40,7 @@ public class SenderAdapterTest {
         };
     MockSend send = new MockSend(back);
     SenderAdapter sendAdapter = new SenderAdapter(send, mockLog, mockLog);
-    sendAdapter.boardcast(expected, null);
+    sendAdapter.broadcast(expected, null);
   }
 
   @Test
@@ -166,12 +166,12 @@ public class SenderAdapterTest {
     }
 
     @Override
-    public <T extends UserListener> void boardcast(String obj, Map<String, T> userlist) {
+    public <T extends UserListener> void broadcast(String obj, Map<String, T> userlist) {
       callBack.accept(new Object() {}.getClass().getEnclosingMethod().getName(), obj);
     }
 
     @Override
-    public void boardcast(String obj) {
+    public void broadcast(String obj) {
       callBack.accept(new Object() {}.getClass().getEnclosingMethod().getName(), obj);
     }
 
