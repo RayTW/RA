@@ -11,7 +11,7 @@ import ra.util.annotation.ExcludeIfNull;
 import ra.util.annotation.Quote;
 
 /**
- * Sql class.
+ * SQL class.
  *
  * @author Ray Li
  */
@@ -63,43 +63,40 @@ public class Sql {
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 採用BigIntFunction、StringFunction.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
+   * @param tableName table name
+   * @param object target
+   * @return SQL statement
    */
   public <T> String toInsert(String tableName, T object) {
     return toInsert(tableName, object, (o) -> o.value(), bigInt, string);
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 預設取SerializedName的alternate，若沒有alternate屬性就取value<br>
-   * 採用BigIntFunction、StringFunction.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
-   * @param index alternate的索引值
+   * @param tableName table name
+   * @param object target
+   * @param index alternate
+   * @return SQL statement
    */
   public <T> String toInsert(String tableName, T object, int index) {
     return toInsert(tableName, object, index, bigInt, string);
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 預設取SerializedName的alternate，若沒有alternate屬性就取value<br>
-   * 採用BigIntFunction、StringFunction<br>
-   * 將會處理annotation AutoIncremen，若不處理請改用 Sql#toInsert(String, Object, int).
+   * Convert object to the SQL statement.
    *
    * @see Sql#toInsert(String, Object, int)
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
-   * @param index alternate的索引值
-   * @param function .
+   * @param tableName table name
+   * @param object target
+   * @param index alternate
+   * @param function function
+   * @return SQL statement
    */
   public <T> String toInsert(
       String tableName, T object, int index, StatementsFunction... function) {
@@ -111,13 +108,14 @@ public class Sql {
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
+   * @param tableName table name
+   * @param object target
    * @param listener listener
    * @param function function
+   * @return SQL statement
    */
   public <T> String toInsert(
       String tableName,
@@ -131,12 +129,12 @@ public class Sql {
         .recursiveClassFields(
             object.getClass(),
             (field) -> {
-              // 內部類別不處理
+              // Ignore internal class
               if (field.getName().startsWith("this$")) {
                 return;
               }
 
-              // 若欄位標記 @ExcludeIfNull且value為null時也不處理
+              // Ignore when class field '@ExcludeIfNull' and the value is null.
               if (field.isAnnotationPresent(ExcludeIfNull.class)) {
                 if (!field.isAccessible()) {
                   field.setAccessible(true);
@@ -187,25 +185,25 @@ public class Sql {
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 採用AutoIncrementFunction、BigIntFunction、StringFunction.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
+   * @param tableName table name
+   * @param object target
+   * @return SQL statement
    */
   public <T> String toInsertAutoIncrement(String tableName, T object) {
     return toInsert(tableName, object, (o) -> o.value(), autoIncrementFunction, bigInt, string);
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 採用AutoIncrementFunction、BigIntFunction、StringFunction.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
-   * @param listener .
+   * @param tableName table name
+   * @param object target
+   * @param listener listener
+   * @return SQL statement
    */
   public <T> String toInsertAutoIncrement(
       String tableName, T object, Function<SerializedName, String> listener) {
@@ -213,16 +211,14 @@ public class Sql {
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法<br>
-   * 預設取SerializedName的alternate，若沒有alternate屬性就取value<br>
-   * 採用AutoIncrementFunction、BigIntFunction、StringFunction<br>
-   * 將會處理annotation AutoIncremen，若不處理請改用 Sql#toInsert(String, Object, int).
+   * Convert object to the SQL statement.
    *
    * @see Sql#toInsert(String, Object, int)
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
-   * @param index alternate的索引值
+   * @param tableName table name
+   * @param object target
+   * @param index alternate
+   * @return SQL statement
    */
   public <T> String toInsertUsingAlternate(String tableName, T object, int index) {
     return toInsert(
@@ -235,12 +231,12 @@ public class Sql {
   }
 
   /**
-   * 將指定class有SerializedName標記的member串成insert xxx的sql語法，若有field標記為@Quote時會跳脫"\"<br>
-   * 採用QuoteJson、BigIntFunction、StringFunction.
+   * Convert object to the SQL statement.
    *
    * @param <T> class type
-   * @param tableName 資料表名稱
-   * @param object 指定class創建的物件
+   * @param tableName table name
+   * @param object target
+   * @return SQL statement
    */
   public <T> String toInsertQuoteJson(String tableName, T object) {
     return toInsert(tableName, object, (o) -> o.value(), quoteJson, bigInt, string);
@@ -282,7 +278,6 @@ public class Sql {
     }
   }
 
-  /** 若有class標記@AutoIncrement時，將會針對該欄位取值時轉換成"null". */
   private class AutoIncrementFunction implements StatementsFunction {
     @Override
     public Boolean apply(Field field, StringBuilder sb1, Object object) {
@@ -296,7 +291,6 @@ public class Sql {
     }
   }
 
-  /** 若有class標記@Quote時，將會對該欄位取值後再經由EscapeString.mysqlRealEscapeString(String)轉換. */
   private class QuoteJson implements StatementsFunction {
     @Override
     public Boolean apply(Field field, StringBuilder sb1, Object object) {

@@ -37,34 +37,34 @@ public final class Common {
   }
 
   /**
-   * 記錄錯誤的request log，發送錯誤訊息.
+   * Send error message.
    *
-   * @param request 接收到的request
-   * @param code 要發送的錯誤碼
-   * @param message 要發送的錯誤訊息
-   * @param index 指定Server的索引值
+   * @param request request
+   * @param code error code
+   * @param message message
+   * @param index index
    */
   public void sendError(String request, int code, String message, int index) {
     sendAdapter.sendError(request, code, message, index);
   }
 
   /**
-   * 記錄錯誤的request log，發送錯誤訊息並斷開client連線.
+   * Logging after sending error message and close connection.
    *
-   * @param request 接收到的request
-   * @param code 要發送的錯誤碼
-   * @param message 要發送的錯誤訊息
-   * @param index 指定Server的索引值
+   * @param request request
+   * @param code error code
+   * @param message message
+   * @param index index
    */
   public void sendErrorClose(String request, int code, String message, int index) {
     sendAdapter.sendErrorClose(request, code, message, index);
   }
 
   /**
-   * 發送pong並斷開client連線.
+   * Send heartbeat.
    *
-   * @param json pong的json內容
-   * @param index 指定Server的索引值
+   * @param json json
+   * @param index index
    */
   public void sendPong(JSONObject json, int index) {
     boolean serverInfo = false;
@@ -83,9 +83,10 @@ public final class Common {
   }
 
   /**
-   * 發送目前server的loading狀態.
+   * Send server status.
    *
-   * @param index 指定Server的索引值
+   * @param index index
+   * @param queueSize queueSize
    */
   public void sendMonitor(int index, long queueSize) {
     JSONObject obj = new JSONObject();
@@ -110,7 +111,6 @@ public final class Common {
     sendAdapter.sendClose(obj.toString(), index);
   }
 
-  /** 取得目前連線到Server的請求連線數. */
   public long getRequestCount() {
     return countMachine.get();
   }
@@ -127,7 +127,7 @@ public final class Common {
     return "" + monitor.optLocalHostAddress(JSONObject.NULL);
   }
 
-  /** 創建Common. */
+  /** Common. */
   public static class Builder {
     private String serverName;
     private String serverAlias;
@@ -166,7 +166,11 @@ public final class Common {
       return this;
     }
 
-    /** 創建Common. */
+    /**
+     * Build Common.
+     *
+     * @return Common
+     */
     public Common build() {
       Common common = new Common();
 

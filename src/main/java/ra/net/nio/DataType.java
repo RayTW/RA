@@ -32,9 +32,10 @@ public enum DataType {
   }
 
   /**
-   * 指定type創建DataType.
+   * Create type uses specific type.
    *
-   * @param type 要指定的資料型態
+   * @param type type
+   * @return {@link DataType}
    */
   public static DataType valueOf(int type) {
     switch (type) {

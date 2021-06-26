@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ra.db.DatabaseCategory;
 
 /**
- * .
+ * MySQL database parameters.
  *
  * @author Ray Li
  */
@@ -81,7 +81,6 @@ public class MysqlParameters implements DatabaseParameters {
     String queryString = "";
 
     if (properties != null) {
-      // 若properties為null且預設DBCategory是MYSQL時，回傳MYSQL預設設定
       StringBuilder str = new StringBuilder();
 
       properties
@@ -103,11 +102,7 @@ public class MysqlParameters implements DatabaseParameters {
     return getUrlSchema() + getHost() + ":" + getPort() + "/" + getName() + queryString;
   }
 
-  /**
-   * 建構MysqlParameters.
-   *
-   * @author ray_lee
-   */
+  /** MysqlParameters. */
   public static class Builder {
     private String dbHost;
     private String dbName;
@@ -154,16 +149,21 @@ public class MysqlParameters implements DatabaseParameters {
     }
 
     /**
-     * 是否啟用JDbC debug模式.
+     * enable/disable debug mode.
      *
-     * @param enable 停啟用debug模式
+     * @param enable enable/disable debug mode.
+     * @return Builder
      */
     public Builder setProfileSql(boolean enable) {
       profileSql = enable;
       return this;
     }
 
-    /** . */
+    /**
+     * build.
+     *
+     * @return MysqlParameters
+     */
     public MysqlParameters build() {
       MysqlParameters param = new MysqlParameters();
 
@@ -185,7 +185,7 @@ public class MysqlParameters implements DatabaseParameters {
       }
 
       if (dbProperties != null && dbProperties.size() > 0) {
-        // 保留預設參數再疊加新參數
+        // Keep the preset parameters and then new parameters.
         Properties defaultProperties = new Properties();
 
         setupDefaultProperty(defaultProperties);
@@ -203,13 +203,11 @@ public class MysqlParameters implements DatabaseParameters {
     }
 
     /**
-     * 連線資料庫時，預設填入的Property.
+     * Load default properties before connecting database.
      *
-     * @param defaultProperties 預設的Property
+     * @param defaultProperties default properties
      */
     public void setupDefaultProperty(Properties defaultProperties) {
-      // 若mDBProperties為null且預設DBCategory是MYSQL時，回傳MYSQL預設設定
-      // mysql default參數
       defaultProperties.put("useUnicode", "true");
       defaultProperties.put("characterEncoding", "utf8");
       defaultProperties.put("socketTimeout", String.valueOf(SOCKET_TIMEOUT));
@@ -218,10 +216,7 @@ public class MysqlParameters implements DatabaseParameters {
   }
 
   @Override
-  public void setupConnection(Connection connection) throws SQLException {
-    // TODO Auto-generated method stub
-
-  }
+  public void setupConnection(Connection connection) throws SQLException {}
 
   @Override
   public String toString() {

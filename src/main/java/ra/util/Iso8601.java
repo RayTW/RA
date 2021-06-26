@@ -93,6 +93,7 @@ public final class Iso8601 {
    *
    * @param iso8601string iso8601string
    * @return Calendar
+   * @throws ParseException ParseException
    */
   public static Calendar toCalendar(String iso8601string) throws ParseException {
     Calendar calendar = Calendar.getInstance();
@@ -117,6 +118,7 @@ public final class Iso8601 {
    *
    * @param iso8601string iso8601string
    * @return to {@link Date} object
+   * @throws ParseException ParseException
    */
   public static Date toDate(String iso8601string) throws ParseException {
     String s = iso8601string.replace("Z", "+00:00");

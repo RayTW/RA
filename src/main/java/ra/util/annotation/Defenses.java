@@ -17,9 +17,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Defenses {
-  /** check argument value valid ,type=String. */
+  /**
+   * check argument value valid ,type=String.
+   *
+   * @return default false
+   */
   boolean normalInt() default false;
 
-  /** check argument value has no space. */
+  /**
+   * check argument value has no space.
+   *
+   * @return defualt false
+   */
   boolean space() default false;
 }

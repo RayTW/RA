@@ -9,8 +9,7 @@ import java.lang.reflect.Field;
  */
 public interface VisitClassStrategy {
   /**
-   * SQLStatementUtility.get().recursiveClassFields(MyObject.class, obj, (field) -> { Each field
-   * object can be obtained for the specified class. });
+   * Each field object can be obtained for the specified class.
    *
    * @param field target field.
    * @throws IllegalAccessException IllegalAccessException.

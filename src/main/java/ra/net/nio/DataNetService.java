@@ -146,7 +146,11 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     private Transfer transferListener;
     private Executor sendPool;
 
-    /** Initialize. */
+    /**
+     * Initialize.
+     *
+     * @return {@link DataNetService}
+     */
     public DataNetService build() {
       DataNetService service = new DataNetService();
       service.serverSocket = serverSocket;

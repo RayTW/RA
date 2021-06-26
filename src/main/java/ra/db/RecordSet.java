@@ -88,6 +88,7 @@ public class RecordSet implements RecordCursor {
    * Take RecordSet new instance.
    *
    * @param map Table`s Data. Key:column name,Data:List
+   * @return RecordSet
    */
   public static RecordSet newInstance(Map<String, AbstractList<byte[]>> map) {
     RecordSet obj = new RecordSet();

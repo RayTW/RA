@@ -13,7 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * 驗證每個Authorization只能呼叫指定的API command.
+ * Verify command mapping authorization.
  *
  * @author Ray Li
  */
@@ -28,15 +28,15 @@ public class CommandsVerification {
   // AUTHORIZATION_MONITOR
   public static final String MONITOR = "/v1/server/monitor";
 
-  /** key:部門單位名稱, value:部門access token. */
+  /** key:depart, value:department access token. */
   private static Map<String, String> accessTokens = new ConcurrentHashMap<>();
   /** key:API command, value:部門單位名稱. */
   private static Map<String, List<String>> commandsAuthorization = new ConcurrentHashMap<>();
 
   /**
-   * 戴入各API command援權的access token與部門名稱.
+   * Initialize.
    *
-   * @param path 設定檔路徑
+   * @param path path
    */
   public static void loadCommands(String path) {
     try {
@@ -71,10 +71,11 @@ public class CommandsVerification {
   }
 
   /**
-   * 驗證是否有通過授權.
+   * Verify command and authorization.
    *
-   * @param command Client傳送的command
-   * @param auth Client傳送的Auth Key
+   * @param command command
+   * @param auth authorization
+   * @return If command and authorization are valid returns true.
    */
   public static boolean isValidAuth(String command, String auth) {
     if (auth == null) {
@@ -119,18 +120,18 @@ public class CommandsVerification {
   }
 
   /**
-   * 取得各部門單位的access token.
+   * Returns access token of department.
    *
-   * @return key:部門單位名稱, value:部門access token
+   * @return key:department name, value:departmentaccess token
    */
   public static Map<String, String> getAccessTokens() {
     return accessTokens;
   }
 
   /**
-   * 取得各command對應可讀取的部門單位.
+   * Returns department list.
    *
-   * @return key:API command, value:部門單位名稱
+   * @return key:command, value:department name
    */
   public static Map<String, List<String>> getCommandsAuthorization() {
     return commandsAuthorization;

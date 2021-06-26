@@ -1,16 +1,16 @@
 package ra.util.compression;
 
 /**
- * 日誌檔案支援的壓縮模式.
+ * Compression mode supported by log files.
  *
  * @author Ray Li
  */
 public enum CompressionMode {
-  /** 一般文字檔. */
+  /** text. */
   LOG("log"),
-  /** GZIP壓縮. */
+  /** GZIP. */
   GZIP("gz"),
-  /** SNAPPY壓縮. */
+  /** SNAPPY. */
   SNAPPY("snappy");
 
   private final String filenameExtension;
@@ -19,7 +19,11 @@ public enum CompressionMode {
     this.filenameExtension = filenameExtension;
   }
 
-  /** 日誌檔案壓縮副檔名. */
+  /**
+   * Returns extension name of file.
+   *
+   * @return file extension name
+   */
   public String getFilenameExtension() {
     return filenameExtension;
   }

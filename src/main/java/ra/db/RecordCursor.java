@@ -36,6 +36,7 @@ public interface RecordCursor extends Closeable {
    * Use field name returns a value.
    *
    * @param name name of field
+   * @return value
    */
   public String field(String name);
 
@@ -44,6 +45,7 @@ public interface RecordCursor extends Closeable {
    *
    * @param name field name
    * @param charset charset, etc : utf8
+   * @return value
    */
   public String field(String name, String charset);
 
@@ -54,6 +56,7 @@ public interface RecordCursor extends Closeable {
    * @param name field name
    * @param lang charset, etc : utf8
    * @param feedback Return the feedback when if get value of the field is null.
+   * @return value
    */
   public String field(String name, String lang, String feedback);
 
@@ -62,6 +65,7 @@ public interface RecordCursor extends Closeable {
    *
    * @param name field name
    * @param cursor record cursor
+   * @return value
    */
   public String field(String name, int cursor);
 
@@ -69,6 +73,7 @@ public interface RecordCursor extends Closeable {
    * Get value from the specific field name, and if field value is null will return null.
    *
    * @param name field name
+   * @return value
    */
   public String optField(String name);
 
@@ -77,6 +82,7 @@ public interface RecordCursor extends Closeable {
    *
    * @param name field name
    * @param cursor record cursor
+   * @return value
    */
   public String optField(String name, int cursor);
 
@@ -85,6 +91,7 @@ public interface RecordCursor extends Closeable {
    *
    * @param name field name
    * @param lang record cursor
+   * @return value
    */
   public String optField(String name, String lang);
 
@@ -93,6 +100,7 @@ public interface RecordCursor extends Closeable {
    *
    * @param name field name
    * @param feedback Return the feedback when if get value of the field is null.
+   * @return value
    */
   public String fieldFeedback(String name, String feedback);
 
@@ -123,10 +131,18 @@ public interface RecordCursor extends Closeable {
   /** Last record. */
   public void end();
 
-  /** Verify whether first record. */
+  /**
+   * Verify whether first record.
+   *
+   * @return If first row returns true.
+   */
   public boolean isBof();
 
-  /** Verify whether end of the record. */
+  /**
+   * Verify whether end of the record.
+   *
+   * @return If last row returns true.
+   */
   public boolean isEof();
 
   /**
@@ -143,9 +159,17 @@ public interface RecordCursor extends Closeable {
    */
   public void forEach(Consumer<RowSet> action);
 
-  /** Return the ordered stream of the number of data after the query is completed. */
+  /**
+   * Return the ordered stream of the number of data after the query is completed.
+   *
+   * @return Stream
+   */
   public Stream<RowSet> stream();
 
-  /** Return the parallel stream of the number of data after the query is completed.. */
+  /**
+   * Return the parallel stream of the number of data after the query is completed.
+   *
+   * @return Stream
+   */
   public Stream<RowSet> parallelStream();
 }

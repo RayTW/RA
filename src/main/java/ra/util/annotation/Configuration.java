@@ -16,6 +16,10 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Configuration {
 
-  /** Configuration path. */
+  /**
+   * Configuration path.
+   *
+   * @return default application properties
+   */
   String value() default "application.properties";
 }

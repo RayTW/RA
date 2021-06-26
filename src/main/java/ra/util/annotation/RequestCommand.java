@@ -15,9 +15,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface RequestCommand {
-  /** API command. */
+  /**
+   * API command.
+   *
+   * @return default null
+   */
   String value();
 
-  /** Enable cache instance of API service. */
+  /**
+   * Enable cache instance of API service.
+   *
+   * @return default true
+   */
   boolean cache() default true;
 }

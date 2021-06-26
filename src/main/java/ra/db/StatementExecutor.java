@@ -27,6 +27,7 @@ public class StatementExecutor {
   /**
    * If the execution is successful, the return count.
    *
+   * @param sql SQL statement
    * @return affected rows
    */
   public int execute(String sql) {
@@ -276,8 +277,6 @@ public class StatementExecutor {
    *
    * @param sql SQL statement
    * @return RecordCursor
-   * @throws SQLException SQL statement invalid
-   * @throws ConnectException Connect to database failed
    */
   public RecordCursor executeQuery(String sql) {
     return executeQuery(sql, null);
@@ -289,6 +288,7 @@ public class StatementExecutor {
    * @param sql SQL statement
    * @param exceptionListener SQLException statement invalid、ConnectException connect to database
    *     failed
+   * @return RecordCursor
    */
   public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener) {
     if (!isLive()) {
@@ -329,7 +329,11 @@ public class StatementExecutor {
     return record;
   }
 
-  /** Execute query( transaction), ex : SELECT * FROM table. */
+  /**
+   * Execute query( transaction), ex : SELECT * FROM table.
+   *
+   * @param listener listener
+   */
   public void multiQuery(Consumer<MultiQuery> listener) {
     if (!isLive()) {
       return;
@@ -347,7 +351,12 @@ public class StatementExecutor {
     }
   }
 
-  /** Execute query( transaction), ex : SELECT * FROM table. */
+  /**
+   * Execute query( transaction), ex : SELECT * FROM table.
+   *
+   * @param listener listener
+   * @param exceptionListener exceptionListener
+   */
   public void multiQuery(Consumer<MultiQuery> listener, Consumer<Exception> exceptionListener) {
     if (!isLive()) {
       return;

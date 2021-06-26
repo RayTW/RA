@@ -31,46 +31,50 @@ public class DataSocket {
   }
 
   /**
-   * 連線指定ip、port.
+   * Connect to remote server.
    *
-   * @param ip 位址
-   * @param port 埠號
+   * @param ip IP address
+   * @param port port
+   * @return If connect successful returns true.
    */
   public boolean connect(String ip, int port) {
     return connect(ip, port, e -> e.printStackTrace());
   }
 
   /**
-   * 連線指定ip、port.
+   * Connect to remote server.
    *
-   * @param ip 位址
-   * @param port 埠號
-   * @param connectTimeout 連線逾時秒數(millisecond)
-   * @param soTimeout 讀取逾時秒數(millisecond)
+   * @param ip IP address
+   * @param port port
+   * @param connectTimeout connect timeout (millisecond)
+   * @param soTimeout soTimeout(millisecond)
+   * @return If connect successful returns true.
    */
   public boolean connect(String ip, int port, int connectTimeout, int soTimeout) {
     return connect(ip, port, connectTimeout, soTimeout, e -> e.printStackTrace());
   }
 
   /**
-   * 連線指定ip、port.
+   * Connect to remote server.
    *
-   * @param ip 位址
-   * @param port 埠號
-   * @param listener 用來取回IOException
+   * @param ip IP address
+   * @param port port
+   * @param listener IOException
+   * @return If connect successful returns true.
    */
   public boolean connect(String ip, int port, Consumer<IOException> listener) {
     return connect(ip, port, 0, 0, listener);
   }
 
   /**
-   * 連線指定ip、port.
+   * Connect to remote server.
    *
-   * @param ip 位址
-   * @param port 埠號
-   * @param connectTimeout 連線逾時秒數(millisecond)
-   * @param soTimeout 讀取逾時秒數(millisecond)
-   * @param listener 用來取回IOException
+   * @param ip IP address
+   * @param port port
+   * @param connectTimeout connect timeout(millisecond)
+   * @param soTimeout soTimeout(millisecond)
+   * @param listener IOException
+   * @return If connect successful returns true.
    */
   public boolean connect(
       String ip, int port, int connectTimeout, int soTimeout, Consumer<IOException> listener) {
@@ -169,9 +173,9 @@ public class DataSocket {
   }
 
   /**
-   * 是否已關閉.
+   * Whether connection has closed.
    *
-   * @return 是否已關閉
+   * @return If connection has closed returns true.
    */
   public boolean isClose() {
     if (socket != null) {
@@ -181,9 +185,9 @@ public class DataSocket {
   }
 
   /**
-   * 連線狀態.
+   * Whether connection has connected.
    *
-   * @return 連線狀態
+   * @return If connection has connected returns true.
    */
   public boolean isConnected() {
     if (socket != null) {

@@ -19,7 +19,6 @@ public class EscapeString {
    *
    * @param str 要進行SQL Injection的字串
    * @return 經過SQL Injection處理後的字串
-   * @throws Exception .
    */
   public static String mysqlRealEscapeString(String str) {
     if (str == null) {

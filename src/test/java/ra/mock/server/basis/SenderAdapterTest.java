@@ -18,11 +18,11 @@ public class SenderAdapterTest {
   LogEveryDay mockLog = getMockLog();
 
   @Test
-  public void testBoardcast() {
+  public void testBroadcast() {
     String expected = "expected";
     BiConsumer<String, String> back =
         (functionName, message) -> {
-          assertTrue(functionName.equals("boardcast"));
+          assertTrue(functionName.equals("broadcast"));
           assertEquals(expected, message);
         };
     MockSend send = new MockSend(back);
@@ -31,11 +31,11 @@ public class SenderAdapterTest {
   }
 
   @Test
-  public void testBoardcastList() {
+  public void testBroadcastList() {
     String expected = "expected";
     BiConsumer<String, String> back =
         (functionName, message) -> {
-          assertTrue(functionName.equals("boardcast"));
+          assertTrue(functionName.equals("broadcast"));
           assertEquals(expected, message);
         };
     MockSend send = new MockSend(back);
