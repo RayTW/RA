@@ -20,7 +20,7 @@ public interface NetServiceProvider {
   /**
    * Hash Key : {User.getIndex()} ex:0~n.
    *
-   * @return 儲存User的容器
+   * @return user pool
    */
   public abstract Map<String, UserListener> getUsers();
 }

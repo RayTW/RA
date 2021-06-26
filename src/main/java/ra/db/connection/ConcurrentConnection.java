@@ -9,8 +9,8 @@ import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
 
 /**
- * 避免多緒執行sql語法時不受保護，若在多緒情況時對mConnection.setAutoCommit(boolean)
- * 設置true且有另外的執行緒改為flase時，有機率發生Exception.
+ * Provide execute SQL statement using a keep database connection, and the connection is thread
+ * safe.
  *
  * @author Ray Li
  */
@@ -25,9 +25,9 @@ public class ConcurrentConnection implements DatabaseConnection {
   private Object lock = new Object();
 
   /**
-   * .
+   * Initialize.
    *
-   * @param param db連線相關參數
+   * @param param database connection settings.
    */
   public ConcurrentConnection(DatabaseParameters param) {
     this.param = param;
@@ -55,9 +55,9 @@ public class ConcurrentConnection implements DatabaseConnection {
   }
 
   /**
-   * 連線到 DB.
+   * Connect to database.
    *
-   * @return 連線成功回傳1，失敗回傳0
+   * @return If connect successful return true.
    */
   @Override
   public boolean connect() {
@@ -78,8 +78,8 @@ public class ConcurrentConnection implements DatabaseConnection {
       startThread = true;
       return true;
     } catch (Exception e) {
+      e.printStackTrace();
       volatileIsLive = false;
-      System.out.println("mysql 無法連線！ IP:" + param.getHost() + ":" + param.getPort());
       return false;
     }
   }

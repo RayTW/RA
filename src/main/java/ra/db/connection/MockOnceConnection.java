@@ -6,7 +6,7 @@ import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
 
 /**
- * .
+ * Mock class.
  *
  * @author Ray Li
  */

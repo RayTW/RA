@@ -46,7 +46,7 @@ public class NetSocketWriter {
   /**
    * Sent message synchronous.
    *
-   * @param message 發送的訊息
+   * @param message message
    * @return Returns receive message.
    * @throws IOException IOException
    * @throws UnknownHostException UnknownHostException

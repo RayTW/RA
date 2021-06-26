@@ -18,9 +18,9 @@ public class LogDeleteTest {
   private static File loadFile;
 
   /**
-   * .
+   * setUpBeforeClass.
    *
-   * @throws Exception .
+   * @throws Exception Exception.
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

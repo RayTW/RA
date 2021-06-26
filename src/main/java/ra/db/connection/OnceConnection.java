@@ -7,7 +7,8 @@ import ra.db.DatabaseConnection;
 import ra.db.parameter.DatabaseParameters;
 
 /**
- * 沒有keep資料庫連線機制，亦不會每5秒query "SELECT 1"，所有的查詢、新增等等行為是非執行緒安全.
+ * Provide execute SQL statement using a database connection, and the connection is not thread safe.
+ * The connection is not keeping alive.
  *
  * @author Ray Li
  */
@@ -37,11 +38,10 @@ public class OnceConnection implements DatabaseConnection {
   }
 
   /**
-   * 連線到 DB.
+   * Get the connection state.
    *
-   * @return 連線成功回傳1，失敗回傳0
+   * @return Connection state.
    */
-  @Override
   public boolean connect() {
     try {
       DatabaseParameters param = getParam();

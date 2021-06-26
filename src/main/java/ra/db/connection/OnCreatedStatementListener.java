@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * 取得Statement.
+ * Get statement.
  *
  * @author Ray Li
  */
