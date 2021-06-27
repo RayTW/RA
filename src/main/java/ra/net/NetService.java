@@ -209,10 +209,10 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
   }
 
   @Override
-  public boolean getSendcompilete() {
+  public boolean getSendCompilete() {
     return false;
   }
 
   @Override
-  public void setSendcompilete(boolean compilete) {}
+  public void setSendCompilete(boolean compilete) {}
 }

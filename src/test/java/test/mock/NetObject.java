@@ -9,12 +9,12 @@ public class NetObject implements NetServiceable {
   public void onClose() {}
 
   @Override
-  public boolean getSendcompilete() {
+  public boolean getSendCompilete() {
     return false;
   }
 
   @Override
-  public void setSendcompilete(boolean compilete) {}
+  public void setSendCompilete(boolean compilete) {}
 
   @Override
   public void send(String msg) {}

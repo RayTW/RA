@@ -42,7 +42,7 @@ public class NetServiceTest {
     builder.setIndex(1);
     service = builder.build();
     service.setCommandProcessorProvider(new MockNetServiceCommand());
-    service.setSendcompilete(false); // Meaningless
+    service.setSendCompilete(false); // Meaningless
     service.start();
 
     Thread.sleep(100);
@@ -52,7 +52,7 @@ public class NetServiceTest {
 
     assertNotNull(service);
     assertEquals(1, service.getIndex());
-    assertFalse(service.getSendcompilete());
+    assertFalse(service.getSendCompilete());
   }
 
   @Test

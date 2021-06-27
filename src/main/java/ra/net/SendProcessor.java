@@ -20,7 +20,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
   private Socket socket;
   private BufferedOutputStream bufferedOutputStream;
   private int timeOut = 0;
-  private boolean sendcompilete = false;
+  private boolean sendCompilete = false;
 
   /**
    * Initialize.
@@ -82,7 +82,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
         msg = "";
       }
       try {
-        if (sendcompilete) {
+        if (sendCompilete) {
           close();
           netServiceable.onClose();
         }
@@ -143,7 +143,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
   @Override
   public void sendClose(String message) {
     send(message);
-    setSendcompilete(true);
+    setSendCompilete(true);
   }
 
   private void flushMessage(String msg) throws Exception {
@@ -193,11 +193,11 @@ public class SendProcessor extends Thread implements Sendable<String> {
     }
   }
 
-  public boolean getSendcompilete() {
-    return sendcompilete;
+  public boolean getSendCompilete() {
+    return sendCompilete;
   }
 
-  private void setSendcompilete(boolean compilete) {
-    sendcompilete = compilete;
+  private void setSendCompilete(boolean compilete) {
+    sendCompilete = compilete;
   }
 }

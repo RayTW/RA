@@ -31,6 +31,6 @@ public class SendProcessorTest {
   public void testGetSendcompileteIsFalse() throws IOException {
     SendProcessor obj = new SendProcessor(null);
 
-    assertFalse(obj.getSendcompilete());
+    assertFalse(obj.getSendCompilete());
   }
 }

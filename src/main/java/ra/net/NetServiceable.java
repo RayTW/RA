@@ -11,12 +11,12 @@ public interface NetServiceable extends Serviceable<String> {
    *
    * @return enable enable
    */
-  public abstract boolean getSendcompilete();
+  public abstract boolean getSendCompilete();
 
   /**
    * Enable encryption.
    *
    * @param encryption enable encryption
    */
-  public abstract void setSendcompilete(boolean encryption);
+  public abstract void setSendCompilete(boolean encryption);
 }

@@ -98,7 +98,7 @@ public class Sender<E> extends Thread implements Sendable<Data> {
       }
     }
 
-    flushQue(); // workaround，暫時解決sendthread因多緒搶進Sendcompilete=true之後，queue才被add訊息但無法送出
+    flushQue();
     clearQue();
     release();
   }
