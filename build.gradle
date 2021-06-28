@@ -15,6 +15,82 @@ group = "io.github.ra"
 archivesBaseName = "Ra"
 version = "0.1.0"
 
+//-SNAPSHOT
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'Ra'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'Ra'
+                description = 'The library provides mysql (CRUD), socket server, logging.'
+                url = 'https://github.com/RayTW/RA'
+                properties = [
+                    myProp: "value",
+                    "prop.with.dots": "anotherValue"
+                ]
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'https://raw.githubusercontent.com/RayTW/RA/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'RayTW'
+                        name = 'Ray Li'
+                        email = 'ray00000sina@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:RayTW/RA.git'
+                    developerConnection = 'scm:git:ssh://github.com/RayTW/RA.git'
+                    url = 'https://github.com/RayTW/RA'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+          credentials {
+            username ossrhUsername
+            password ossrhPassword
+          }
+          
+          if(project.version.endsWith('-SNAPSHOT')) {
+            url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+          } else {
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+          }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
 dependencies {
     // https://mvnrepository.com/artifact/org.json/json
 	implementation group: 'org.json', name: 'json', version: '20210307'
