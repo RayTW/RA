@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 /**
- * .
+ * Output string with file.
  *
  * @author Ray Li
  */
@@ -17,10 +17,10 @@ public class StringFileOutput implements StringOutput {
   private BufferedWriter bufferedWriter;
 
   /**
-   * .
+   * Initialize.
    *
-   * @param file 要處理的檔案
-   * @param charset 檔案的編碼格式
+   * @param file source format
+   * @param charset file charset
    */
   public StringFileOutput(File file, String charset) {
     try {

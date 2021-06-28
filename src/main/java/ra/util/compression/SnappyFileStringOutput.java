@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.xerial.snappy.SnappyOutputStream;
 
 /**
- * 採用snappy方式壓縮輸出文字檔案.
+ * Use snappy to compress the output text file.
  *
  * @author Ray Li
  */
@@ -18,10 +18,10 @@ public class SnappyFileStringOutput implements StringOutput {
   private String charset;
 
   /**
-   * .
+   * Initialize.
    *
-   * @param file 要壓縮的檔案
-   * @param charset 檔案編碼格式
+   * @param file source format
+   * @param charset file charset
    */
   public SnappyFileStringOutput(File file, String charset) {
     try {

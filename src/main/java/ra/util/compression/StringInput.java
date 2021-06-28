@@ -3,7 +3,7 @@ package ra.util.compression;
 import java.io.IOException;
 
 /**
- * 讀取字串.
+ * Read string.
  *
  * @author Ray Li
  */

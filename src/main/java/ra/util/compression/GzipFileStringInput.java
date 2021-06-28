@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
 /**
- * 採用gzip方式讀取文字檔案.
+ * Use gzip to read text files.
  *
  * @author Ray Li
  */
@@ -18,10 +18,10 @@ public class GzipFileStringInput implements StringInput {
   private GZIPInputStream compressionInputStream;
 
   /**
-   * .
+   * Initialize.
    *
-   * @param file 要壓縮的檔案
-   * @param charset 檔案編碼格式
+   * @param file source format
+   * @param charset file charset
    */
   public GzipFileStringInput(File file, String charset) {
     try {
