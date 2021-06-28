@@ -30,7 +30,7 @@ public class NetServerApplicationTest {
   @Test
   public void testGetUser() {
     NetServerApplication obj = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
 
     user.setIndex(1);
 
@@ -42,7 +42,7 @@ public class NetServerApplicationTest {
   @Test
   public void testUserOffline() {
     NetServerApplication obj = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
 
     user.setIndex(1);
     obj.putUser(1, user);

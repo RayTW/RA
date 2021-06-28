@@ -16,7 +16,7 @@ public class MessageSenderTest {
     String expected = "message";
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
 
     user.setIndex(1);
 
@@ -40,7 +40,7 @@ public class MessageSenderTest {
     String expected = "message";
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
 
     user.setIndex(1);
 
@@ -63,7 +63,7 @@ public class MessageSenderTest {
     String expected = "message";
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
 
     user.setIndex(1);
 
@@ -85,7 +85,7 @@ public class MessageSenderTest {
   public void testSendWhenThrowRuntimeException() throws NamingException {
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
     BooleanReference actaul = new BooleanReference(false);
 
     user.setIndex(1);
@@ -115,7 +115,7 @@ public class MessageSenderTest {
   public void testSendCloseWhenThrowRuntimeException() throws NamingException {
     MessageSender obj = new MessageSender();
     NetServerApplication application = new NetServerApplication();
-    User user = new User();
+    DefaultUser user = new DefaultUser();
     BooleanReference actaul = new BooleanReference(false);
 
     user.setIndex(1);

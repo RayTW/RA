@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ra.net.MessageSender;
-import ra.net.UserListener;
+import ra.net.User;
 import ra.util.logging.LogEveryDay;
 
 /**
@@ -48,7 +48,7 @@ public class SenderAdapter extends MessageSender {
   }
 
   @Override
-  public <T extends UserListener> void broadcast(String message, Map<String, T> userlist) {
+  public <T extends User> void broadcast(String message, Map<String, T> userlist) {
     sender.broadcast(message, userlist);
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message));
   }

@@ -26,12 +26,12 @@ public class MessageSender {
   /**
    * Broadcast message to all users.
    *
-   * @param <T> {@link UserListener}
+   * @param <T> {@link User}
    * @param message message
    * @param userlist user list
    */
   @SuppressWarnings("unchecked")
-  public <T extends UserListener> void broadcast(String message, Map<String, T> userlist) {
+  public <T extends User> void broadcast(String message, Map<String, T> userlist) {
     userlist
         .entrySet()
         .parallelStream()

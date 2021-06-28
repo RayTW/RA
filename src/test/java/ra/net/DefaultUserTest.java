@@ -6,11 +6,11 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 /** Test class. */
-public class UserTest {
+public class DefaultUserTest {
 
   @Test
   public void testUserInitialize() {
-    User obj = new User();
+    DefaultUser obj = new DefaultUser();
 
     obj.setIndex(0);
     obj.setIp("127.0.0.1");
@@ -23,7 +23,7 @@ public class UserTest {
 
   @Test
   public void testUserClose() {
-    User obj = new User();
+    DefaultUser obj = new DefaultUser();
 
     obj.setIp("127.0.0.1");
     obj.setName("name");

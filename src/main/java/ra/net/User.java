@@ -1,44 +1,54 @@
 package ra.net;
 
-/** User. */
-public class User implements UserListener {
-  private int index = -1;
-  private String ip;
-  private String name = "";
+/**
+ * Abstraction layer for user.
+ *
+ * @author Ray Li,Kevin Tasi
+ */
+public interface User {
 
-  @Override
-  public int getIndex() {
-    return this.index;
-  }
+  /**
+   * Returns index of member in user pool.
+   *
+   * @return index
+   */
+  public abstract int getIndex();
 
-  @Override
-  public void setIndex(int index) {
-    this.index = index;
-  }
+  /**
+   * Assign index for the user.
+   *
+   * @param index index
+   */
+  public abstract void setIndex(int index);
 
-  @Override
-  public String getName() {
-    return this.name;
-  }
+  /**
+   * Returns name of user.
+   *
+   * @return user name
+   */
+  public abstract String getName();
 
-  @Override
-  public void setName(String username) {
-    this.name = username;
-  }
+  /**
+   * Set name for the user.
+   *
+   * @param username username
+   */
+  public abstract void setName(String username);
 
-  @Override
-  public String getIp() {
-    return this.ip;
-  }
+  /**
+   * Returns IP address of the user.
+   *
+   * @return IP address
+   */
+  public abstract String getIp();
 
-  @Override
-  public void setIp(String ip) {
-    this.ip = ip;
-  }
+  /**
+   * Set the IP address for the user.
+   *
+   * @param ip IP address
+   */
+  public abstract void setIp(String ip);
 
-  @Override
-  public void close() {
-    ip = null;
-    name = null;
-  }
+  /** Close. */
+  public abstract void close();
 }
