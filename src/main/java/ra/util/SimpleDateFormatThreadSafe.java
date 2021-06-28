@@ -14,14 +14,14 @@ import java.util.TimeZone;
 import java.util.function.Supplier;
 
 /**
- * copy自github: https://gist.github.com/pablomoretti/9748230.
+ * Thread safe version of {@link SimpleDateFormat}.
  *
  * @author Ray Li
  */
 public class SimpleDateFormatThreadSafe {
   private ThreadLocal<SimpleDateFormat> localSimpleDateFormat;
 
-  /** . */
+  /** Thread safe. */
   public SimpleDateFormatThreadSafe() {
     super();
     localSimpleDateFormat =
@@ -34,9 +34,9 @@ public class SimpleDateFormatThreadSafe {
   }
 
   /**
-   * .
+   * Thread safe.
    *
-   * @param supplier 用來取得SimpleDateFormat
+   * @param supplier Returns SimpleDateFormat
    */
   public SimpleDateFormatThreadSafe(Supplier<SimpleDateFormat> supplier) {
     localSimpleDateFormat =
@@ -53,10 +53,10 @@ public class SimpleDateFormatThreadSafe {
   }
 
   /**
-   * .
+   * Thread safe.
    *
-   * @param pattern 時間格式
-   * @param timeZone 時區
+   * @param pattern time format pattern
+   * @param timeZone time zone
    */
   public SimpleDateFormatThreadSafe(String pattern, TimeZone timeZone) {
     this(
@@ -70,10 +70,10 @@ public class SimpleDateFormatThreadSafe {
   }
 
   /**
-   * .
+   * Thread safe.
    *
-   * @param pattern 時間格式
-   * @param formatSymbols .
+   * @param pattern time format pattern
+   * @param formatSymbols formatSymbols
    */
   public SimpleDateFormatThreadSafe(String pattern, DateFormatSymbols formatSymbols) {
     localSimpleDateFormat =
@@ -86,10 +86,10 @@ public class SimpleDateFormatThreadSafe {
   }
 
   /**
-   * .
+   * Thread safe.
    *
-   * @param pattern 時間格式
-   * @param locale .
+   * @param pattern time format pattern
+   * @param locale locale
    */
   public SimpleDateFormatThreadSafe(String pattern, Locale locale) {
     localSimpleDateFormat =

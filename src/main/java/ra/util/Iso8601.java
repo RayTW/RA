@@ -10,7 +10,7 @@ import java.util.Date;
  * "2008-03-01T13:00:00+01:00"). It supports parsing the "Z" timezone, but many other less-used
  * features are missing.
  *
- * @author Ray Li(修改者)
+ * @author Ray Li(editor)
  */
 public final class Iso8601 {
   private static final ThreadLocal<SimpleDateFormat> sThreadLocal =
