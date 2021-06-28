@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import org.json.JSONObject;
 import org.junit.Test;
 import ra.net.MessageSender;
-import ra.net.UserListener;
+import ra.net.User;
 import ra.server.basis.SenderAdapter;
 import ra.util.logging.LogEveryDay;
 import ra.util.logging.LogSettings;
@@ -166,7 +166,7 @@ public class SenderAdapterTest {
     }
 
     @Override
-    public <T extends UserListener> void broadcast(String obj, Map<String, T> userlist) {
+    public <T extends User> void broadcast(String obj, Map<String, T> userlist) {
       callBack.accept(new Object() {}.getClass().getEnclosingMethod().getName(), obj);
     }
 

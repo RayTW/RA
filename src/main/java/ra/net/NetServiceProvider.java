@@ -22,5 +22,5 @@ public interface NetServiceProvider {
    *
    * @return user pool
    */
-  public abstract Map<String, UserListener> getUsers();
+  public abstract Map<String, User> getUsers();
 }

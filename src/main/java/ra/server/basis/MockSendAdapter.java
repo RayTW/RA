@@ -6,7 +6,7 @@ import java.util.function.BiConsumer;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ra.net.MessageSender;
-import ra.net.UserListener;
+import ra.net.User;
 import ra.util.logging.LogEveryDay;
 
 /**
@@ -108,7 +108,7 @@ public class MockSendAdapter extends SenderAdapter {
   public void broadcast(String obj) {}
 
   @Override
-  public <T extends UserListener> void broadcast(String obj, Map<String, T> userlist) {}
+  public <T extends User> void broadcast(String obj, Map<String, T> userlist) {}
 
   public String getSendMessgae() {
     return sendMsg;

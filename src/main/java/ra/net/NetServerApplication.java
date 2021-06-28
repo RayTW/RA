@@ -30,7 +30,7 @@ public class NetServerApplication implements NetServiceProvider {
   private static final String NET = "Net";
   private ServerSocket serverSocket;
   private Map<String, Serviceable<?>> servicePool;
-  private Map<String, UserListener> userList;
+  private Map<String, User> userList;
   private MessageSender sender;
   private ExecutorService threadPool;
   private ServerConfiguration configuration;
@@ -49,7 +49,7 @@ public class NetServerApplication implements NetServiceProvider {
    * @param index Socket index
    */
   public void removeUser(int index) {
-    UserListener user = userList.get("" + index);
+    User user = userList.get("" + index);
 
     if (user != null) {
       user.close();
@@ -57,7 +57,7 @@ public class NetServerApplication implements NetServiceProvider {
     }
   }
 
-  public void putUser(int index, UserListener listener) {
+  public void putUser(int index, User listener) {
     userList.put("" + index, listener);
   }
 
@@ -126,12 +126,12 @@ public class NetServerApplication implements NetServiceProvider {
     return (DataNetService) servicePool.get(NET + index);
   }
 
-  public UserListener getUser(int index) {
+  public User getUser(int index) {
     return userList.get("" + index);
   }
 
   @Override
-  public Map<String, UserListener> getUsers() {
+  public Map<String, User> getUsers() {
     return userList;
   }
 
