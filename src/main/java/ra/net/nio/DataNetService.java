@@ -13,7 +13,7 @@ import ra.net.request.Request;
 import ra.ref.BiReference;
 
 /**
- * 使用ServerSocket 與 Socket處理發送與接收.
+ * Provide TCP/IP write with read use bytes, and the support text with file format transmission.
  *
  * @author Ray Li
  */
@@ -103,6 +103,11 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     }
   }
 
+  /**
+   * Returns index of service.
+   *
+   * @return index
+   */
   public int getIndex() {
     return index;
   }
@@ -115,7 +120,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     }
   }
 
-  /** 關閉連線. */
+  /** Close service. */
   @Override
   public void close() {
     try {
@@ -197,11 +202,13 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     }
   }
 
+  /** Sent to client text or file. */
   @Override
   public void send(Data message) {
     sender.send(message);
   }
 
+  /** Close client connection after sent to client text or file. */
   @Override
   public void sendClose(Data message) {
     sender.sendClose(message);

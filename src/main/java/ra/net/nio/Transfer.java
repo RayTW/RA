@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.SocketException;
 
 /**
- * .
+ * Transfer layer.
  *
  * @author Ray Li
  */

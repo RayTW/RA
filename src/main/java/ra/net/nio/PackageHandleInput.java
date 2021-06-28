@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.function.BiFunction;
 
 /**
- * 接收封包並解析.
+ * Receive the packet and parse it.
  *
  * @author Ray Li
  */
@@ -26,9 +26,9 @@ public class PackageHandleInput {
   /**
    * Read bytes.
    *
-   * @param in 輸入
-   * @param listener 解析後回傳資料用
-   * @throws IOException 接收封包過程中可能會發生
+   * @param in input
+   * @param listener parse package
+   * @throws IOException IOException
    */
   public void readByte(BufferedInputStream in, BiFunction<DataType, byte[], Boolean> listener)
       throws IOException {

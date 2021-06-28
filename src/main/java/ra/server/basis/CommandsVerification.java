@@ -30,7 +30,7 @@ public class CommandsVerification {
 
   /** key:depart, value:department access token. */
   private static Map<String, String> accessTokens = new ConcurrentHashMap<>();
-  /** key:API command, value:部門單位名稱. */
+  /** key:API command, value: department name. */
   private static Map<String, List<String>> commandsAuthorization = new ConcurrentHashMap<>();
 
   /**

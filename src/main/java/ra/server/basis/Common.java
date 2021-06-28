@@ -28,9 +28,9 @@ public final class Common {
   }
 
   /**
-   * 設定監控值回傳附加額外資訊.
+   * Set the monitoring value to return additional additional information.
    *
-   * @param info 附加額外資訊用
+   * @param info additional information
    */
   public void setMonitorAdditionalInfo(Supplier<String> info) {
     additionalInfo = Optional.ofNullable(info);
