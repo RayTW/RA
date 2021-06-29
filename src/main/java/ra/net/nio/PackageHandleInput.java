@@ -6,7 +6,7 @@ import static ra.net.nio.DataPackageProtocol.HEADER_LENGTH;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Receive the packet and parse it.
@@ -30,7 +30,7 @@ public class PackageHandleInput {
    * @param listener parse package
    * @throws IOException IOException
    */
-  public void readByte(BufferedInputStream in, BiFunction<DataType, byte[], Boolean> listener)
+  public void readByte(BufferedInputStream in, Function<Data, Boolean> listener)
       throws IOException {
     int len = 0;
     byte[] header = null;
@@ -48,7 +48,6 @@ public class PackageHandleInput {
         header = headerBuffer.toByteArray();
         headerBuffer.reset();
         packageLength = 0;
-        dataType = 0;
         dataType = DataType.toInt(header);
         packageLength = (header[2] << 8) & 0x0000ff00 | (header[3] << 0) & 0x000000ff;
         int readLen = 0;
@@ -72,7 +71,7 @@ public class PackageHandleInput {
           contextBuffer.reset();
 
           if (listener != null) {
-            if (listener.apply(DataType.valueOf(dataType), databyte)) {
+            if (listener.apply(Data.parse(DataType.valueOf(dataType), databyte))) {
               break;
             }
           }

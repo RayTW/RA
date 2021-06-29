@@ -7,6 +7,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Provide sent message from the queue.
@@ -68,7 +69,6 @@ public class SendProcessor extends Thread implements Sendable<String> {
       String msg;
       while (queue.size() > 0) {
         try {
-
           msg = queue.get(0);
           flushMessage(msg);
           queue.remove(0);
@@ -129,6 +129,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
    */
   @Override
   public void send(String message) {
+    Objects.requireNonNull(message, "The message requires a non null, message = " + message);
     queue.add(message);
     synchronized (this) {
       notifyAll();

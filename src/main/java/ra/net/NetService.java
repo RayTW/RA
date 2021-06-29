@@ -18,8 +18,8 @@ import ra.net.request.Request;
  */
 public class NetService extends Thread implements NetServiceable, AutoCloseable {
   private ServerSocket serverSocket;
-  private CommandProcessorListener<String> processorListener;
-  private CommandProcessorProvider<String> processorProvider;
+  private CommandProcessorListener<NetRequest> processorListener;
+  private CommandProcessorProvider<NetRequest> processorProvider;
   private BufferedInputStream bufferedInputStream;
   private SendProcessor sendProcessor;
   private Executor sendPool;
@@ -32,8 +32,10 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
 
   @Override
   public void run() {
-    Request<String> request = new Request<>(index);
-    byte[] data = TransmissionEnd.BYTES_ZERO;
+    NetRequest.Builder builder = new NetRequest.Builder();
+    String data = "";
+
+    builder.setIndex(index);
 
     while (isRunning) {
       try {
@@ -46,7 +48,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
         }
         sendProcessor = new SendProcessor(this, socket, timeout);
         sendPool.execute(sendProcessor);
-        request.setSender(sendProcessor);
+        builder.setSender(sendProcessor);
         socket.setSoTimeout(socketSoTimeout);
         bufferedInputStream = new BufferedInputStream(socket.getInputStream());
 
@@ -56,7 +58,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
       }
       boolean readThread = true;
       try {
-        request.setIp(sendProcessor.getIp());
+        builder.setIp(sendProcessor.getIp());
         processorListener = processorProvider.createCommand();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -74,16 +76,15 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
             }
           }
 
-          request.setDataBytes(null);
-          data = TransmissionEnd.BYTES_ZERO;
+          data = "";
           if (baos.size() > 0) {
-            data = baos.toByteArray();
+            data = new String(baos.toByteArray());
           }
           baos.reset();
           if (c == -1) {
             data = null;
           }
-          if (data != null && data.length == 0) {
+          if (data != null && data.isEmpty()) {
             continue;
           }
           sendProcessor.setSoTimeout(timeout);
@@ -98,10 +99,10 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
               processorProvider.offline(index);
             }
           } else {
-            request.setDataBytes(data);
+            builder.setText(data);
 
             if (processorListener != null) {
-              processorListener.commandProcess(request);
+              processorListener.commandProcess(builder.build());
             }
           }
         }
@@ -112,7 +113,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     }
   }
 
-  public void setCommandProcessorProvider(CommandProcessorProvider<String> provider) {
+  public void setCommandProcessorProvider(CommandProcessorProvider<NetRequest> provider) {
     this.processorProvider = provider;
   }
 
@@ -164,7 +165,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
   public static class Builder {
     private ServerSocket serverSocket;
     private Executor sendPool;
-    private CommandProcessorListener<String> commandProcessorListener;
+    private CommandProcessorListener<NetRequest> commandProcessorListener;
     private int index;
     private Long socketSoTimeout;
 
@@ -215,4 +216,69 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
 
   @Override
   public void setSendCompilete(boolean compilete) {}
+
+  /**
+   * NetRequest.
+   *
+   * @author Ray Li
+   */
+  public static class NetRequest extends Request {
+    private Sendable<String> sender;
+    private String text;
+
+    public NetRequest(Request request) {
+      super(request);
+    }
+
+    public Sendable<String> getSender() {
+      return sender;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    /**
+     * builder.
+     *
+     * @author Ray Li
+     */
+    public static class Builder extends Request.Builder {
+      private Sendable<String> sender;
+      private String text;
+
+      /**
+       * Set message sender.
+       *
+       * @param sender sender
+       * @return Builder
+       */
+      public Builder setSender(Sendable<String> sender) {
+        this.sender = sender;
+
+        return this;
+      }
+
+      /**
+       * Set text.
+       *
+       * @param text text
+       * @return Builder
+       */
+      public Builder setText(String text) {
+        this.text = text;
+
+        return this;
+      }
+
+      /** build. */
+      public NetRequest build() {
+        NetRequest obj = new NetRequest(super.build());
+        obj.sender = this.sender;
+        obj.text = this.text;
+
+        return obj;
+      }
+    }
+  }
 }

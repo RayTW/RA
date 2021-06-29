@@ -8,6 +8,6 @@ import ra.util.annotation.ServerApplication;
  *
  * @author Ray Li
  */
-@ServerApplication(serviceMode = TestReadZipCommand.class)
+@ServerApplication(serviceMode = TestReadFileApplication.class)
 @Configuration("unittest/testReadText.properties")
-public class TestReadZip {}
+public class TestReadFile {}

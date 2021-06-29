@@ -1,66 +1,60 @@
 package ra.net.request;
 
-import ra.net.Sendable;
-
 /**
  * Connection request.
  *
  * @author Ray Li
  */
-public class Request<T> {
-  private String ip;
+public class Request {
   private int index;
-  private byte[] bytes;
-  private Sendable<T> sender;
+  private String ip;
 
-  public Request() {}
+  protected Request() {}
 
-  public Request(int index) {
-    this.index = index;
-  }
-
-  /**
-   * Initialize.
-   *
-   * @param request request
-   */
-  public Request(Request<T> request) {
-    this.index = request.index;
-    this.sender = request.sender;
-    this.ip = request.ip;
-    this.bytes = request.bytes;
-  }
-
-  public void setSender(Sendable<T> sender) {
-    this.sender = sender;
-  }
-
-  public void setIp(String ip) {
-    this.ip = ip;
-  }
-
-  public String getIp() {
-    return ip;
-  }
-
-  public void setDataBytes(byte[] bytes) {
-    this.bytes = bytes;
-  }
-
-  protected byte[] getDataBytes() {
-    return bytes;
+  protected Request(Request request) {
+    index = request.index;
+    ip = request.ip;
   }
 
   public int getIndex() {
-    return index;
+    return this.index;
   }
 
-  public Sendable<T> getSender() {
-    return this.sender;
+  public String getIp() {
+    return this.ip;
   }
 
-  @Override
-  public String toString() {
-    return String.format("ip=%s, index=%d, bytes=%s\n", ip, index, bytes);
+  /**
+   * builder.
+   *
+   * @author Ray Li
+   */
+  public static class Builder {
+    private int index;
+    private String ip;
+
+    public Builder setIndex(int index) {
+      this.index = index;
+      return this;
+    }
+
+    public Builder setIp(String ip) {
+      this.ip = ip;
+      return this;
+    }
+
+    /**
+     * build.
+     *
+     * @return Request
+     */
+    public Request build() {
+      Request obj = new Request();
+
+      obj.index = this.index;
+      obj.ip = this.ip;
+
+      return obj;
+    }
   }
 }

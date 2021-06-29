@@ -14,10 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.Test;
-import ra.net.processor.CommandProcessorListener;
-import ra.net.processor.CommandProcessorText;
 import ra.net.processor.NetCommandProvider;
-import ra.net.request.TextRequest;
 import ra.ref.Reference;
 import test.UnitTestUtils;
 import test.mock.MockNetServiceCommand;
@@ -71,7 +68,7 @@ public class NetServiceTest {
     service.setCommandProcessorProvider(
         new NetCommandProvider() {
           @Override
-          public void receivedRequest(TextRequest request) {
+          public void receivedRequest(NetService.NetRequest request) {
             request.getSender().send(request.getText());
           }
         });
@@ -111,7 +108,7 @@ public class NetServiceTest {
     service.setCommandProcessorProvider(
         new NetCommandProvider() {
           @Override
-          public void receivedRequest(TextRequest request) {
+          public void receivedRequest(NetService.NetRequest request) {
             request.getSender().sendClose(request.getText());
           }
         });
@@ -153,7 +150,7 @@ public class NetServiceTest {
     service.setCommandProcessorProvider(
         new NetCommandProvider() {
           @Override
-          public void receivedRequest(TextRequest request) {
+          public void receivedRequest(NetService.NetRequest request) {
             request.getSender().sendClose(request.getText());
             actual.set(request.getText());
             letch.countDown();
@@ -197,7 +194,7 @@ public class NetServiceTest {
     service.setCommandProcessorProvider(
         new NetCommandProvider() {
           @Override
-          public void receivedRequest(TextRequest request) {
+          public void receivedRequest(NetService.NetRequest request) {
             request.getSender().sendClose(request.getText());
           }
         });
@@ -214,16 +211,10 @@ public class NetServiceTest {
             .setIndex(0)
             .setCommandProcessorProvider(
                 new NetCommandProvider() {
-                  @Override
-                  public CommandProcessorListener<String> createCommand() {
-                    return new CommandProcessorText() {
 
-                      @Override
-                      public void commandHandle(TextRequest request) {
-                        actual.add(request.getText());
-                        letch.countDown();
-                      }
-                    };
+                  public void receivedRequest(NetService.NetRequest request) {
+                    actual.add(request.getText());
+                    letch.countDown();
                   }
                 })
             .build();
@@ -245,7 +236,7 @@ public class NetServiceTest {
             + "sttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttes"
             + "ttesttesttesttesttesttesttesttesttesttesttest";
 
-    socket.sendData(expected);
+    socket.send(expected);
     letch.await();
     serverSocket.close();
     socket.close();

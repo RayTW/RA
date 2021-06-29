@@ -37,10 +37,10 @@ public class PackageHandleOutput implements Transfer {
 
   @Override
   public void transfer(Data data, Writable consumer) throws SocketException, IOException {
-    writeSplitBytes(data.getRaw(), data.getDataType().getType(), consumer);
+    writeSplitBytes(data.getDataType().getType(), data.toBytes(), consumer);
   }
 
-  private void writeSplitBytes(byte[] data, int dataType, Writable consumer)
+  private void writeSplitBytes(int dataType, byte[] data, Writable consumer)
       throws SocketException, IOException {
     int remainingLength = data.length;
     int packageLength = 0;

@@ -1,26 +1,26 @@
 package ra.net.processor;
 
-import ra.net.request.TextRequest;
+import ra.net.NetService;
 
 /**
  * Provides {@link String} command processor.
  *
  * @author Ray Li
  */
-public class NetCommandProvider implements CommandProcessorProvider<String> {
+public class NetCommandProvider implements CommandProcessorProvider<NetService.NetRequest> {
 
   @Override
-  public CommandProcessorListener<String> createCommand() {
-    return new CommandProcessorText() {
+  public CommandProcessorListener<NetService.NetRequest> createCommand() {
+    return new NetCommandProcessor() {
 
       @Override
-      public void commandHandle(TextRequest request) {
+      public void commandProcess(NetService.NetRequest request) {
         receivedRequest(request);
       }
     };
   }
 
-  public void receivedRequest(TextRequest request) {
+  public void receivedRequest(NetService.NetRequest request) {
     System.out.println("text[" + request.getText() + "],request[" + request + "]");
   }
 

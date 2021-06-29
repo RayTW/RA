@@ -2,17 +2,18 @@ package ra.net.nio;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * CySocket base on bytes.
+ * DataSocket base on bytes.
  *
  * @author Ray Li
  */
@@ -111,9 +112,9 @@ public class DataSocket {
 
       input.readByte(
           in,
-          (dataType, bytes) -> {
+          (data) -> {
             if (onReadListener != null) {
-              onReadListener.accept(new Data(dataType, bytes));
+              onReadListener.accept(data);
             }
             return Boolean.FALSE;
           });
@@ -140,13 +141,13 @@ public class DataSocket {
   public void write(String text) {
     try {
       output.transfer(
-          new Data(DataType.TEXT, text.getBytes()),
+          new Data(text),
           (byte[] bytes, int offset, int length) -> {
             bufferedOutputStream.write(bytes, offset, length);
             bufferedOutputStream.flush();
           });
-    } catch (IOException e1) {
-      e1.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -155,17 +156,22 @@ public class DataSocket {
    *
    * @param path file path
    */
-  public void writeFile(Path path) {
+  public void write(Path path) {
     try {
+
       output.transfer(
-          new Data(DataType.ZIP, Files.readAllBytes(path)),
+          new Data(path),
           (byte[] b, int offset, int length) -> {
             bufferedOutputStream.write(b, offset, length);
             bufferedOutputStream.flush();
           });
-    } catch (IOException e1) {
-      e1.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
+
+  public void write(File file) {
+    write(Paths.get(file.toString()));
   }
 
   public void close() throws IOException {

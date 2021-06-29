@@ -7,11 +7,10 @@ package ra.net.nio;
  */
 public enum DataType {
   TEXT(0x0000),
-  ZIP(0x0010),
-  FILE_NAME(0x0020),
-  FILE_CONTENT(0x0030);
-
+  FILE(0x0010);
   private final int type;
+
+  public static final String FILE_NAME = "{\"name\":\"%s\"}";
 
   private DataType(int type) {
     this.type = type;
@@ -42,7 +41,7 @@ public enum DataType {
       case 0x0000:
         return TEXT;
       case 0x0010:
-        return ZIP;
+        return FILE;
       default:
         break;
     }
