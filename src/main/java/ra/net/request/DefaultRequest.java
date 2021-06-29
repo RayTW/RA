@@ -1,13 +1,15 @@
 package ra.net.request;
 
 import org.json.JSONObject;
+import ra.net.NetService;
+import ra.net.Sendable;
 
 /**
  * Default request.
  *
  * @author Ray Li
  */
-public class DefaultRequest extends Request<String> {
+public class DefaultRequest extends Request {
   private String command;
 
   private String authorization;
@@ -18,16 +20,19 @@ public class DefaultRequest extends Request<String> {
 
   private long reciveTimestamp;
 
+  private Sendable<String> sender;
+
   /**
    * Initialize.
    *
    * @param request request
    */
-  public DefaultRequest(Request<String> request) {
+  public DefaultRequest(NetService.NetRequest request) {
     super(request);
 
+    this.sender = request.getSender();
     this.reciveTimestamp = System.currentTimeMillis();
-    this.source = new String(request.getDataBytes());
+    this.source = request.getText();
     this.json = new JSONObject(source);
     this.command = json.optString("command", null);
     this.authorization = json.optString("authorization", null);
@@ -71,5 +76,13 @@ public class DefaultRequest extends Request<String> {
 
   public void setJson(JSONObject json) {
     this.json = json;
+  }
+
+  public void send(String message) {
+    this.sender.send(message);
+  }
+
+  public void sendClose(String message) {
+    this.sender.sendClose(message);
   }
 }

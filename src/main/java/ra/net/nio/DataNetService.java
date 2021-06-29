@@ -6,11 +6,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.concurrent.Executor;
+import ra.net.Sendable;
 import ra.net.Serviceable;
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorProvider;
 import ra.net.request.Request;
-import ra.ref.BiReference;
 
 /**
  * Provide TCP/IP write with read use bytes, and the support text with file format transmission.
@@ -19,13 +19,13 @@ import ra.ref.BiReference;
  */
 public class DataNetService extends Thread implements Serviceable<Data>, AutoCloseable {
   private ServerSocket serverSocket;
-  private CommandProcessorListener<Data> processorListener;
-  private CommandProcessorProvider<Data> processorProvider;
+  private CommandProcessorListener<NetDataRequest> processorListener;
+  private CommandProcessorProvider<NetDataRequest> processorProvider;
   private BufferedInputStream bufferedInputStream;
   private Sender<Data> sender;
   private Executor sendPool;
   private boolean isRunning = true;
-  private int timeOut = 0;
+  private int timeout = 0;
   private int index;
   private int socketSoTimeout = 20000;
   private Transfer transferListener;
@@ -37,8 +37,9 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
 
   @Override
   public void run() {
-    BiReference<DataType, byte[]> ref = new BiReference<>();
-    Request<Data> request = new Request<>(index);
+    NetDataRequest.Builder builder = new NetDataRequest.Builder();
+
+    builder.setIndex(index);
 
     while (isRunning) {
       try {
@@ -49,9 +50,9 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
         if (sender != null) {
           sender.close();
         }
-        sender = new Sender<Data>(this, transferListener, socket, timeOut);
+        sender = new Sender<Data>(this, transferListener, socket, timeout);
         sendPool.execute(sender);
-        request.setSender(sender);
+        builder.setSender(sender);
         socket.setSoTimeout(socketSoTimeout);
         bufferedInputStream = new BufferedInputStream(socket.getInputStream());
       } catch (Exception e) {
@@ -60,39 +61,29 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
       }
       boolean readThread = true;
       try {
-        request.setIp(sender.getIp());
+        builder.setIp(sender.getIp());
         processorListener = this.processorProvider.createCommand();
 
         while (readThread) {
-          ref.setLeft(null);
-          ref.setRight(null);
+          builder.setData(null);
 
           input.readByte(
               bufferedInputStream,
-              (dataType, dataBytes) -> {
-                ref.setLeft(dataType);
-                ref.setRight(dataBytes);
+              (data) -> {
+                builder.setData(data);
 
                 return Boolean.TRUE;
               });
 
-          if (ref.isLeftNull()) {
-            continue;
-          }
+          sender.setSoTimeout(timeout);
 
-          sender.setSoTimeout(timeOut);
-          if (ref.isRightNull()) {
+          NetDataRequest request = builder.build();
+
+          if (request.getData() == null) {
             readThread = false;
             close();
             processorProvider.offline(index);
           } else {
-            byte[] data = new byte[2 + ref.getRight().length];
-            byte dateType = (byte) ref.getLeft().getType();
-
-            DataType.copyToBytes(data, dateType);
-            System.arraycopy(ref.getRight(), 0, data, 2, ref.getRight().length);
-
-            request.setDataBytes(data);
             processorListener.commandProcess(request);
           }
         }
@@ -144,8 +135,8 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
    */
   public static class Builder {
     private ServerSocket serverSocket;
-    private CommandProcessorListener<Data> processorListener;
-    private CommandProcessorProvider<Data> processorProvider;
+    private CommandProcessorListener<NetDataRequest> processorListener;
+    private CommandProcessorProvider<NetDataRequest> processorProvider;
     private int index;
     private Long socketSoTimeout;
     private Transfer transferListener;
@@ -176,7 +167,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
       return this;
     }
 
-    public Builder setCommandProcessorProvider(CommandProcessorProvider<Data> provider) {
+    public Builder setCommandProcessorProvider(CommandProcessorProvider<NetDataRequest> provider) {
       this.processorProvider = provider;
       return this;
     }
@@ -217,5 +208,70 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
   @Override
   public void onClose() {
     offline();
+  }
+
+  /**
+   * NetRequest.
+   *
+   * @author Ray Li
+   */
+  public static class NetDataRequest extends Request {
+    private Sendable<Data> sender;
+    private Data data;
+
+    public NetDataRequest(Request request) {
+      super(request);
+    }
+
+    public Sendable<Data> getSender() {
+      return sender;
+    }
+
+    public Data getData() {
+      return data;
+    }
+
+    /**
+     * builder.
+     *
+     * @author Ray Li
+     */
+    public static class Builder extends Request.Builder {
+      private Sendable<Data> sender;
+      private Data data;
+
+      /**
+       * Set message sender.
+       *
+       * @param sender sender
+       * @return Builder
+       */
+      public Builder setSender(Sendable<Data> sender) {
+        this.sender = sender;
+
+        return this;
+      }
+
+      /**
+       * Set data.
+       *
+       * @param data data
+       * @return Builder
+       */
+      public Builder setData(Data data) {
+        this.data = data;
+
+        return this;
+      }
+
+      /** build. */
+      public NetDataRequest build() {
+        NetDataRequest obj = new NetDataRequest(super.build());
+        obj.sender = this.sender;
+        obj.data = this.data;
+
+        return obj;
+      }
+    }
   }
 }

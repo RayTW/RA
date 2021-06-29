@@ -1,11 +1,13 @@
 package ra.net.processor;
 
+import ra.net.request.Request;
+
 /**
  * Provide CommandProcessor.
  *
  * @author Ray Li, Kevin Tsai
  */
-public interface CommandProcessorProvider<T> {
+public interface CommandProcessorProvider<T extends Request> {
 
   /**
    * Create {@link CommandProcessorListener}.

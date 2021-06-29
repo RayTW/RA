@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
@@ -19,12 +20,11 @@ import org.json.JSONObject;
 import org.junit.Test;
 import ra.net.NetServerApplication;
 import ra.net.processor.DataNetCommandProvider;
-import ra.net.request.DataRequest;
 import ra.ref.Reference;
 import ra.util.annotation.Configuration;
 import test.UnitTestUtils;
+import test.mock.annotationclass.TestReadFile;
 import test.mock.annotationclass.TestReadText;
-import test.mock.annotationclass.TestReadZip;
 
 /** Test class. */
 public class DataNetServiceTest {
@@ -93,7 +93,7 @@ public class DataNetServiceTest {
             .setCommandProcessorProvider(
                 generateCommandProvider(
                     (request) -> {
-                      messageRef.set(new String(request.getData().getRaw()));
+                      messageRef.set(new String(request.getData().getContent()));
                       letch.countDown();
                     }))
             .setSocketSoTimeout(Duration.ofSeconds(60))
@@ -139,7 +139,12 @@ public class DataNetServiceTest {
             .setCommandProcessorProvider(
                 generateCommandProvider(
                     (request) -> {
-                      messageRef.set(new String(request.getData().getRaw()));
+                      System.out.println(
+                          "server收到,title="
+                              + request.getData().getTitle()
+                              + ",content="
+                              + new String(request.getData().getContent()));
+                      messageRef.set(new String(request.getData().getContent()));
                       letch.countDown();
                     }))
             .setSocketSoTimeout(Duration.ofSeconds(60))
@@ -167,7 +172,6 @@ public class DataNetServiceTest {
       net.close();
     }
     pool.shutdownNow();
-    System.out.println("src=" + json.toString().length() + ",re=" + messageRef.get().length());
     assertEquals(json.toString(), messageRef.get());
   }
 
@@ -184,7 +188,7 @@ public class DataNetServiceTest {
 
     socket.setOnReadLineListener(
         data -> {
-          resultRef.set(new String(data.getRaw()));
+          resultRef.set(new String(data.getContent()));
           letch.countDown();
         });
 
@@ -193,13 +197,13 @@ public class DataNetServiceTest {
     socket.write(expected);
     letch.await();
     NetServerApplication.getApplication().close();
-
+    System.out.println("expected[" + expected + "],resultRef.get()[" + resultRef.get() + "]");
     assertEquals(expected, resultRef.get());
   }
 
   @Test
-  public void testReadZip() throws InterruptedException, IOException {
-    int port = runApplication(TestReadZip.class);
+  public void testReadFile() throws InterruptedException, IOException {
+    int port = runApplication(TestReadFile.class);
 
     Reference<byte[]> resultRef = new Reference<>();
     CountDownLatch letch = new CountDownLatch(1);
@@ -210,10 +214,10 @@ public class DataNetServiceTest {
 
     socket.setOnReadLineListener(
         data -> {
-          resultRef.set(data.getRaw());
+          resultRef.set(data.getContent());
           letch.countDown();
         });
-    socket.writeFile(Paths.get(filePath));
+    socket.write(new File(filePath));
     letch.await();
 
     assertArrayEquals(Files.readAllBytes(Paths.get(filePath)), resultRef.get());
@@ -223,11 +227,12 @@ public class DataNetServiceTest {
     return generateCommandProvider(null);
   }
 
-  private DataNetCommandProvider generateCommandProvider(Consumer<DataRequest> consumer) {
+  private DataNetCommandProvider generateCommandProvider(
+      Consumer<DataNetService.NetDataRequest> consumer) {
     DataNetCommandProvider provider =
         new DataNetCommandProvider() {
           @Override
-          public void receivedRequest(DataRequest request) {
+          public void receivedRequest(DataNetService.NetDataRequest request) {
             consumer.accept(request);
           }
         };

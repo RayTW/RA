@@ -31,8 +31,7 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * Add the folder path to save Log file.
-   * And add the Expiration date.
+   * Add the folder path to save Log file. And add the Expiration date.
    *
    * @param folderPath the folder path to save Log file
    * @param days reserve days(positive number)
@@ -92,7 +91,7 @@ public class LogDelete extends Thread {
     File[] logFileRoot = new File(rootPath).listFiles();
 
     if (logFileRoot != null) {
-      //precount the keep day list
+      // precount the keep day list
       for (int i = dayCount - 1; i >= 0; i--) {
         keepDates.add(getDate(-i));
       }
@@ -141,8 +140,7 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * Adds or subtracts the specified amount of time to the given now.
-   * format style："2017-10-16".
+   * Adds or subtracts the specified amount of time to the given now. format style："2017-10-16".
    *
    * @param amount Adds or subtracts number
    */

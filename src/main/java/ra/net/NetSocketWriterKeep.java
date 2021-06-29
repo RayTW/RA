@@ -6,9 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import ra.net.NetService.NetRequest;
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorProvider;
-import ra.net.request.Request;
 
 /**
  * Socket connection output.
@@ -37,7 +37,7 @@ public class NetSocketWriterKeep extends Thread {
   private int index;
   private BufferedOutputStream bufferedOutputStream;
   private BufferedInputStream bufferedInputStream;
-  private CommandProcessorListener<String> commandProcessorListener;
+  private CommandProcessorListener<NetService.NetRequest> commandProcessorListener;
   private SendProcessorKeep sendThreadKeep;
   private MessageReceiver receiveThread;
   private byte[] readBuffer = new byte[1024];
@@ -54,19 +54,19 @@ public class NetSocketWriterKeep extends Thread {
     }
     sendThreadKeep.start();
 
-    Request<String> request = new Request<>(index);
+    NetRequest.Builder builder = new NetRequest.Builder();
 
-    request.setSender(sendThreadKeep);
+    builder.setSender(sendThreadKeep);
 
     receiveThread =
         new MessageReceiver(
-            bytes -> {
+            text -> {
               if (commandProcessorListener == null) {
                 return;
               }
-              request.setDataBytes(bytes);
-              request.setIp(socket.getInetAddress().toString());
-              commandProcessorListener.commandProcess(request);
+              builder.setText(text);
+              builder.setIp(socket.getInetAddress().toString());
+              commandProcessorListener.commandProcess(builder.build());
             });
     receiveThread.start();
   }
@@ -78,7 +78,7 @@ public class NetSocketWriterKeep extends Thread {
       bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
       bufferedInputStream = new BufferedInputStream(socket.getInputStream());
       if (!regedit.isEmpty()) {
-        sendData(regedit);
+        send(regedit);
       }
       if (!isRunning) {
         isRunning = true;
@@ -197,12 +197,12 @@ public class NetSocketWriterKeep extends Thread {
     }
   }
 
-  public void sendData(String msg) {
-    sendThreadKeep.send(msg);
+  public void send(String message) {
+    sendThreadKeep.send(message);
   }
 
-  void write(String msg) throws IOException {
-    bufferedOutputStream.write(TransmissionEnd.appendFeedNewLine(msg).getBytes());
+  void write(String message) throws IOException {
+    bufferedOutputStream.write(TransmissionEnd.appendFeedNewLine(message).getBytes());
     bufferedOutputStream.flush();
   }
 
@@ -212,7 +212,6 @@ public class NetSocketWriterKeep extends Thread {
         socket.close();
         socket = null;
       }
-      System.out.println("[connect lost]");
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -224,7 +223,7 @@ public class NetSocketWriterKeep extends Thread {
     private int port;
     private int index;
     private Boolean enableClearQueue;
-    private CommandProcessorProvider<String> commandProcessorProvider;
+    private CommandProcessorProvider<NetService.NetRequest> commandProcessorProvider;
 
     public Builder setHost(String host) {
       this.host = host;
@@ -252,7 +251,8 @@ public class NetSocketWriterKeep extends Thread {
       return this;
     }
 
-    public Builder setCommandProcessorProvider(CommandProcessorProvider<String> provider) {
+    public Builder setCommandProcessorProvider(
+        CommandProcessorProvider<NetService.NetRequest> provider) {
       commandProcessorProvider = provider;
       return this;
     }

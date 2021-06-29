@@ -9,7 +9,7 @@ import ra.util.Utility;
 
 /**
  * A lightweight set of re-usable functions for general purpose parsing. support JSON parsing
- * styles. 
+ * styles.
  *
  * @author Ray Li
  */

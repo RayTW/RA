@@ -1,27 +1,28 @@
 package ra.net.processor;
 
 import ra.net.nio.Data;
-import ra.net.request.DataRequest;
+import ra.net.nio.DataNetService;
 
 /**
  * Provides {@link Data} command processor.
  *
  * @author Ray Li
  */
-public class DataNetCommandProvider implements CommandProcessorProvider<Data> {
+public class DataNetCommandProvider
+    implements CommandProcessorProvider<DataNetService.NetDataRequest> {
 
   @Override
-  public CommandProcessorListener<Data> createCommand() {
-    return new CommandProcessorData() {
+  public CommandProcessorListener<DataNetService.NetDataRequest> createCommand() {
+    return new DataNetCommandProcessor() {
 
       @Override
-      public void commandHandle(DataRequest request) {
+      public void commandProcess(DataNetService.NetDataRequest request) {
         receivedRequest(request);
       }
     };
   }
 
-  public void receivedRequest(DataRequest request) {
+  public void receivedRequest(DataNetService.NetDataRequest request) {
     System.out.println("data[" + request.getData() + "],request[" + request + "]");
   }
 

@@ -174,8 +174,7 @@ public class LogRecord {
   }
 
   /**
-   * Can it write in, after checking the storage space remaining?.
-   * Default：Infinity
+   * Can it write in, after checking the storage space remaining?. Default：Infinity
    *
    * @return Returns true when storage space remaining.
    */

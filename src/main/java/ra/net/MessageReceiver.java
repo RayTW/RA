@@ -16,11 +16,11 @@ import java.util.function.Consumer;
 public class MessageReceiver extends Thread {
   private boolean isRunning = true;
   private List<byte[]> queue = Collections.synchronizedList(new LinkedList<byte[]>());
-  private Consumer<byte[]> onReceiveMessageListener;
+  private Consumer<String> onReceiveMessageListener;
   private ReentrantLock lock = new ReentrantLock();
   private Condition condition = lock.newCondition();
 
-  public MessageReceiver(Consumer<byte[]> listener) {
+  public MessageReceiver(Consumer<String> listener) {
     onReceiveMessageListener = listener;
   }
 
@@ -52,7 +52,7 @@ public class MessageReceiver extends Thread {
       while (queue.size() > 0) {
         try {
           msg = queue.remove(0);
-          onReceiveMessageListener.accept(msg);
+          onReceiveMessageListener.accept(new String(msg));
         } catch (Exception e) {
           e.printStackTrace();
         }

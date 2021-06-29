@@ -1,17 +1,17 @@
 package test.mock.annotationclass;
 
+import ra.net.nio.DataNetService;
 import ra.net.processor.DataNetCommandProvider;
-import ra.net.request.DataRequest;
 
 /**
  * Fake class.
  *
  * @author Ray Li
  */
-public class TestReadTextCommand extends DataNetCommandProvider {
+public class TestReadTextApplication extends DataNetCommandProvider {
 
   @Override
-  public void receivedRequest(DataRequest request) {
+  public void receivedRequest(DataNetService.NetDataRequest request) {
     request.getSender().send(request.getData());
   }
 }

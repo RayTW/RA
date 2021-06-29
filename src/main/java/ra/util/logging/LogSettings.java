@@ -41,8 +41,7 @@ public class LogSettings {
   }
 
   /**
-   * The Compression Mode on a real-time saves Log.
-   * Default： CompressionMode.LOG
+   * The Compression Mode on a real-time saves Log. Default： CompressionMode.LOG
    *
    * @param mode Log Compression Mode
    */
@@ -51,8 +50,7 @@ public class LogSettings {
   }
 
   /**
-   * The time unit of the Log file be created.
-   * Default： CompressionTimeUnit.DAY
+   * The time unit of the Log file be created. Default： CompressionTimeUnit.DAY
    *
    * @param timeUnit The time unit of the Log file be created
    */
