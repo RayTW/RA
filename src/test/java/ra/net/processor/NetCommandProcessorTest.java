@@ -4,14 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
-import ra.net.request.DefaultRequest;
-import ra.net.request.Request;
+import ra.net.NetService;
 import ra.ref.Reference;
 import ra.server.basis.CommandsVerification;
 import ra.util.Utility;
 
 /** Test class. */
-public class CommandProcessorJsonTest {
+public class NetCommandProcessorTest {
 
   @Before
   public void setUp() throws Exception {
@@ -21,21 +20,21 @@ public class CommandProcessorJsonTest {
   @Test
   public void testSucessHeartbeat() {
     String source = Utility.get().readFile("./unittest/CommandHeartbeat.json");
-    Request<String> request = new Request<String>(0);
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
     Reference<String> result = new Reference<>(source);
 
-    request.setDataBytes(source.getBytes());
+    builder.setText(source);
 
-    CommandProcessorJson cmd =
-        new CommandProcessorJson() {
+    NetCommandProcessor cmd =
+        new NetCommandProcessor() {
 
           @Override
-          public void commandHandle(DefaultRequest request) {
-            result.set(request.getSource());
+          public void commandProcess(NetService.NetRequest request) {
+            result.set(request.getText());
           }
         };
 
-    cmd.commandProcess(new DefaultRequest(request));
+    cmd.commandProcess(builder.build());
 
     assertEquals(source, result.get());
   }

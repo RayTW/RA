@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * 採用gzip方式壓縮輸出文字檔案.
+ * Use gzip to compress the output text file.
  *
  * @author Ray Li
  */
@@ -18,10 +18,10 @@ public class GzipFileStringOutput implements StringOutput {
   private String charset;
 
   /**
-   * 創建.
+   * Initialize.
    *
-   * @param file 要壓縮的檔案
-   * @param charset 檔案編碼格式
+   * @param file source format
+   * @param charset file charset
    */
   public GzipFileStringOutput(File file, String charset) {
     try {

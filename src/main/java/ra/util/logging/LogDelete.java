@@ -10,12 +10,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import ra.util.Utility;
 
 /**
- * 定期 刪LOG.
+ * Regular Delete Log file.
  *
  * @author Kevin Tsai, Ray Li
  */
 public class LogDelete extends Thread {
-  private Duration intervalCheckTime = Duration.ofHours(1); // 預設為每一小時清一次��
+  private Duration intervalCheckTime = Duration.ofHours(1); // Default every Hour.
   private SimpleDateFormat simpleDateFormat;
   private List<DelRecordSettings> logFileRoot = new CopyOnWriteArrayList<>();
   private Object lock = new Object();
@@ -31,10 +31,10 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * 新增LOG檔案資料夾路徑與要刪除幾天前的LOG檔案.
+   * Add the folder path to save Log file. And add the Expiration date.
    *
-   * @param folderPath 資料夾路徑
-   * @param days 要刪除幾天前的(正值)
+   * @param folderPath the folder path to save Log file
+   * @param days reserve days(positive number)
    */
   public void addLogPathWithSaveDays(String folderPath, int days) {
     removeLogPath(folderPath);
@@ -42,10 +42,10 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * 移除欲刪除指定LOG檔案資料夾路徑.
+   * Earmark the folder to Delete the Log file.
    *
-   * @param folderPath 資料夾路徑
-   * @return 若有移除已存在的資料夾會回傳true
+   * @param folderPath the folder path to Delete the Log file
+   * @return return true,when delete some exists files.
    */
   public boolean removeLogPath(String folderPath) {
     boolean ret = false;
@@ -60,15 +60,15 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * 固定的間隔時間檢查是否刪除逾期存放日誌.
+   * Checking the expired Log files each interval time, which is needed to delete.
    *
-   * @param interval 間隔時間
+   * @param interval Checking interval time
    */
   public void setCheckTime(Duration interval) {
     this.intervalCheckTime = interval;
   }
 
-  /** 尋找多組指定資料夾下，比對檔名前綴若是與保留日期不相同則進行刪除. */
+  /** delete the expired Log files from all the saved folder. */
   private void delFiles() {
     DelRecordSettings settings = null;
 
@@ -79,19 +79,19 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * 尋找指定資料夾下，比對檔名前綴若是與保留日期不相同則進行刪除.
+   * delete the expired Log files from all the saved folder.
    *
-   * @param rootPath 被指定檢查的資料夾
-   * @param dayCount 要刪除幾天前的(正值)
+   * @param rootPath the folder path which needs to checking
+   * @param dayCount expired count by day(positive number)
    */
   private void delFile(String rootPath, int dayCount) {
-    // 要保留不刪除的LOG日期
+    // the keep days
     ArrayList<String> keepDates = new ArrayList<>();
-    // 被指定檢查的資料夾
+    // the folder path which needs to checking
     File[] logFileRoot = new File(rootPath).listFiles();
 
     if (logFileRoot != null) {
-      // 預算出此次要檢查保留log檔的日期列表
+      // precount the keep day list
       for (int i = dayCount - 1; i >= 0; i--) {
         keepDates.add(getDate(-i));
       }
@@ -101,7 +101,7 @@ public class LogDelete extends Thread {
       for (File file : logFileRoot) {
         isKeepFile = false;
 
-        // 找到的檔案是否在保留名單
+        // checking the keep list
         for (String keep : keepDates) {
           if (file.getName().startsWith(keep)) {
             isKeepFile = true;
@@ -109,7 +109,7 @@ public class LogDelete extends Thread {
           }
         }
 
-        // 不在保留名單，執行刪除檔案
+        // delete file
         if (!isKeepFile) {
           Utility.get().deleteFiles(file);
         }
@@ -140,9 +140,9 @@ public class LogDelete extends Thread {
   }
 
   /**
-   * 取得加減過的日期，格式"2017-10-16".
+   * Adds or subtracts the specified amount of time to the given now. format style："2017-10-16".
    *
-   * @param amount 加減值
+   * @param amount Adds or subtracts number
    */
   private String getDate(int amount) {
     Calendar cal = Calendar.getInstance();
@@ -150,7 +150,7 @@ public class LogDelete extends Thread {
     return simpleDateFormat.format(cal.getTime());
   }
 
-  /** 請求進行刪log. */
+  /** Request that deletes Log file. */
   public void requestDelete() {
     synchronized (lock) {
       lock.notifyAll();
@@ -163,8 +163,8 @@ public class LogDelete extends Thread {
   }
 
   private class DelRecordSettings {
-    private String logFileRoot; // 檔案儲存路徑
-    private int saveDays = 7; // 檔案預留天數
+    private String logFileRoot; // the path to save files
+    private int saveDays = 7; // keep days
 
     public DelRecordSettings(String folderPath, int days) {
       logFileRoot = folderPath;

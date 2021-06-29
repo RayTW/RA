@@ -1,7 +1,7 @@
 package ra.util;
 
 /**
- * .
+ * Ternary Function.
  *
  * @author Ray Li
  * @param <T> T - the type of the first argument to the function

@@ -2,20 +2,23 @@ package ra.util;
 
 import java.math.BigDecimal;
 
-/** 由於Java的簡單類型不能夠精確的對浮點數進行運算，這個工具類提供精 確的浮點數運算，包括加減乘除和四捨五入. */
+/**
+ * Since Java's primitive types cannot accurately perform operations on floating-point numbers, this
+ * tool class provides accurate floating-point operations, including addition, subtraction,
+ * multiplication, division, and rounding..
+ */
 public class Arith {
-  // 默認除法運算精度
+  // Default division precision.
   private static final int DEF_DIV_SCALE = 10;
 
-  // 這個類不能實例化
   private Arith() {}
 
   /**
-   * 提供精確的加法運算.
+   * Returns sum two values.
    *
-   * @param v1 被加數
-   * @param v2 加數
-   * @return 兩個參數的和
+   * @param v1 value1
+   * @param v2 value2
+   * @return Returns sum two values.
    */
   public static double add(double v1, double v2) {
     BigDecimal b1 = new BigDecimal(Double.toString(v1));
@@ -24,11 +27,11 @@ public class Arith {
   }
 
   /**
-   * 提供精確的減法運算.
+   * Returns the subtraction of two values.
    *
-   * @param v1 被減數
-   * @param v2 減數
-   * @return 兩個參數的差
+   * @param v1 value1
+   * @param v2 value2
+   * @return Returns the subtraction of two values.
    */
   public static double sub(double v1, double v2) {
     BigDecimal b1 = new BigDecimal(Double.toString(v1));
@@ -37,11 +40,11 @@ public class Arith {
   }
 
   /**
-   * 提供精確的乘法運算.
+   * Provide precise multiplication operations.
    *
-   * @param v1 被乘數
-   * @param v2 乘數
-   * @return 兩個參數的積
+   * @param v1 value1
+   * @param v2 value2
+   * @return Product of two parameters
    */
   public static double mul(double v1, double v2) {
     BigDecimal b1 = new BigDecimal(Double.toString(v1));
@@ -50,23 +53,25 @@ public class Arith {
   }
 
   /**
-   * 提供（相對）精確的除法運算，當發生除不盡的情況時，精確到 小數點以後10位元，以後的數字四捨五入.
+   * Provides (relatively) accurate division operations. When the division is inexhaustible, the
+   * accuracy is 10 digits after the decimal point, and subsequent numbers are rounded.
    *
-   * @param v1 被除數
-   * @param v2 除數
-   * @return 兩個參數的商
+   * @param v1 value1
+   * @param v2 value2
+   * @return quotient of two parameters
    */
   public static double div(double v1, double v2) {
     return div(v1, v2, DEF_DIV_SCALE);
   }
 
   /**
-   * 提供（相對）精確的除法運算。當發生除不盡的情況時，由scale參數指 定精度，以後的數字四捨五入.
+   * Provides (relatively) precise division operations. When the division is inexhaustible, the
+   * precision is specified by the scale parameter, and the subsequent figures are rounded.
    *
-   * @param v1 被除數
-   * @param v2 除數
-   * @param scale 表示表示需要精確到小數點以後幾位。
-   * @return 兩個參數的商
+   * @param v1 value1
+   * @param v2 value2
+   * @param scale Indicates that it needs to be accurate to a few decimal places.
+   * @return quotient of two parameters
    */
   public static double div(double v1, double v2, int scale) {
     if (scale < 0) {
@@ -78,11 +83,11 @@ public class Arith {
   }
 
   /**
-   * 提供精確的小數位四捨五入處理.
+   * Provide accurate decimal rounding processing.
    *
-   * @param v 需要四捨五入的數位
-   * @param scale 小數點後保留幾位
-   * @return 四捨五入後的結果
+   * @param v value
+   * @param scale keep a few digits after the decimal point
+   * @return rounded result
    */
   public static double round(double v, int scale) {
     if (scale < 0) {
@@ -94,17 +99,18 @@ public class Arith {
   }
 
   /**
-   * 提供精確的小數位無條件捨去處理.
+   * Provide accurate decimal places to be discarded unconditionally.
    *
-   * @param v 需要無條件捨去的數位
-   * @param scale 小數點後保留幾位
-   * @return 無條件捨去後的結果
+   * @param value value
+   * @param scale scale
+   * @return the largest (closest to positive infinity) floating-point value that less than or equal
+   *     to the argument and is equal to a mathematical integer..
    */
-  public static double floor(double v, int scale) {
+  public static double floor(double value, int scale) {
     if (scale < 0) {
       throw new IllegalArgumentException("The scale must be a positive integer or zero");
     }
-    BigDecimal b = new BigDecimal(Double.toString(v));
+    BigDecimal b = new BigDecimal(Double.toString(value));
     BigDecimal one = new BigDecimal("1");
     return b.divide(one, scale, BigDecimal.ROUND_DOWN).doubleValue();
   }

@@ -30,10 +30,11 @@ public class ServiceLoader<T> {
   }
 
   /**
-   * 戴入有標記@RequestCommand的class，預設搜尋指定packageName及其下層package.
+   * Wear the class marked @RequestCommand, and search for the specified packageName and its lower
+   * packages by default.
    *
    * @param packageName package path
-   * @throws ClassNotFoundException 無指定類別時拋出
+   * @throws ClassNotFoundException Throw when no specified class
    * @throws IOException io
    */
   @SuppressWarnings("unchecked")
@@ -55,11 +56,11 @@ public class ServiceLoader<T> {
   }
 
   /**
-   * .
+   * Returns service by specific command.
    *
-   * @param command 接收到的command內容
+   * @param command command
    * @return T
-   * @throws CommandNotFoundException 無相對應command時拋出
+   * @throws CommandNotFoundException when command not found.
    */
   public T getService(String command) throws CommandNotFoundException {
     T obj = null;
@@ -87,7 +88,7 @@ public class ServiceLoader<T> {
       classes = loadCleasses(urlfrom.get(), packageName);
     }
 
-    // 使用本機eclipse開發時才會執行這段邏輯
+    // local devlop
     if (classes.isEmpty()) {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
       String path = packageName.replace('.', '/');
@@ -139,7 +140,8 @@ public class ServiceLoader<T> {
         }
       }
     } catch (FileNotFoundException e) {
-      // 此虎找不到jar檔氣預期內錯誤，後續流程應找本機編譯的class檔去執行
+      // The expected error in the jar file cannot be found here, and the subsequent process should
+      // be executed with the class file compiled by the machine.
     } catch (Exception e) {
       e.printStackTrace();
     }

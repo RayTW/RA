@@ -3,7 +3,7 @@ package ra.util.logging;
 import ra.util.compression.CompressionMode;
 
 /**
- * 日誌設定.
+ * General Setting parameters for Log.
  *
  * @author Ray Li
  */
@@ -41,18 +41,18 @@ public class LogSettings {
   }
 
   /**
-   * 儲存日誌進行即時壓縮設定 預設啟用CompressionTimeUnit.DAY.
+   * The Compression Mode on a real-time saves Log. Default： CompressionMode.LOG
    *
-   * @param mode 日誌檔案格式
+   * @param mode Log Compression Mode
    */
   public void setCompressionMode(CompressionMode mode) {
     this.mode = mode;
   }
 
   /**
-   * 儲存產生日誌檔的時間單位、是否對日誌進行即時壓縮.
+   * The time unit of the Log file be created. Default： CompressionTimeUnit.DAY
    *
-   * @param timeUnit 產生日誌檔的時間單位
+   * @param timeUnit The time unit of the Log file be created
    */
   public void setCompressionTimeUnit(CompressionTimeUnit timeUnit) {
     this.timeUnit = timeUnit;
@@ -63,7 +63,7 @@ public class LogSettings {
   }
 
   /**
-   * 取得日誌檔案存檔格式.
+   * Get the Compression Mode of saving Log file.
    *
    * @return {@link CompressionMode}
    */

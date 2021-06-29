@@ -1,16 +1,16 @@
 package ra.util.logging;
 
 /**
- * 產生壓縮檔的檔名時間單位.
+ * The time unit of the file name in creates a compressed file.
  *
  * @author Ray Li
  */
 public enum CompressionTimeUnit {
-  /** 每天產生新檔名. */
+  /** Create new file per every day. */
   DAY("yyyy-MM-dd"),
-  /** 每小時產生新檔名. */
+  /** Create new file per every hour. */
   HOUR("yyyy-MM-dd_hh"),
-  /** 每分鐘產生新檔名. */
+  /** Create new file per every minute. */
   MINUTE("yyyy-MM-dd_hhmm");
 
   private final String dateFormatPattern;
@@ -20,7 +20,7 @@ public enum CompressionTimeUnit {
   }
 
   /**
-   * 日誌檔名格式.
+   * get the date format pattern.
    *
    * @return date format pattern
    */

@@ -13,7 +13,9 @@ import ra.util.compression.StringFileOutput;
 import ra.util.compression.StringOutput;
 
 /**
- * 建立檔案寫log 機制如下: 會以指定檔名進行創建檔案後，保持file I/O連線，每次寫入log之後不會關閉file I/O連線.
+ * Create a file which be used to write Log. the following action: Keep the file I/O connection and
+ * will not close the file I/O connection when writing log into a file, after creating the Log file
+ * by earmark file name.
  *
  * @author Ray Li
  */
@@ -24,7 +26,7 @@ public class LogRecord {
   private boolean dateFormatFlag;
   private CompressionMode compressionMode;
   private SimpleDateFormat simpleDateFormat;
-  private long maxFileSize; // 日誌檔大小限制
+  private long maxFileSize; // The Limit size of Log file.
   private OnNotEnoughSpaceListener onNotEnoughSpaceListener;
 
   /** Initialize. */
@@ -39,39 +41,39 @@ public class LogRecord {
   }
 
   /**
-   * 可修改日期顯示的格式.
+   * The Date format style of write log into Log file.
    *
-   * @param format 顯示的格式
+   * @param format The Date format style
    */
   public void setSimpleDateFormat(String format) {
     simpleDateFormat = new SimpleDateFormat(format);
   }
 
-  /** 開啟log前面串上日期、時間功能. */
+  /** Enable add the head(Date-time information) when write log into Log file. */
   public void enableDateFormat() {
     dateFormatFlag = true;
   }
 
-  /** 關閉log前面串上日期、時間功能. */
+  /** Disenable add the head (Date-time information) when write log into Log file. */
   public void disenableDateFormat() {
     dateFormatFlag = false;
   }
 
   /**
-   * 設定寫入的日誌檔案壓縮格式.
+   * Setting the Compression Mode on a real-time saves Log.
    *
-   * @param mode 壓縮方式
+   * @param mode the file Compression Mode
    */
   public void setCompressionMode(CompressionMode mode) {
     compressionMode = mode;
   }
 
   /**
-   * 初始化.
+   * initialize.
    *
-   * @param folderPath log的Folder路徑
-   * @param fileName 檔名
-   * @param charset 檔案的編碼格式
+   * @param folderPath the Folder path of the Log
+   * @param fileName the file name of Log
+   * @param charset The Character encoding of Log file
    * @return initialize state
    */
   public boolean init(String folderPath, String fileName, String charset) {
@@ -101,7 +103,7 @@ public class LogRecord {
     return false;
   }
 
-  /** . */
+  /** Close the Log file. */
   public void close() {
     try {
       stringOutput.close();
@@ -111,12 +113,12 @@ public class LogRecord {
   }
 
   /**
-   * 寫日誌到檔案，並且逐自動跳行..
+   * Will not have text wraps automatically when write the log into file.
    *
-   * @param str 記錄的訊息
+   * @param str message of the log record.
    */
   public void write(String str) {
-    // 剩餘硬碟空間低於預留空間，不寫入log
+    // Stop writing to Log file, when has not enough space.
     if (!hasRemaining()) {
       if (onNotEnoughSpaceListener != null) {
         onNotEnoughSpaceListener.onNotEnoughSpace(logFileFolder);
@@ -133,14 +135,14 @@ public class LogRecord {
         stringOutput.write(str);
         stringOutput.flush();
       } catch (IOException e) {
-        // 因為寫入失敗若時遇到硬碟空間不足時，若用e.printStackTrace()寫errorLog遞迴lock
+        // Maybe has the deadlock, if use e.printStackTrace() when has not enough space.
         System.out.println(Utility.get().getThrowableDetail(e));
       }
     }
   }
 
   /**
-   * 寫日誌到檔案，並且逐自動跳行.
+   * Will have text wraps automatically when write the log into file.
    *
    * @param str log
    */
@@ -149,9 +151,9 @@ public class LogRecord {
   }
 
   /**
-   * 取得日誌檔名.
+   * Get the file name of the Log file.
    *
-   * @return file
+   * @return file name of the Log file
    */
   public File getLogFile() {
     return logFileName;
@@ -162,17 +164,17 @@ public class LogRecord {
   }
 
   /**
-   * 設定日誌檔大小限制.
+   * Setting the limit size of Log file.
    *
-   * @param space 數量
-   * @param unit 空間的單位
+   * @param space numbers in unit
+   * @param unit the unit of space
    */
   public void setMaxFileSize(long space, SpaceUnit unit) {
     maxFileSize = SpaceUnit.Bytes.convert(space, unit);
   }
 
   /**
-   * 檢查日誌檔大小限制，是否還有剩餘空間可寫入.(預設無限制)
+   * Can it write in, after checking the storage space remaining?. Default：Infinity
    *
    * @return Returns true when storage space remaining.
    */
@@ -184,12 +186,12 @@ public class LogRecord {
     return false;
   }
 
-  /** 空間不夠寫入log時會呼叫. */
+  /** It will be called on, when has not enough storage space remaining. */
   public static interface OnNotEnoughSpaceListener {
     /**
-     * 空間不夠寫入log時會呼叫.
+     * It will be called on, when has not enough storage space remaining.
      *
-     * @param logRootFolder .
+     * @param logRootFolder the Folder path of the Log
      */
     public void onNotEnoughSpace(File logRootFolder);
   }

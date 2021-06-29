@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import org.xerial.snappy.SnappyInputStream;
 
 /**
- * 採用snappy方式讀取文字檔案.
+ * Use snappy to read text files.
  *
  * @author Ray Li
  */
@@ -18,10 +18,10 @@ public class SnappyFileStringInput implements StringInput {
   private SnappyInputStream compressionInputStream;
 
   /**
-   * .
+   * Initialize.
    *
-   * @param file 要壓縮的檔案
-   * @param charset 檔案編碼格式
+   * @param file source format
+   * @param charset file charset
    */
   public SnappyFileStringInput(File file, String charset) {
     try {

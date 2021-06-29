@@ -9,13 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.naming.NamingException;
-import ra.net.nio.Data;
 import ra.net.nio.DataNetService;
 import ra.net.nio.PackageHandleOutput;
 import ra.net.processor.CommandProcessorListener;
 import ra.net.processor.CommandProcessorProvider;
 import ra.net.processor.DataNetCommandProvider;
 import ra.net.processor.NetCommandProvider;
+import ra.net.request.Request;
 import ra.util.annotation.Configuration;
 import ra.util.annotation.ServerApplication;
 
@@ -185,7 +185,8 @@ public class NetServerApplication implements NetServiceProvider {
     int poolSize = application.configuration.getPropertyAsInt("server.netservice.max-threads", 200);
     int port = application.configuration.getPropertyAsInt("server.port", 20000);
     ServerApplication annotation = source.getAnnotation(ServerApplication.class);
-    Class<? extends CommandProcessorProvider<?>> commandProviderClass = annotation.serviceMode();
+    Class<? extends CommandProcessorProvider<? extends Request>> commandProviderClass =
+        annotation.serviceMode();
     ServerSocket serverSocket = null;
 
     System.out.printf(
@@ -200,7 +201,7 @@ public class NetServerApplication implements NetServiceProvider {
           "ServerSocket not initialize, port = " + port + ",poolSize=" + poolSize + ".", e);
     }
 
-    CommandProcessorProvider<?> providerObject = null;
+    CommandProcessorProvider<? extends Request> providerObject = null;
     try {
       providerObject = commandProviderClass.getDeclaredConstructor().newInstance();
     } catch (Exception e) {
@@ -250,7 +251,7 @@ public class NetServerApplication implements NetServiceProvider {
       service.setCommandProcessorProvider(
           new NetCommandProvider() {
             @Override
-            public CommandProcessorListener<String> createCommand() {
+            public CommandProcessorListener<NetService.NetRequest> createCommand() {
               return commandProvider.createCommand();
             }
 
@@ -290,7 +291,7 @@ public class NetServerApplication implements NetServiceProvider {
             .setCommandProcessorProvider(
                 new DataNetCommandProvider() {
                   @Override
-                  public CommandProcessorListener<Data> createCommand() {
+                  public CommandProcessorListener<DataNetService.NetDataRequest> createCommand() {
                     return commandProvider.createCommand();
                   }
 

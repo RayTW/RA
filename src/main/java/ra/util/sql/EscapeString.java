@@ -17,8 +17,8 @@ public class EscapeString {
    * around table and row identifiers. If this function returns null than the result should be
    * changed to "NULL" without any quote or backtick.
    *
-   * @param str 要進行SQL Injection的字串
-   * @return 經過SQL Injection處理後的字串
+   * @param str Waiting to protect against SQL Injection`s String
+   * @return finished to protect against SQL Injection`s String
    */
   public static String mysqlRealEscapeString(String str) {
     if (str == null) {
@@ -44,8 +44,8 @@ public class EscapeString {
   /**
    * Escape data to protected against SQL Injection.
    *
-   * @param str 要進行SQL Injection的字串
-   * @return 經過SQL Injection處理後的字串
+   * @param str Waiting to protect against SQL Injection`s String
+   * @return finished to protect against SQL Injection`s String
    * @throws Exception Exception
    */
   public static String quote(String str) throws Exception {
@@ -58,8 +58,8 @@ public class EscapeString {
   /**
    * Escape identifier to protected against SQL Injection.
    *
-   * @param str 要進行SQL Injection的字串
-   * @return 經過SQL Injection處理後的字串
+   * @param str Waiting to protect against SQL Injection`s String
+   * @return finished to protect against SQL Injection`s String
    * @throws Exception .
    */
   public static String nameQuote(String str) throws Exception {

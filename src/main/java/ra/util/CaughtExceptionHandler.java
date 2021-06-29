@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import ra.db.parameter.MysqlParameters;
 
 /**
- * 用於觀察process裡有呼叫Exception.printStackTrace()的log.
+ * It is used to observe the log of calling Exception.printStackTrace() in the process.
  *
  * @author Ray Li
  */
@@ -57,7 +57,7 @@ public class CaughtExceptionHandler {
   }
 
   /**
-   * 取得Singleton的CaughtExceptionHandler.
+   * Returns instance of {@link CaughtExceptionHandler}.
    *
    * @return Returns instance of {@link CaughtExceptionHandler}
    */
@@ -78,23 +78,23 @@ public class CaughtExceptionHandler {
   }
 
   /**
-   * 觸發這個事件傾聽者清況如下.:
+   * The following situations will trigger events:.
    *
    * <pre>
-   * 1.使用System.err.println(..)時
-   * 2.使用 {@link MysqlParameters.Builder#setProfileSql(boolean)} 功能並且參數為true時
+   * 1.When use System.err.println(..)
+   * 2.When use {@link MysqlParameters.Builder#setProfileSql(boolean)} set true.
    * </pre>
    *
-   * @param listener 將console取得的訊息透過listener拋出
+   * @param listener error
    */
   public void setErrorConsoleOutputListener(Consumer<String> listener) {
     errorConsoleOutputListener = listener;
   }
 
   /**
-   * 取得錯誤訊息的詳細資料.
+   * Returns details of the error message.
    *
-   * @param e 要被解折的Throwable
+   * @param e Throwable
    * @return stack trance
    */
   public String getThrowableDetail(Throwable e) {

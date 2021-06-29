@@ -11,7 +11,7 @@ import ra.net.Sendable;
 import ra.net.Serviceable;
 
 /**
- * 將要傳送的訊息排queue 每100毫秒檢查1次.
+ * Provide sent message use queue.
  *
  * @author Ray Li
  */
@@ -22,17 +22,17 @@ public class Sender<E> extends Thread implements Sendable<Data> {
   private List<Data> queue = Collections.synchronizedList(new ArrayList<Data>(4096));
   private Socket socket;
   private BufferedOutputStream bufferedOutputStream;
-  private int timeOut = 0; // 發送完訊息後，會對socket setSoTimeout(mTimeOut);
+  private int timeOut = 0;
   private boolean sendClose = false;
 
   /**
    * Initialize.
    *
-   * @param listener 用來發送Close的事件
-   * @param transferListener 發送資料用
-   * @param socket 連線元件
-   * @param timeout Time Out時間
-   * @throws IOException 建立BufferedOutputStream失敗時拋出
+   * @param listener close event
+   * @param transferListener transfer
+   * @param socket connection
+   * @param timeout connection read timeout
+   * @throws IOException Throw IOException when the connection failed.
    */
   public Sender(Serviceable<E> listener, Transfer transferListener, Socket socket, int timeout)
       throws IOException {
@@ -43,8 +43,8 @@ public class Sender<E> extends Thread implements Sendable<Data> {
     bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
   }
 
-  /** 清空Que裡存放的資料. */
-  public void clearQue() {
+  /** Clear message queue. */
+  public void clearQueue() {
     try {
       queue.clear();
     } catch (Exception e) {
@@ -52,7 +52,7 @@ public class Sender<E> extends Thread implements Sendable<Data> {
     }
   }
 
-  /** 清空queue並停止送訊息thread. */
+  /** Close and clear message queue. */
   public void close() {
     isRunning = false;
     try {
@@ -71,7 +71,7 @@ public class Sender<E> extends Thread implements Sendable<Data> {
       while (queue.size() > 0) {
         try {
           msg = queue.get(0);
-          sendDataThread(msg);
+          flushData(msg);
           queue.remove(0);
 
         } catch (Exception e) {
@@ -98,8 +98,8 @@ public class Sender<E> extends Thread implements Sendable<Data> {
       }
     }
 
-    flushQue();
-    clearQue();
+    flushQueue();
+    clearQueue();
     release();
   }
 
@@ -126,9 +126,9 @@ public class Sender<E> extends Thread implements Sendable<Data> {
   }
 
   /**
-   * 傳送資料.
+   * Send data.
    *
-   * @param data 要發送的資料
+   * @param data text or file
    */
   @Override
   public void send(Data data) {
@@ -138,15 +138,14 @@ public class Sender<E> extends Thread implements Sendable<Data> {
     }
   }
 
-  // 送完資料後自動斷線
+  /** Close sender after sending data. */
   @Override
   public void sendClose(Data data) {
     send(data);
     sendClose = true;
   }
 
-  // 將資料送出
-  private void sendDataThread(Data data) throws Exception {
+  private void flushData(Data data) throws Exception {
     // data transfer to bytes
     transferListener.transfer(
         data,
@@ -161,15 +160,15 @@ public class Sender<E> extends Thread implements Sendable<Data> {
         });
   }
 
-  // 若socket還未斷線，將queue裡的訊息send
-  private void flushQue() {
+  // If the socket is not disconnected, send the message in the queue.
+  private void flushQueue() {
     Data msg;
     while (queue.size() > 0) {
       try {
         msg = queue.get(0);
-        sendDataThread(msg);
+        flushData(msg);
         queue.remove(0);
-      } catch (Exception e) { // 若送出訊息發生IOException則不繼續執行清queue
+      } catch (Exception e) {
         e.printStackTrace();
         break;
       }
@@ -178,9 +177,9 @@ public class Sender<E> extends Thread implements Sendable<Data> {
   }
 
   /**
-   * 取得ip.
+   * Returns IP address of client.
    *
-   * @return ip
+   * @return IP address
    */
   public String getIp() {
     if (socket != null) {
@@ -190,10 +189,10 @@ public class Sender<E> extends Thread implements Sendable<Data> {
   }
 
   /**
-   * 設定timeout時間.
+   * Enable/disable SO_TIMEOUT with the specified timeout, in milliseconds.
    *
-   * @param timeout .
-   * @throws SocketException 設定失敗時拋出
+   * @param timeout timeout
+   * @throws SocketException SocketException
    */
   public void setSoTimeout(int timeout) throws SocketException {
     if (socket != null) {

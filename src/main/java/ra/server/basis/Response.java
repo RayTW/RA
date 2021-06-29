@@ -50,11 +50,11 @@ public class Response {
   }
 
   /**
-   * 記錄錯誤的request log，發送錯誤訊息並斷開client連線.
+   * Disconnect the client connection after sending the error message and record logging.
    *
    * @param request 收到的request內容
-   * @param code 錯誤的code碼
-   * @param message 錯誤訊息
+   * @param code error code
+   * @param message error message
    */
   public void sendErrorClose(String request, int code, String message) {
     sendAdapter.sendErrorClose(request, code, message, index);

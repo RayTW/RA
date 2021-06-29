@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import ra.net.processor.CommandProcessorProvider;
 import ra.net.processor.NetCommandProvider;
+import ra.net.request.Request;
 
 /**
  * When tag member field as Quote annotation, the field will execute escape string.
@@ -22,5 +23,6 @@ public @interface ServerApplication {
    *
    * @return default {@link NetCommandProvider}
    */
-  Class<? extends CommandProcessorProvider<?>> serviceMode() default NetCommandProvider.class;
+  Class<? extends CommandProcessorProvider<? extends Request>> serviceMode() default
+      NetCommandProvider.class;
 }

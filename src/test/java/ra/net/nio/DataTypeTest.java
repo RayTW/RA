@@ -19,23 +19,23 @@ public class DataTypeTest {
   }
 
   @Test
-  public void testValueOfUsingZip() {
+  public void testValueOfUsingFile() {
     DataType type = DataType.valueOf(0x0010);
 
-    assertEquals(DataType.ZIP, type);
+    assertEquals(DataType.FILE, type);
   }
 
   @Test
   public void testCopyToBytes() {
     byte[] data = new byte[2];
-    DataType.copyToBytes(data, DataType.ZIP.getType());
+    DataType.copyToBytes(data, DataType.FILE.getType());
 
     assertArrayEquals(new byte[] {0x00, 0x10}, data);
   }
 
   @Test
   public void testToInt() {
-    assertEquals(DataType.ZIP.getType(), DataType.toInt(new byte[] {0x00, 0x10}));
+    assertEquals(DataType.FILE.getType(), DataType.toInt(new byte[] {0x00, 0x10}));
   }
 
   @Test

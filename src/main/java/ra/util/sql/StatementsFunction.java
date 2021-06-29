@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import ra.util.TernaryFunction;
 
 /**
- * .
+ * Statements function.
  *
  * @author Ray Li
  */

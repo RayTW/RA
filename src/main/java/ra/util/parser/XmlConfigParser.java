@@ -12,7 +12,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 /**
- * 解析XML格式的檔案設定檔.
+ * A lightweight set of re-usable functions for general purpose parsing. support XML parsing styles.
  *
  * @author Ray Li
  */
@@ -21,7 +21,8 @@ public class XmlConfigParser implements ConfigParser {
   public XmlConfigParser() {}
 
   /**
-   * 把path的xml檔案各欄位讀取後存入clazz對應的類別成員變數，用法如下:
+   * Setting value into the variable which below the Class, after reading the file that is earmarked
+   * path. This can be used in the following example:
    *
    * <pre>{@code
    * public static void initConfig(String path) {
@@ -31,8 +32,8 @@ public class XmlConfigParser implements ConfigParser {
    *
    * <p>.
    *
-   * @param clazz .
-   * @param path .
+   * @param clazz plan to be used Class
+   * @param path earmarked xml file path
    */
   @Override
   public void fill(Class<?> clazz, String path) {
@@ -40,7 +41,8 @@ public class XmlConfigParser implements ConfigParser {
   }
 
   /**
-   * 把path的xml檔案各欄位讀取後存入clazz對應的類別成員變數，用法如下:
+   * Setting value into the variable which below the Class, after reading the file that is earmarked
+   * path. This can be used in the following example:
    *
    * <pre>{@code
    * public static void initConfig(String path) {
@@ -48,11 +50,13 @@ public class XmlConfigParser implements ConfigParser {
    * }
    * }</pre>
    *
-   * <p>.
+   * <p>. Skip reading the variable which was tag true,or throw Exception when it`s exists and was
+   * tag false
    *
-   * @param clazz .
-   * @param path .
-   * @param igonreException 忽略錯誤，若為true時，有某個欄位未設定會繼續往下一個欄位讀取，為flase則會拋出Exception
+   * @param clazz plan to be used Class
+   * @param path earmarked xml file path
+   * @param igonreException Skip reading the variable which was tag true, or throw an Exception when
+   *     it´s exists any error and was tag false
    */
   @Override
   public void fill(Class<?> clazz, String path, boolean igonreException) {

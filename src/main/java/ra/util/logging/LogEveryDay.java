@@ -7,20 +7,20 @@ import ra.util.SpaceUnit;
 import ra.util.compression.CompressionMode;
 
 /**
- * 會用每天日期當檔名進行寫檔，開檔後會保持io不會重複開關寫檔串流.
- *
- * <p>機制如下: 1.寫檔採用LogRecord，有file I/O reuse 2.每次呼叫 write(String str)或writeln(String
- * str)寫log時，會檢查日期是否有變動，若變動將會以新日期為log檔名
+ * Using the Date to create a file every day, which be used to write Log. the following action: Keep
+ * the file I/O connection and will not close the file I/O connection when writing log into a file,
+ * after creating the Log file by earmark file name. Using the new Date to write a log, when the
+ * Date is changed.
  *
  * @author Ray Li
  */
 public class LogEveryDay {
-  // 寫檔用
+  // Object of writing log
   private LogRecord logRecord;
   private SimpleDateFormat simpleDateFormat;
-  // log的存檔格式
+  // The Character encoding of Log file
   private String charset;
-  // log壓縮設定
+  // The Compression Mode of Log file
   private CompressionTimeUnit compressionTimeUnit;
   private CompressionMode compressionMode;
   private ReentrantLock lock = new ReentrantLock();
@@ -29,9 +29,9 @@ public class LogEveryDay {
   /**
    * .
    *
-   * @param enable 關/開log是否寫檔
-   * @param setting 日誌相關設定值
-   * @param charset 文字編碼
+   * @param enable enable of write log into Log file
+   * @param setting settings of Log Object
+   * @param charset The Character encoding of Log file
    */
   public LogEveryDay(boolean enable, LogSettings setting, String charset) {
     if (setting != null) {
@@ -57,7 +57,7 @@ public class LogEveryDay {
   }
 
   /**
-   * 取得今天年、月、日(Not Thread-Safe).
+   * Get Year、Month、Day of Today(Not Thread-Safe).
    *
    * @return current date
    */
@@ -66,7 +66,7 @@ public class LogEveryDay {
   }
 
   /**
-   * 以今天日期生成檔案名稱(Not Thread-Safe).
+   * Using the current date as file name to create a file(Not Thread-Safe).
    *
    * @return current date as file name
    */
@@ -74,7 +74,10 @@ public class LogEveryDay {
     return getCurrentDate() + "." + compressionMode.getFilenameExtension();
   }
 
-  /** 檢查是否日期有變動、若變動將會關閉舊檔，開新檔案繼續寫檔(Not Thread-Safe). */
+  /**
+   * Using the new current date as the file name to open a file, when the current date to be
+   * changed.(Not Thread-Safe).
+   */
   private void checkDoChangedDay() {
     if (!logRecord.getLogFile().getName().equals(generateFileName())) {
       logRecord.close();
@@ -83,9 +86,9 @@ public class LogEveryDay {
   }
 
   /**
-   * 寫日誌到檔案.
+   * Write log into the Log file.
    *
-   * @param str 要記錄的訊息
+   * @param str message which needs to be record
    */
   public void write(String str) {
     if (logEnable) {
@@ -100,9 +103,9 @@ public class LogEveryDay {
   }
 
   /**
-   * 寫日誌到檔案，並且逐自動跳行..
+   * Will have text wraps automatically when write the log into file.
    *
-   * @param str 要記錄的訊息
+   * @param str message which needs to be record
    */
   public void writeln(String str) {
     if (logEnable) {
@@ -117,11 +120,11 @@ public class LogEveryDay {
   }
 
   /**
-   * 寫日誌到檔案，並且逐自動跳行.
+   * Will have text wraps automatically when write the log into file.
    *
-   * @param tag 記錄時要串上的標識訊息
-   * @param message 要記錄的訊息
-   * @param index 索引值
+   * @param tag The Tag Message to add in the head
+   * @param message message which needs to be record
+   * @param index index value
    */
   public void writeln(String tag, String message, int index) {
     if (logEnable) {
@@ -130,10 +133,10 @@ public class LogEveryDay {
   }
 
   /**
-   * .
+   * Will have text wraps automatically when write the log into file.
    *
-   * @param tag 記錄時要串上的標識訊息
-   * @param message 要記錄的訊息
+   * @param tag The Tag Message to add in the head
+   * @param message message which needs to be record
    */
   public void writeln(String tag, String message) {
     if (logEnable) {
@@ -142,10 +145,10 @@ public class LogEveryDay {
   }
 
   /**
-   * 設定日誌檔大小限制.
+   * Setting the limit size of Log file.
    *
-   * @param space 數量
-   * @param unit 空間的單位值
+   * @param space numbers in unit
+   * @param unit the unit of space
    */
   public void setMaxFileSize(long space, SpaceUnit unit) {
     logRecord.setMaxFileSize(space, unit);

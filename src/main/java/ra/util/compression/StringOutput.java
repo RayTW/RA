@@ -3,7 +3,7 @@ package ra.util.compression;
 import java.io.IOException;
 
 /**
- * 輸出字串.
+ * Write string.
  *
  * @author Ray Li
  */
