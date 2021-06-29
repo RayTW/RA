@@ -3,19 +3,29 @@ package ra.mock.server.basis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Test;
 import ra.net.MessageSender;
 import ra.net.User;
 import ra.server.basis.SenderAdapter;
+import ra.util.Utility;
 import ra.util.logging.LogEveryDay;
 import ra.util.logging.LogSettings;
 
 /** Test class. */
 public class SenderAdapterTest {
+  private static String filePath = "./log/loggingTest";
   LogEveryDay mockLog = getMockLog();
+
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception {
+    Utility.get().deleteFiles("./log/");
+  }
 
   @Test
   public void testBroadcast() {
@@ -148,7 +158,6 @@ public class SenderAdapterTest {
   }
 
   private LogEveryDay getMockLog() {
-    String filePath = "./log/loggingTest";
     LogSettings setting = new LogSettings();
 
     setting.setPath(filePath);
