@@ -20,7 +20,7 @@ public interface RecordCursor extends Closeable {
   /**
    * Get name of table fields.
    *
-   * @param action consumer
+   * @param action Consumer
    */
   public void fieldNames(Consumer<String> action);
 
@@ -35,7 +35,7 @@ public interface RecordCursor extends Closeable {
   /**
    * Use field name returns a value.
    *
-   * @param name name of field
+   * @param name Field name
    * @return value
    */
   public String field(String name);
@@ -43,71 +43,71 @@ public interface RecordCursor extends Closeable {
   /**
    * Use field name returns a value.
    *
-   * @param name field name
-   * @param charset charset, etc : utf8
+   * @param name Field name
+   * @param charset Charset, etc : utf8
    * @return value
    */
   public String field(String name, String charset);
 
   /**
-   * Get the field value of the data pen of the specified field name. If the queried field is null,
-   * return the feedback.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
-   * @param lang charset, etc : utf8
+   *
+   * @param name Field name
+   * @param lang Charset, etc : utf8
    * @param feedback Return the feedback when if get value of the field is null.
    * @return value
    */
   public String field(String name, String lang, String feedback);
 
   /**
-   * Get value of specific name.
+   * Get value by specified name.
    *
-   * @param name field name
-   * @param cursor record cursor
+   * @param name Field name
+   * @param cursor Record cursor
    * @return value
    */
   public String field(String name, int cursor);
 
   /**
-   * Get value from the specific field name, and if field value is null will return null.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
+   * @param name Field name
    * @return value
    */
   public String optField(String name);
 
   /**
-   * Get value from the specific field name, and if field value is null will return null.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
-   * @param cursor record cursor
+   * @param name Field name
+   * @param cursor Record cursor
    * @return value
    */
   public String optField(String name, int cursor);
 
   /**
-   * Get value from the specific field name, and if field value is null will return null.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
-   * @param lang record cursor
+   * @param name Field name
+   * @param lang Record cursor
    * @return value
    */
   public String optField(String name, String lang);
 
   /**
-   * Get value from the specific field name, and if field value is null will return null.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
+   * @param name Field name
    * @param feedback Return the feedback when if get value of the field is null.
    * @return value
    */
   public String fieldFeedback(String name, String feedback);
 
   /**
-   * Get value from the specific field name, and if field value is null will return null.
+   * Get value by specified field name. If field value is null will return null.
    *
-   * @param name field name
+   * @param name Field name
    * @return bytes
    */
   public byte[] fieldBytes(String name);
@@ -155,19 +155,19 @@ public interface RecordCursor extends Closeable {
   /**
    * Get each row data from the record.
    *
-   * @param action row of record
+   * @param action Row of record
    */
   public void forEach(Consumer<RowSet> action);
 
   /**
-   * Return the ordered stream of the number of data after the query is completed.
+   * Return ordered stream of the number of data after the query is completed.
    *
    * @return Stream
    */
   public Stream<RowSet> stream();
 
   /**
-   * Return the parallel stream of the number of data after the query is completed.
+   * Return parallel stream of the number of data after the query is completed.
    *
    * @return Stream
    */
