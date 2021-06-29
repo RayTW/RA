@@ -160,9 +160,9 @@ public class MockStatementExecutor extends StatementExecutor {
   }
 
   /**
-   * Setting all the column name into the fake table.
+   * Setting all column name into the fake table.
    *
-   * @param columnsName The List exists all the column name in the fake table.
+   * @param columnsName The list contains all the column names in the fake table.
    */
   public void setFakeQueryColumnsNameList(List<String> columnsName) {
     if (columnsName != null) {

@@ -23,7 +23,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   /**
    * Load driver.
    *
-   * @param param The connection database parameters.
+   * @param param The parameters of database connect setting.
    */
   public default void loadDriveInstance(DatabaseParameters param) {
     try {
@@ -47,9 +47,9 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   }
 
   /**
-   * Try get a database connection from database pool.
+   * Try to get a database connection from database pool.
    *
-   * @param param The connection database parameters.
+   * @param param The parameters of database connect setting.
    * @return {@link Connection}
    * @throws SQLException SQLException
    * @throws ConnectException ConnectException
@@ -80,8 +80,8 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   /**
    * Try to execute SQL (INSERT,UPDATE,DELETE) statements.
    *
-   * @param sql statements
-   * @param listener exception
+   * @param sql Statements
+   * @param listener Exception
    * @return Execute success count.
    */
   public default int tryExecute(String sql, Consumer<Exception> listener) {
@@ -113,10 +113,10 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   }
 
   /**
-   * If Database connection connected return {@link StatementExecutor}.
+   * If database connection connected return {@link StatementExecutor}.
    *
-   * @param executor executor
-   * @return If connected return true.
+   * @param executor Executor
+   * @return If connected return TRUE.
    */
   public default boolean connectIf(Consumer<StatementExecutor> executor) {
     if (connect()) {
@@ -125,9 +125,9 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
     }
     return false;
   }
-
+  
   /**
-   * Get the connection state.
+   * Get the connection state. 
    *
    * @return Connection state.
    */
@@ -136,7 +136,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
   public abstract DatabaseParameters getParam();
 
   /**
-   * Get the current database connection.
+   * Get current database connection.
    *
    * @return Database original connection.
    */
@@ -147,7 +147,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
 
   public abstract boolean isLive();
 
-  /** Get the current database connection. */
+  /** Get current database connection. */
   public static interface ConnectionFunction {
     public abstract int applay(Connection connection) throws SQLException, ConnectException;
   }

@@ -25,7 +25,7 @@ public class OnceDatabaseFactory {
   }
 
   /**
-   * Get once database connection will close after use.
+   * Get once database connection, It will be close after use.
    *
    * @param comsumer Get {@link StatementExecutor}
    */
@@ -43,7 +43,7 @@ public class OnceDatabaseFactory {
   }
 
   /**
-   * Get the current connection count.
+   * Get current connection count.
    *
    * @return connection count
    */

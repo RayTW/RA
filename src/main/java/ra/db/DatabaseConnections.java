@@ -49,7 +49,7 @@ public class DatabaseConnections {
   /**
    * Create the Connect Object are kept connected. Connect Object are Thread-safe.
    *
-   * @param param Parameters of Database connect setting.
+   * @param param The parameters of database connect setting.
    * @param count Kept connections count by the same database.
    */
   public void connectConcurrentConnection(DatabaseParameters param, int count) {
@@ -63,7 +63,7 @@ public class DatabaseConnections {
   /**
    * There is non lock when executes SQL, probable return error results when execute insert.
    *
-   * @param param Parameters of Database connect setting.
+   * @param param The parameters of database connect setting.
    * @param count Kept connections count by the same database.
    */
   public void connectOriginalConnection(DatabaseParameters param, int count) {
@@ -77,10 +77,10 @@ public class DatabaseConnections {
   /**
    * Create Kept connections.
    *
-   * @param param Parameters of Database connect setting.
+   * @param param The parameters of database connect setting.
    * @param count Kept connections count by the same database.
-   * @param newDbObj Need to be Used Database Connect Object.
-   * @throws Exception Throwable Any Exception, Throw the ConnectException when connect fail.
+   * @param newDbObj Need to be used database connect Object.
+   * @throws Exception Throwable any exception, Throw the ConnectException when connect fail.
    */
   public void connect(DatabaseParameters param, int count, Callable<DatabaseConnection> newDbObj)
       throws Exception {
@@ -131,7 +131,7 @@ public class DatabaseConnections {
     return dbHolders.get(index).dbConnection;
   }
 
-  /** Close all the Database connection. */
+  /** Close all database connection. */
   public void close() {
     for (DatabaseConnectionHolder db : dbHolders) {
       try {
