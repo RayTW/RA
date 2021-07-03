@@ -1,4 +1,4 @@
-name: CI with Gradle
+name: Publishing to maven central
 
 on:
   workflow_dispatch:
