@@ -1,9 +1,9 @@
 package ra.util;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Helper class for handling a most common subset of ISO 8601 strings (in the following format:
@@ -13,13 +13,8 @@ import java.util.Date;
  * @author Ray Li(editor)
  */
 public final class Iso8601 {
-  private static final ThreadLocal<SimpleDateFormat> sThreadLocal =
-      new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-          return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        }
-      };
+  private static final SimpleDateFormatThreadSafe dateFormate =
+      new SimpleDateFormatThreadSafe("yyyy-MM-dd'T'HH:mm:ssZ", TimeZone.getTimeZone("Asia/Taipei"));
 
   /**
    * Transform Date to ISO 8601 string.
@@ -41,7 +36,7 @@ public final class Iso8601 {
    * @return data string
    */
   public static String fromDate(Date date, boolean colon) {
-    String formatted = sThreadLocal.get().format(date);
+    String formatted = dateFormate.format(date);
     return formatted.substring(0, 22) + (colon ? ":" : "") + formatted.substring(22);
   }
 
@@ -108,7 +103,7 @@ public final class Iso8601 {
       }
     }
 
-    Date date = sThreadLocal.get().parse(s);
+    Date date = dateFormate.parse(s);
     calendar.setTime(date);
     return calendar;
   }
@@ -131,7 +126,7 @@ public final class Iso8601 {
       throw new ParseException("Invalid length", 0);
     }
 
-    return sThreadLocal.get().parse(s);
+    return dateFormate.parse(s);
   }
 
   private static boolean hasColon(String iso8601string) {

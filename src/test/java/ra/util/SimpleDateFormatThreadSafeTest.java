@@ -58,17 +58,20 @@ public class SimpleDateFormatThreadSafeTest {
 
   @Test
   public void testParse() throws ParseException {
-    SimpleDateFormatThreadSafe obj = new SimpleDateFormatThreadSafe("yyyy-MM-dd HH:mm:ss.SSS");
+    SimpleDateFormatThreadSafe obj =
+        new SimpleDateFormatThreadSafe(
+            "yyyy-MM-dd HH:mm:ss.SSS", TimeZone.getTimeZone("Asia/Taipei"));
 
     long time = obj.parse("2020-04-10 15:42:50.770").getTime();
 
-    System.out.println("time[" + time + "],1586504570770L");
     assertEquals(1586504570770L, time);
   }
 
   @Test
   public void testToPattern() {
-    SimpleDateFormatThreadSafe obj = new SimpleDateFormatThreadSafe("yyyy-MM-dd HH:mm:ss.SSS");
+    SimpleDateFormatThreadSafe obj =
+        new SimpleDateFormatThreadSafe(
+            "yyyy-MM-dd HH:mm:ss.SSS", TimeZone.getTimeZone("Asia/Taipei"));
 
     assertEquals("yyyy-MM-dd HH:mm:ss.SSS", obj.toPattern());
   }
