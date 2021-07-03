@@ -13,7 +13,7 @@ public class XmlConfigParserTest {
 
   @Test
   public void testInitConfigClass() {
-    new XmlConfigParser().fill(ConfigXml.class, "unittest/Config.xml");
+    new XmlConfigParser().fill(ConfigXml.class, "unittest/config.xml");
 
     assertEquals("單元測試", ConfigXml.SERVER_ALIAS);
     assertEquals(12345, ConfigXml.SOCKET_PORT);
@@ -28,7 +28,7 @@ public class XmlConfigParserTest {
 
   @Test
   public void testInitConfigClassUsingIgonreException() {
-    new XmlConfigParser().fill(ConfigXml.class, "unittest/Config.xml", true);
+    new XmlConfigParser().fill(ConfigXml.class, "unittest/config.xml", true);
 
     assertEquals("單元測試", ConfigXml.SERVER_ALIAS);
     assertEquals(12345, ConfigXml.SOCKET_PORT);
@@ -43,7 +43,7 @@ public class XmlConfigParserTest {
 
   @Test
   public void testInitConfigClassInvalidValue() {
-    new XmlConfigParser().fill(ConfigErrorXml.class, "unittest/ConfigError.xml", false);
+    new XmlConfigParser().fill(ConfigErrorXml.class, "unittest/configError.xml", false);
 
     assertEquals(0, ConfigErrorXml.LONG_VALUE);
   }
@@ -56,7 +56,7 @@ public class XmlConfigParserTest {
             (clazz) -> {
               return null;
             },
-            "unittest/Config.xml",
+            "unittest/config.xml",
             false);
   }
 

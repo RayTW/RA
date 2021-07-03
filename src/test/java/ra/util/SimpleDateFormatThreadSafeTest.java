@@ -62,6 +62,7 @@ public class SimpleDateFormatThreadSafeTest {
 
     long time = obj.parse("2020-04-10 15:42:50.770").getTime();
 
+    System.out.println("time[" + time + "],1586504570770L");
     assertEquals(1586504570770L, time);
   }
 

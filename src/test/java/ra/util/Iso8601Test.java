@@ -42,6 +42,8 @@ public class Iso8601Test {
     Date date = new Date(1542245787000L);
     String actual = Iso8601.fromDate(date);
 
+    System.out.println("expected[" + expected + "],actual[" + actual + "]");
+
     Assert.assertEquals(expected, actual);
   }
 
