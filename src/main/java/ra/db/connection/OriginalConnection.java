@@ -75,6 +75,7 @@ public class OriginalConnection implements DatabaseConnection {
       startThread = true;
       return true;
     } catch (Exception e) {
+      e.printStackTrace();
       volatileIsLive = false;
     }
     return false;
