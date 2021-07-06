@@ -59,6 +59,7 @@ public class OnceConnection implements DatabaseConnection {
       isLive = true;
       return true;
     } catch (Exception e) {
+      e.printStackTrace();
       isLive = false;
 
       return false;
