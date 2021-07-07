@@ -1,0 +1,37 @@
+name: Upload coverage reports
+
+on:
+    push:
+      branches:
+        - actionCoverage
+        - develop
+        - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          distribution: 'adopt-openj9'
+          java-version: 8
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - uses: actions/checkout@master
+      - uses: codecov/codecov-action@v1
+      with:
+      token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+      files: build/customJacocoReportDir/test/jacocoTestReport.xml  # optional
+      flags: unittests # optional
+      name: codecov-umbrella # optional
+      fail_ci_if_error: true # optional (default = false)
+      verbose: true # optional (default = false)
