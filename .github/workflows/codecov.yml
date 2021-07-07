@@ -1,10 +1,14 @@
-name: Upload coverage reports
-
-on: push
-
+name: 'Upload coverage reports'
+on:
+    push:
+      branches:
+        - actionCoverage
+        - develop
+        - main
 jobs:
-  build:
+  coverage:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@master
       - uses: codecov/codecov-action@v1
