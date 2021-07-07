@@ -29,7 +29,7 @@ dependencies {
 ### Connection to MySQL database
 #### Once connection ([OnceConnection](https://raytw.github.io/RA/ra/db/connection/OnceConnection.html))
 ```java
-   MysqlParameters.Builder builder = new MysqlParameters.Builder();
+  MysqlParameters.Builder builder = new MysqlParameters.Builder();
 
   builder.setHost("127.0.0.1").setName("test").setPort(3306).setUser("ray").setPassword("raypwd");
 
