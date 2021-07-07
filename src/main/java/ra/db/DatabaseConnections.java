@@ -18,7 +18,7 @@ import ra.db.parameter.DatabaseParameters;
  */
 public class DatabaseConnections {
   private String name;
-  private List<DatabaseConnectionHolder> dbHolders;
+  private List<DatabaseConnectionHolder> connectionPool;
   private int index = 0;
   private StampedLock lock;
 
@@ -33,7 +33,7 @@ public class DatabaseConnections {
    */
   public DatabaseConnections(String name) {
     this.name = name;
-    dbHolders = new ArrayList<DatabaseConnectionHolder>();
+    connectionPool = new ArrayList<DatabaseConnectionHolder>();
     lock = new StampedLock();
   }
 
@@ -79,24 +79,24 @@ public class DatabaseConnections {
    *
    * @param param The parameters of database connect setting.
    * @param count Kept connections count by the same database.
-   * @param newDbObj Need to be used database connect Object.
+   * @param connectionMode Need to be used database connect Object.
    * @throws Exception Throwable any exception, Throw the ConnectException when connect fail.
    */
-  public void connect(DatabaseParameters param, int count, Callable<DatabaseConnection> newDbObj)
+  public void connect(
+      DatabaseParameters param, int count, Callable<DatabaseConnection> connectionMode)
       throws Exception {
-    Objects.requireNonNull(newDbObj, "newDBObj == null, newDBObj is required");
+    Objects.requireNonNull(connectionMode, "connectionMode == null, connectionMode is required");
 
     if (name == null) {
       name = param.getDatabaseUrl();
     }
 
     for (int i = 0; i < count; i++) {
-      DatabaseConnection db = newDbObj.call();
+      DatabaseConnection db = connectionMode.call();
 
-      if (db.connectIf(executor -> dbHolders.add(new DatabaseConnectionHolder(db, executor)))) {
-        System.out.println("資料庫連線[" + name + "],index[" + i + "]連線成功 !");
-      } else {
-        throw new ConnectException("資料庫連線[" + name + "],index[" + i + "]連線失敗!");
+      if (!db.connectIf(
+          executor -> connectionPool.add(new DatabaseConnectionHolder(db, executor)))) {
+        throw new ConnectException("Database name[" + name + "],index[" + i + "] connect failure!");
       }
     }
   }
@@ -113,34 +113,34 @@ public class DatabaseConnections {
     try {
       index = this.index;
       index++;
-      if (index >= dbHolders.size()) {
+      if (index >= connectionPool.size()) {
         index = 0;
       }
     } finally {
       lock.unlockWrite(stamp);
     }
 
-    return dbHolders.get(index).statementExecutor;
+    return connectionPool.get(index).statementExecutor;
   }
 
   public StatementExecutor getStatementExecutor(int index) {
-    return dbHolders.get(index).statementExecutor;
+    return connectionPool.get(index).statementExecutor;
   }
 
-  public DatabaseConnection getDbConnection(int index) {
-    return dbHolders.get(index).dbConnection;
+  public DatabaseConnection getConnection(int index) {
+    return connectionPool.get(index).dbConnection;
   }
 
   /** Close all database connection. */
   public void close() {
-    for (DatabaseConnectionHolder db : dbHolders) {
+    for (DatabaseConnectionHolder db : connectionPool) {
       try {
         db.dbConnection.close();
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
-    dbHolders.clear();
+    connectionPool.clear();
   }
 
   private static class DatabaseConnectionHolder {
