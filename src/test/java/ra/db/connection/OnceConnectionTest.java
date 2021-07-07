@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import ra.db.DatabaseConnection;
+import ra.db.DatabaseConnections;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
@@ -575,6 +576,29 @@ public class OnceConnectionTest {
       db.connect();
 
       db.keep();
+    }
+  }
+
+  @Test
+  public void testOnce() {
+    MysqlParameters.Builder builder = new MysqlParameters.Builder();
+
+    builder.setHost("127.0.0.1").setName("test").setPort(3306).setUser("ray").setPassword("raypwd");
+
+    DatabaseConnections pool = new DatabaseConnections();
+    int connectionSize = 5;
+
+    pool.connectOriginalConnection(builder.build(), connectionSize);
+
+    for (int i = 0; i < connectionSize; i++) {
+      RecordCursor record = pool.next().executeQuery("SELECT * FROM `test_table`");
+
+      record
+          .stream()
+          .forEach(
+              row -> {
+                System.out.println("name = " + row.getInt("id") + row.getString("name"));
+              });
     }
   }
 }

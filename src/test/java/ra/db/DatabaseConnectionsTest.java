@@ -47,7 +47,7 @@ public class DatabaseConnectionsTest {
     DatabaseConnections dbConnection = generateDatabaseConnections(3);
 
     try {
-      db = dbConnection.getDbConnection(0);
+      db = dbConnection.getConnection(0);
     } catch (Exception e) {
       exception = e;
     }

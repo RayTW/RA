@@ -39,7 +39,8 @@ public class MockDatabaseConnections extends DatabaseConnections {
   }
 
   @Override
-  public void connect(DatabaseParameters param, int count, Callable<DatabaseConnection> newDbObj)
+  public void connect(
+      DatabaseParameters param, int count, Callable<DatabaseConnection> connectionMode)
       throws Exception {}
 
   @Override
@@ -48,7 +49,7 @@ public class MockDatabaseConnections extends DatabaseConnections {
   }
 
   @Override
-  public DatabaseConnection getDbConnection(int index) {
+  public DatabaseConnection getConnection(int index) {
     return null;
   }
 
