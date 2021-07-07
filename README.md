@@ -1,7 +1,4 @@
 # RA
-[![Build Status](https://travis-ci.com/RayTW/RA.svg?branch=ci)](https://travis-ci.com/RayTW/RA)
-[![codecov](https://codecov.io/gh/RayTW/RA/branch/ci2/graph/badge.svg?token=QVO57XPZRK)](https://codecov.io/gh/RayTW/RA)
-
 The library provides mysql (CRUD), socket server, logging.
 
 ## Download
