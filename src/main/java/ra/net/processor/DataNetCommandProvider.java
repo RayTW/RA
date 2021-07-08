@@ -9,20 +9,20 @@ import ra.net.nio.DataNetService;
  * @author Ray Li
  */
 public class DataNetCommandProvider
-    implements CommandProcessorProvider<DataNetService.NetDataRequest> {
+    implements CommandProcessorProvider<DataNetService.DataNetRequest> {
 
   @Override
-  public CommandProcessorListener<DataNetService.NetDataRequest> createCommand() {
+  public CommandProcessorListener<DataNetService.DataNetRequest> createCommand() {
     return new DataNetCommandProcessor() {
 
       @Override
-      public void commandProcess(DataNetService.NetDataRequest request) {
+      public void commandProcess(DataNetService.DataNetRequest request) {
         receivedRequest(request);
       }
     };
   }
 
-  public void receivedRequest(DataNetService.NetDataRequest request) {
+  public void receivedRequest(DataNetService.DataNetRequest request) {
     System.out.println("data[" + request.getData() + "],request[" + request + "]");
   }
 

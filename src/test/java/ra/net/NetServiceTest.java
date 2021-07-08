@@ -212,7 +212,8 @@ public class NetServiceTest {
             .setCommandProcessorProvider(
                 new NetCommandProvider() {
 
-                  public void receivedRequest(NetService.NetRequest request) {
+                  @Override
+        public void receivedRequest(NetService.NetRequest request) {
                     actual.add(request.getText());
                     letch.countDown();
                   }

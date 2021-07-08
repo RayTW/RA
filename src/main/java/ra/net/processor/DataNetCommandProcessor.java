@@ -8,8 +8,8 @@ import ra.net.nio.DataNetService;
  * @author Ray Li
  */
 public abstract class DataNetCommandProcessor
-    implements CommandProcessorListener<DataNetService.NetDataRequest> {
+    implements CommandProcessorListener<DataNetService.DataNetRequest> {
 
   @Override
-  public void commandProcess(DataNetService.NetDataRequest request) {}
+  public void commandProcess(DataNetService.DataNetRequest request) {}
 }

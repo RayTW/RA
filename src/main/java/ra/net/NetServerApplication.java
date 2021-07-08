@@ -291,7 +291,7 @@ public class NetServerApplication implements NetServiceProvider {
             .setCommandProcessorProvider(
                 new DataNetCommandProvider() {
                   @Override
-                  public CommandProcessorListener<DataNetService.NetDataRequest> createCommand() {
+                  public CommandProcessorListener<DataNetService.DataNetRequest> createCommand() {
                     return commandProvider.createCommand();
                   }
 
