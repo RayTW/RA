@@ -42,7 +42,8 @@ public class OnceConnection implements DatabaseConnection {
    *
    * @return Connection state.
    */
-  public boolean connect() {
+  @Override
+public boolean connect() {
     try {
       DatabaseParameters param = getParam();
       Connection connectionTemp = null;
