@@ -2,9 +2,11 @@ package ra.util.compression;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Output string with file.
@@ -21,16 +23,15 @@ public class StringFileOutput implements StringOutput {
    *
    * @param file source format
    * @param charset file charset
+   * @throws UnsupportedEncodingException UnsupportedEncodingException
+   * @throws FileNotFoundException FileNotFoundException
    */
-  public StringFileOutput(File file, String charset) {
-    try {
-      fileOutputStream = new FileOutputStream(file, true);
-      outputStreamWriter = new OutputStreamWriter(fileOutputStream, charset);
+  public StringFileOutput(File file, String charset)
+      throws UnsupportedEncodingException, FileNotFoundException {
+    fileOutputStream = new FileOutputStream(file, true);
+    outputStreamWriter = new OutputStreamWriter(fileOutputStream, charset);
 
-      bufferedWriter = new BufferedWriter(outputStreamWriter);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    bufferedWriter = new BufferedWriter(outputStreamWriter);
   }
 
   @Override

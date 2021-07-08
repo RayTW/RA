@@ -2,6 +2,7 @@ package ra.util.compression;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.xerial.snappy.SnappyOutputStream;
@@ -22,16 +23,13 @@ public class SnappyFileStringOutput implements StringOutput {
    *
    * @param file source format
    * @param charset file charset
+   * @throws FileNotFoundException FileNotFoundException
    */
-  public SnappyFileStringOutput(File file, String charset) {
-    try {
-      this.charset = charset;
-      fileOutputStream = new FileOutputStream(file, true);
-      bufferedOutput = new BufferedOutputStream(fileOutputStream);
-      compressionOutputStream = new SnappyOutputStream(bufferedOutput);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public SnappyFileStringOutput(File file, String charset) throws FileNotFoundException {
+    this.charset = charset;
+    fileOutputStream = new FileOutputStream(file, true);
+    bufferedOutput = new BufferedOutputStream(fileOutputStream);
+    compressionOutputStream = new SnappyOutputStream(bufferedOutput);
   }
 
   @Override

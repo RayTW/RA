@@ -22,16 +22,13 @@ public class GzipFileStringOutput implements StringOutput {
    *
    * @param file source format
    * @param charset file charset
+   * @throws IOException IOException
    */
-  public GzipFileStringOutput(File file, String charset) {
-    try {
-      this.charset = charset;
-      fileOutputStream = new FileOutputStream(file, true);
-      bufferedOutput = new BufferedOutputStream(fileOutputStream);
-      compressionOutputStream = new GZIPOutputStream(bufferedOutput);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public GzipFileStringOutput(File file, String charset) throws IOException {
+    this.charset = charset;
+    fileOutputStream = new FileOutputStream(file, true);
+    bufferedOutput = new BufferedOutputStream(fileOutputStream);
+    compressionOutputStream = new GZIPOutputStream(bufferedOutput);
   }
 
   @Override
