@@ -14,7 +14,7 @@ public class NetCommandProviderTest {
       private boolean isReceivedRequest = false;
 
       @Override
-  public void receivedRequest(NetService.NetRequest request) {
+      public void receivedRequest(NetService.NetRequest request) {
         super.receivedRequest(request);
         isReceivedRequest = true;
       }

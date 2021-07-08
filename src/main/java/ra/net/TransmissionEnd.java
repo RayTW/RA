@@ -37,7 +37,7 @@ public class TransmissionEnd {
   }
 
   @Override
-public String toString() {
+  public String toString() {
     return string;
   }
 }

@@ -213,7 +213,7 @@ public class NetServiceTest {
                 new NetCommandProvider() {
 
                   @Override
-        public void receivedRequest(NetService.NetRequest request) {
+                  public void receivedRequest(NetService.NetRequest request) {
                     actual.add(request.getText());
                     letch.countDown();
                   }

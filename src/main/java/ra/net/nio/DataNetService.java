@@ -266,7 +266,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
 
       /** build. */
       @Override
-  public DataNetRequest build() {
+      public DataNetRequest build() {
         DataNetRequest obj = new DataNetRequest(super.build());
         obj.sender = this.sender;
         obj.data = this.data;

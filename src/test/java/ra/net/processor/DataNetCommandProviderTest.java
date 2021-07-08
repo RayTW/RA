@@ -15,7 +15,7 @@ public class DataNetCommandProviderTest {
       private boolean isReceivedRequest = false;
 
       @Override
-  public void receivedRequest(DataNetService.DataNetRequest request) {
+      public void receivedRequest(DataNetService.DataNetRequest request) {
         super.receivedRequest(request);
         isReceivedRequest = true;
       }

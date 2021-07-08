@@ -11,7 +11,7 @@ import ra.net.processor.NetCommandProvider;
 public class MockNetServiceCommand extends NetCommandProvider {
 
   @Override
-public void receivedRequest(NetService.NetRequest request) {
+  public void receivedRequest(NetService.NetRequest request) {
     System.out.println("text[" + request.getText() + "],request[" + request + "]");
   }
 }
