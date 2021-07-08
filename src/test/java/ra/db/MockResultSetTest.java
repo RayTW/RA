@@ -84,6 +84,8 @@ public class MockResultSetTest {
     Clob clob = null;
     resultSet.updateClob(0, clob);
     resultSet.updateClob("columnLabel", clob);
+    resultSet.updateClob(0, reader);
+    resultSet.updateClob("columnLabel", reader);
     resultSet.updateClob(0, reader, 0);
     resultSet.updateClob("columnLabel", reader, 0);
     resultSet.updateClob(0, reader, 0L);
