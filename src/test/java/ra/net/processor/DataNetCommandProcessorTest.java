@@ -14,7 +14,7 @@ public class DataNetCommandProcessorTest {
   public void testCommandNotEmpty() {
     String expected = "message";
 
-    DataNetService.NetDataRequest.Builder builder = new DataNetService.NetDataRequest.Builder();
+    DataNetService.DataNetRequest.Builder builder = new DataNetService.DataNetRequest.Builder();
     Data data = new Data(expected);
     builder.setData(data);
 
@@ -22,7 +22,7 @@ public class DataNetCommandProcessorTest {
         new DataNetCommandProcessor() {
 
           @Override
-          public void commandProcess(DataNetService.NetDataRequest request) {
+          public void commandProcess(DataNetService.DataNetRequest request) {
             assertArrayEquals(expected.getBytes(), request.getData().getContent());
             assertEquals(0, request.getIndex());
           }
@@ -35,7 +35,7 @@ public class DataNetCommandProcessorTest {
   public void testCommandEmpty() {
     String expected = "";
 
-    DataNetService.NetDataRequest.Builder builder = new DataNetService.NetDataRequest.Builder();
+    DataNetService.DataNetRequest.Builder builder = new DataNetService.DataNetRequest.Builder();
     Data data = new Data(expected);
     builder.setData(data);
 
@@ -43,7 +43,7 @@ public class DataNetCommandProcessorTest {
         new DataNetCommandProcessor() {
 
           @Override
-          public void commandProcess(DataNetService.NetDataRequest request) {
+          public void commandProcess(DataNetService.DataNetRequest request) {
             System.out.println("==" + request.getData().getContent());
             assertArrayEquals(expected.getBytes(), request.getData().getContent());
             assertEquals(0, request.getIndex());

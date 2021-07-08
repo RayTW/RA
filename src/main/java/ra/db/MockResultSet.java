@@ -109,6 +109,7 @@ public class MockResultSet implements ResultSet {
     return null;
   }
 
+  @Override
   @Deprecated
   public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
 
@@ -529,6 +530,7 @@ public class MockResultSet implements ResultSet {
     return null;
   }
 
+  @Override
   @Deprecated
   public InputStream getUnicodeStream(int columnIndex) throws SQLException {
 

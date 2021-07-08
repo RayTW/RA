@@ -58,7 +58,7 @@ public class DefaultRequest extends Request {
     return authorization;
   }
 
-  public void getAuthorization(String authorization) {
+  public void setAuthorization(String authorization) {
     this.authorization = authorization;
   }
 

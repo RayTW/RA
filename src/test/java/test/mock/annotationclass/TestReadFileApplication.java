@@ -10,7 +10,7 @@ import ra.net.processor.DataNetCommandProvider;
  */
 public class TestReadFileApplication extends DataNetCommandProvider {
   @Override
-  public void receivedRequest(DataNetService.NetDataRequest request) {
+  public void receivedRequest(DataNetService.DataNetRequest request) {
     request.getSender().send(request.getData());
   }
 }

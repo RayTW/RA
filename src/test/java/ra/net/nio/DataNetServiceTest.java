@@ -228,11 +228,11 @@ public class DataNetServiceTest {
   }
 
   private DataNetCommandProvider generateCommandProvider(
-      Consumer<DataNetService.NetDataRequest> consumer) {
+      Consumer<DataNetService.DataNetRequest> consumer) {
     DataNetCommandProvider provider =
         new DataNetCommandProvider() {
           @Override
-          public void receivedRequest(DataNetService.NetDataRequest request) {
+          public void receivedRequest(DataNetService.DataNetRequest request) {
             consumer.accept(request);
           }
         };

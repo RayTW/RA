@@ -1,6 +1,7 @@
 package ra.net.request;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.json.JSONObject;
@@ -63,5 +64,94 @@ public class DefaultRequestTest {
     assertEquals("1.2.3.4", request.getIp());
     assertTrue(sendResult.get());
     assertTrue(sendCloseResult.get());
+  }
+
+  @Test
+  public void testInitializeCommand() {
+    String expected = "hello command";
+    JSONObject json = new JSONObject();
+    json.put("command", expected);
+
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText(json.toString());
+    DefaultRequest request = new DefaultRequest(builder.build());
+
+    assertEquals(expected, request.getCommand());
+  }
+
+  @Test
+  public void testInitializeAuthorization() {
+    String expected = "authorization123";
+    JSONObject json = new JSONObject();
+    json.put("authorization", expected);
+
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText(json.toString());
+    DefaultRequest request = new DefaultRequest(builder.build());
+
+    assertEquals(expected, request.getAuthorization());
+  }
+
+  @Test
+  public void testCommand() {
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText("{}");
+    DefaultRequest request = new DefaultRequest(builder.build());
+    String expected = "hello command";
+    request.setCommand(expected);
+
+    assertEquals(expected, request.getCommand());
+  }
+
+  @Test
+  public void testAuthorization() {
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText("{}");
+    DefaultRequest request = new DefaultRequest(builder.build());
+    String expected = "Authorization";
+    request.setAuthorization(expected);
+
+    assertEquals(expected, request.getAuthorization());
+  }
+
+  @Test
+  public void testJson() {
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText("{}");
+    DefaultRequest request = new DefaultRequest(builder.build());
+    JSONObject json = new JSONObject();
+    json.put("test", false);
+    request.setJson(json);
+
+    assertSame(json, request.getJson());
+  }
+
+  @Test
+  public void testSource() {
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText("{}");
+    DefaultRequest request = new DefaultRequest(builder.build());
+    String expected = "source";
+    request.setSource(expected);
+
+    assertSame(expected, request.getSource());
+  }
+
+  @Test
+  public void testReciveTime() {
+    NetService.NetRequest.Builder builder = new NetService.NetRequest.Builder();
+    builder.setIndex(0);
+    builder.setText("{}");
+    DefaultRequest request = new DefaultRequest(builder.build());
+    long expected = 111;
+    request.setReciveTime(expected);
+
+    assertEquals(expected, request.getReciveTime());
   }
 }

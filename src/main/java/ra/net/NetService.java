@@ -272,6 +272,7 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
       }
 
       /** build. */
+      @Override
       public NetRequest build() {
         NetRequest obj = new NetRequest(super.build());
         obj.sender = this.sender;

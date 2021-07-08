@@ -17,12 +17,8 @@ public class MockDatabaseConnections extends DatabaseConnections {
     super(name);
   }
 
-  public void setMockRecordSet2(MockStatementExecutor mock) {
+  public void setMockStatementExecutor(MockStatementExecutor mock) {
     mockStatementExecutor = mock;
-  }
-
-  public MockStatementExecutor getMockRecordSet2() {
-    return mockStatementExecutor;
   }
 
   @Override

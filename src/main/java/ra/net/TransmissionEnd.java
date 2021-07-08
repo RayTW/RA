@@ -36,6 +36,7 @@ public class TransmissionEnd {
     return text.concat(FORM_FEED.string).concat(NEW_LINE.string);
   }
 
+  @Override
   public String toString() {
     return string;
   }

@@ -19,8 +19,8 @@ import ra.net.request.Request;
  */
 public class DataNetService extends Thread implements Serviceable<Data>, AutoCloseable {
   private ServerSocket serverSocket;
-  private CommandProcessorListener<NetDataRequest> processorListener;
-  private CommandProcessorProvider<NetDataRequest> processorProvider;
+  private CommandProcessorListener<DataNetRequest> processorListener;
+  private CommandProcessorProvider<DataNetRequest> processorProvider;
   private BufferedInputStream bufferedInputStream;
   private Sender<Data> sender;
   private Executor sendPool;
@@ -37,7 +37,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
 
   @Override
   public void run() {
-    NetDataRequest.Builder builder = new NetDataRequest.Builder();
+    DataNetRequest.Builder builder = new DataNetRequest.Builder();
 
     builder.setIndex(index);
 
@@ -77,7 +77,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
 
           sender.setSoTimeout(timeout);
 
-          NetDataRequest request = builder.build();
+          DataNetRequest request = builder.build();
 
           if (request.getData() == null) {
             readThread = false;
@@ -135,8 +135,8 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
    */
   public static class Builder {
     private ServerSocket serverSocket;
-    private CommandProcessorListener<NetDataRequest> processorListener;
-    private CommandProcessorProvider<NetDataRequest> processorProvider;
+    private CommandProcessorListener<DataNetRequest> processorListener;
+    private CommandProcessorProvider<DataNetRequest> processorProvider;
     private int index;
     private Long socketSoTimeout;
     private Transfer transferListener;
@@ -167,7 +167,7 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
       return this;
     }
 
-    public Builder setCommandProcessorProvider(CommandProcessorProvider<NetDataRequest> provider) {
+    public Builder setCommandProcessorProvider(CommandProcessorProvider<DataNetRequest> provider) {
       this.processorProvider = provider;
       return this;
     }
@@ -215,11 +215,11 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
    *
    * @author Ray Li
    */
-  public static class NetDataRequest extends Request {
+  public static class DataNetRequest extends Request {
     private Sendable<Data> sender;
     private Data data;
 
-    public NetDataRequest(Request request) {
+    public DataNetRequest(Request request) {
       super(request);
     }
 
@@ -265,8 +265,9 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
       }
 
       /** build. */
-      public NetDataRequest build() {
-        NetDataRequest obj = new NetDataRequest(super.build());
+      @Override
+      public DataNetRequest build() {
+        DataNetRequest obj = new DataNetRequest(super.build());
         obj.sender = this.sender;
         obj.data = this.data;
 

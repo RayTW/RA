@@ -42,6 +42,7 @@ public class OnceConnection implements DatabaseConnection {
    *
    * @return Connection state.
    */
+  @Override
   public boolean connect() {
     try {
       DatabaseParameters param = getParam();

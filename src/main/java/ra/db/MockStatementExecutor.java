@@ -71,7 +71,6 @@ public class MockStatementExecutor extends StatementExecutor {
 
   @Override
   public void multiQuery(Consumer<MultiQuery> listener) {
-
     listener.accept(
         new MultiQuery(null) {
 
@@ -130,7 +129,7 @@ public class MockStatementExecutor extends StatementExecutor {
 
     Objects.requireNonNull(
         fakeQueryColumnsName,
-        "mFakeQueryColumnsName == null,"
+        "fakeQueryColumnsName == null,"
             + " must invoke setFakeQueryColumnsName(List<String> columnsName)");
 
     Map<String, AbstractList<byte[]>> map = new Hashtable<>();

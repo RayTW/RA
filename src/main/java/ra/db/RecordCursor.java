@@ -52,7 +52,6 @@ public interface RecordCursor extends Closeable {
   /**
    * Get value by specified field name. If field value is null will return null.
    *
-   *
    * @param name Field name
    * @param lang Charset, etc : utf8
    * @param feedback Return the feedback when if get value of the field is null.

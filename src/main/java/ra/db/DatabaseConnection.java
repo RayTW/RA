@@ -125,9 +125,9 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
     }
     return false;
   }
-  
+
   /**
-   * Get the connection state. 
+   * Get the connection state.
    *
    * @return Connection state.
    */
