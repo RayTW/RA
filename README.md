@@ -1,6 +1,7 @@
 # RA
-[![Build Status](https://travis-ci.com/RayTW/RA.svg?branch=main)](https://travis-ci.com/RayTW/RA)
-[![codecov](https://codecov.io/gh/RayTW/RA/branch/main/graph/badge.svg?token=QVO57XPZRK)](https://codecov.io/gh/RayTW/RA)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.raytw/ra/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.raytw/ra)
+[![Build Status](https://travis-ci.com/RayTW/RA.svg?branch=develop)](https://travis-ci.com/RayTW/RA)
+[![codecov](https://codecov.io/gh/RayTW/RA/branch/develop/graph/badge.svg?token=QVO57XPZRK)](https://codecov.io/gh/RayTW/RA)
 
 The library provides mysql (CRUD), socket server, logging.
 
@@ -21,7 +22,7 @@ dependencies {
   implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.48'
   implementation group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.8.4'
   
-  implementation 'io.github.raytw:ra:0.2.0'
+  implementation 'io.github.raytw:ra:0.3.0'
 }
 ```
 
