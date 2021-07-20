@@ -48,7 +48,7 @@ public class OriginalConnection implements DatabaseConnection {
 
   @Override
   public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
-    return consumer.applay(connection);
+    return consumer.applay(getConnection());
   }
 
   /**

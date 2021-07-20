@@ -43,9 +43,10 @@ public class XmlConfigParserTest {
 
   @Test
   public void testInitConfigClassInvalidValue() {
+    ConfigErrorXml.longValue = 1;
     new XmlConfigParser().fill(ConfigErrorXml.class, "unittest/configError.xml", false);
 
-    assertEquals(0, ConfigErrorXml.LONG_VALUE);
+    assertEquals(1, ConfigErrorXml.longValue);
   }
 
   @Test
@@ -72,6 +73,6 @@ public class XmlConfigParserTest {
   }
 
   static class ConfigErrorXml {
-    public static long LONG_VALUE;
+    public static long longValue;
   }
 }

@@ -87,7 +87,7 @@ public class MockStatement implements Statement {
 
   @Override
   public ResultSet executeQuery(String sql) throws SQLException {
-    return executeQueryListener.orElse(o -> new MockResultSet()).apply(sql);
+    return executeQueryListener.orElse(o -> new MockResultSet(new String[0])).apply(sql);
   }
 
   @Override

@@ -12,12 +12,11 @@ import java.util.ArrayList;
 import org.junit.Test;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
-import ra.db.RecordCursor;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.RecordCursor;
 import ra.ref.Reference;
 import ra.util.Utility;
-import test.mock.resultset.MockLastidResultSet;
 
 /** Test class. */
 public class ConcurrentConnectionTest {
@@ -42,7 +41,7 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testExecuteSql() {
+  public void testExecuteSql() throws SQLException {
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -65,8 +64,6 @@ public class ConcurrentConnectionTest {
         }) {
 
       db.connectIf(executor -> executor.execute(sql));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -106,7 +103,7 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testExecuteSqlDisconnected() {
+  public void testExecuteSqlDisconnected() throws SQLException {
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -133,14 +130,11 @@ public class ConcurrentConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteSqlConnected() {
+  public void testExecuteSqlConnected() throws SQLException {
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -162,13 +156,11 @@ public class ConcurrentConnectionTest {
           }
         }) {
       db.connectIf(executor -> executor.execute(sql, exception -> {}));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteCommitSqlConnected() {
+  public void testExecuteCommitSqlConnected() throws SQLException {
     ArrayList<String> sqlList = new ArrayList<>();
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -195,13 +187,11 @@ public class ConcurrentConnectionTest {
           }
         }) {
       db.connectIf(executor -> executor.executeCommit(sqlList));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteCommitSqlDisconnected() {
+  public void testExecuteCommitSqlDisconnected() throws SQLException {
     ArrayList<String> sqlList = new ArrayList<>();
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -232,13 +222,11 @@ public class ConcurrentConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlConnected() {
+  public void testInsertSqlConnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -257,8 +245,12 @@ public class ConcurrentConnectionTest {
                   assertEquals(sql, actual);
                   return 1;
                 });
+            @SuppressWarnings("resource")
+            MockResultSet result = new MockResultSet("lastid");
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+            result.addValue("lastid", expected);
+
+            connection.setExecuteQueryListener(sql -> result);
 
             return connection;
           }
@@ -270,14 +262,11 @@ public class ConcurrentConnectionTest {
 
             assertEquals(expected, actual);
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlDisconnected() {
+  public void testInsertSqlDisconnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -297,7 +286,12 @@ public class ConcurrentConnectionTest {
                   return 1;
                 });
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+            @SuppressWarnings("resource")
+            MockResultSet result = new MockResultSet("lastid");
+
+            result.addValue("lastid", expected);
+
+            connection.setExecuteQueryListener(sql -> result);
 
             return connection;
           }
@@ -306,13 +300,11 @@ public class ConcurrentConnectionTest {
           executor ->
               executor.insert(
                   sql, exception -> assertThat(exception, instanceOf(ConnectException.class))));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryConnected() {
+  public void testExecuteQueryConnected() throws SQLException {
     String sql = "SELECT * FROM table;";
     Reference<String> actual = new Reference<>();
     MysqlParameters param =
@@ -327,7 +319,11 @@ public class ConcurrentConnectionTest {
                 sql -> {
                   actual.set(sql);
 
-                  return new MockLastidResultSet(55);
+                  MockResultSet result = new MockResultSet("lastid");
+
+                  result.addValue("lastid", 55);
+
+                  return result;
                 });
             return connection;
           }
@@ -340,14 +336,11 @@ public class ConcurrentConnectionTest {
             assertEquals(sql, actual.get());
             assertEquals("55", record.field("lastid"));
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryDisconnected() {
+  public void testExecuteQueryDisconnected() throws SQLException {
     String sql = "SELECT * FROM table;";
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -372,14 +365,11 @@ public class ConcurrentConnectionTest {
                   assertThat(exception, instanceOf(ConnectException.class));
                 });
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteCommitConnectionIsNull() {
+  public void testExecuteCommitConnectionIsNull() throws SQLException {
     String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
     ArrayList<String> sqlList = new ArrayList<>();
     MysqlParameters param =
@@ -392,20 +382,18 @@ public class ConcurrentConnectionTest {
         new ConcurrentConnection(param) {
           @Override
           public Connection getConnection() {
-            return null;
+            return new MockConnection();
           }
         }) {
 
       db.createStatementExecutor()
           .executeCommit(
               sqlList, exception -> assertThat(exception, instanceOf(ConnectException.class)));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testTryExecute() {
+  public void testTryExecute() throws SQLException {
     String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -429,13 +417,11 @@ public class ConcurrentConnectionTest {
       int result = db.tryExecute(sql, exception -> {});
 
       assertEquals(1, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testTryExecuteDisconnected() {
+  public void testTryExecuteDisconnected() throws SQLException {
     String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -444,7 +430,7 @@ public class ConcurrentConnectionTest {
         new ConcurrentConnection(param) {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            return null;
+            return new MockConnection();
           }
         }) {
       db.connect();
@@ -454,13 +440,11 @@ public class ConcurrentConnectionTest {
               sql, exception -> assertThat(exception, instanceOf(ConnectException.class)));
 
       assertEquals(0, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testOnCheckConnect() {
+  public void testOnCheckConnect() throws SQLException {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
@@ -482,9 +466,6 @@ public class ConcurrentConnectionTest {
       db.connect();
 
       db.keep();
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 }

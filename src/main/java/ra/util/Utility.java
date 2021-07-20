@@ -24,7 +24,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ra.db.RecordCursor;
+import ra.db.record.RecordCursor;
 import ra.util.parser.VisitClassStrategy;
 
 /**

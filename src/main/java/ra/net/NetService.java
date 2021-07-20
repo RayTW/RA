@@ -141,7 +141,9 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
   @Override
   public void close() {
     try {
-      sendProcessor.close();
+      if (sendProcessor != null) {
+        sendProcessor.close();
+      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }

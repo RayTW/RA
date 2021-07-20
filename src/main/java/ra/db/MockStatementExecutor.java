@@ -1,22 +1,22 @@
 package ra.db;
 
-import java.io.UnsupportedEncodingException;
-import java.util.AbstractList;
-import java.util.Hashtable;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import ra.db.connection.MockOnceConnection;
+import ra.db.parameter.MysqlParameters;
+import ra.db.record.Record;
+import ra.db.record.RecordCursor;
 
 /**
  * Mock {@link StatementExecutor}.
  *
  * @author Ray Li
  */
-public class MockStatementExecutor extends StatementExecutor {
+public class MockStatementExecutor extends JdbcExecutor {
   private boolean isLive = true;
 
   private String[] fakeQueryColumnsName;
@@ -29,11 +29,11 @@ public class MockStatementExecutor extends StatementExecutor {
   private Consumer<String> openListener;
 
   public MockStatementExecutor() {
-    super(null);
+    super(new MockOnceConnection(new MysqlParameters.Builder().build()));
   }
 
   public MockStatementExecutor(DatabaseConnection db) {
-    super(null);
+    super(db);
   }
 
   public void setInsertListener(Function<String, Integer> listener) {
@@ -72,15 +72,15 @@ public class MockStatementExecutor extends StatementExecutor {
   @Override
   public void multiQuery(Consumer<MultiQuery> listener) {
     listener.accept(
-        new MultiQuery(null) {
+        new MultiQuery(this::buildRecord, null) {
 
           @Override
-          public RecordSet executeQuery(String sql) {
+          public RecordCursor executeQuery(String sql) {
             if (multiQueryListener != null) {
               multiQueryListener.accept(sql);
             }
 
-            return new RecordSet();
+            return buildRecord();
           }
         });
   }
@@ -124,7 +124,7 @@ public class MockStatementExecutor extends StatementExecutor {
     }
 
     if (!isLive) {
-      return new RecordSet();
+      return buildRecord();
     }
 
     Objects.requireNonNull(
@@ -132,30 +132,27 @@ public class MockStatementExecutor extends StatementExecutor {
         "fakeQueryColumnsName == null,"
             + " must invoke setFakeQueryColumnsName(List<String> columnsName)");
 
-    Map<String, AbstractList<byte[]>> map = new Hashtable<>();
-
-    for (String key : fakeQueryColumnsName) {
-      map.put(key, new Vector<>());
-    }
+    MockResultSet result = new MockResultSet(fakeQueryColumnsName);
 
     fakeQueryData
         .stream()
         .forEach(
             array -> {
               String key = null;
-              AbstractList<byte[]> data = null;
 
               for (int i = 0; i < fakeQueryColumnsName.length; i++) {
                 key = fakeQueryColumnsName[i];
-                data = map.get(key);
-                try {
-                  data.add(array[i].getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                  e.printStackTrace();
-                }
+                result.addValue(key, array[i]);
               }
             });
-    return RecordSet.newInstance(map);
+    Record record = buildRecord();
+
+    try {
+      record.convert(result);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return record;
   }
 
   /**

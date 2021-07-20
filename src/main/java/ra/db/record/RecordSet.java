@@ -1,68 +1,58 @@
-package ra.db;
+package ra.db.record;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Spliterator;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import ra.db.parameter.DatabaseParameters;
+import ra.db.DatabaseCategory;
+import ra.db.Row;
+import ra.db.RowSet;
 
 /**
  * The record of query database.
  *
  * @author Ray Li
  */
-public class RecordSet implements RecordCursor {
+public class RecordSet implements Record {
   private int cursor = 0;
   private int count = 0;
-  private Map<String, AbstractList<byte[]>> table;
+  private Map<String, List<byte[]>> table;
   private String[] columnName;
-
-  public RecordSet(ResultSet rs) throws SQLException {
-    table = newTable();
-    convert(rs);
-  }
-
-  public RecordSet() {
-    convert(newTable());
-  }
-
-  protected Map<String, AbstractList<byte[]>> newTable() {
-    return new Hashtable<String, AbstractList<byte[]>>();
-  }
-
-  protected AbstractList<byte[]> newColumnContainer() {
-    return new Vector<byte[]>();
-  }
+  private ResultConverter resultConverter;
 
   /**
-   * An SQL statement to be sent to the database. Accept SQL statement, EX:'select...'.
+   * Initialize.
    *
-   * @param params Parameters of Database connect setting.
-   * @param statement The object used by executing SQL statements.
-   * @param sql SQL.
-   * @throws SQLException Throw the SQLException, when SQL statement executing fails.
+   * @param category database mode
    */
-  void executeQuery(DatabaseParameters params, Statement statement, String sql)
-      throws SQLException {
-    // Using try-close to close Statement and ResultSet. by Ray
-    try (ResultSet rs = statement.executeQuery(sql); ) {
-      table.clear();
-      count = 0;
-      cursor = 0;
-      convert(params, rs);
+  public RecordSet(DatabaseCategory category) {
+    switch (category) {
+      case MYSQL:
+        resultConverter = new ResultMySql();
+        break;
+      case H2MEM:
+        resultConverter = new ResultH2();
+        break;
+      default:
+        throw new UnsupportedOperationException("Unsupport category = " + category);
     }
+    table = newTable();
+  }
+
+  protected Map<String, List<byte[]>> newTable() {
+    return new ConcurrentHashMap<String, List<byte[]>>();
+  }
+
+  protected List<byte[]> newColumnContainer() {
+    return Collections.synchronizedList(new ArrayList<byte[]>());
   }
 
   /**
@@ -85,65 +75,14 @@ public class RecordSet implements RecordCursor {
   }
 
   /**
-   * Take RecordSet new instance.
+   * Convert the result of a query.
    *
-   * @param map Table`s Data. Key:column name,Data:List
-   * @return RecordSet
+   * @param result Result of query.
+   * @throws SQLException SQLException
    */
-  public static RecordSet newInstance(Map<String, AbstractList<byte[]>> map) {
-    RecordSet obj = new RecordSet();
-
-    obj.convert(map);
-
-    return obj;
-  }
-
-  protected void convert(Map<String, AbstractList<byte[]>> table) {
-    this.table = table;
-    Iterator<Entry<String, AbstractList<byte[]>>> iterator = table.entrySet().iterator();
-    String[] columnName = new String[table.size() + 1];
-    int i = 1;
-    Entry<String, AbstractList<byte[]>> entry = null;
-
-    while (iterator.hasNext()) {
-      entry = iterator.next();
-      columnName[i] = entry.getKey();
-
-      if (entry.getValue().size() > count) {
-        count = entry.getValue().size();
-      }
-      i++;
-    }
-
-    this.columnName = columnName;
-  }
-
-  void convert(DatabaseParameters param, ResultSet rs) throws SQLException {
-    if (param.getCategory() == DatabaseCategory.MYSQL) {
-      convert(rs);
-    } else {
-      throw new UnsupportedOperationException("Unsupport DBCategory = " + param.getCategory());
-    }
-  }
-
-  void convert(ResultSet rs) throws SQLException {
-    int columnNum = rs.getMetaData().getColumnCount();
-    String[] columnName = new String[columnNum + 1];
-
-    for (int i = 1; i <= columnNum; i++) {
-      columnName[i] = rs.getMetaData().getColumnLabel(i);
-      table.put(columnName[i], newColumnContainer());
-    }
-
-    while (rs.next()) {
-      count++;
-      for (int i = 1; i <= columnNum; i++) {
-        AbstractList<byte[]> tmp = table.get(columnName[i]);
-        byte[] value = rs.getBytes(i);
-        tmp.add((value == null) ? null : value);
-      }
-    }
-    this.columnName = columnName;
+  @Override
+  public void convert(ResultSet result) throws SQLException {
+    resultConverter.convert(result);
   }
 
   /**
@@ -186,7 +125,7 @@ public class RecordSet implements RecordCursor {
    */
   @Override
   public String field(String name, String lang, String feedback) {
-    AbstractList<byte[]> v = table.get(name);
+    List<byte[]> v = table.get(name);
 
     try {
       if (v == null) {
@@ -214,7 +153,7 @@ public class RecordSet implements RecordCursor {
    */
   @Override
   public String field(String name, int cursor) {
-    AbstractList<byte[]> v = table.get(name);
+    List<byte[]> v = table.get(name);
 
     if (v == null) {
       return "";
@@ -254,7 +193,7 @@ public class RecordSet implements RecordCursor {
    */
   @Override
   public String optField(String name, int cursor) {
-    AbstractList<byte[]> v = table.get(name);
+    List<byte[]> v = table.get(name);
 
     try {
       byte[] temp = v.get(cursor);
@@ -278,7 +217,7 @@ public class RecordSet implements RecordCursor {
    */
   @Override
   public String optField(String name, String lang) {
-    AbstractList<byte[]> v = table.get(name);
+    List<byte[]> v = table.get(name);
 
     try {
       byte[] temp = v.get(cursor);
@@ -318,7 +257,7 @@ public class RecordSet implements RecordCursor {
    */
   @Override
   public byte[] fieldBytes(String name) {
-    AbstractList<byte[]> v = table.get(name);
+    List<byte[]> v = table.get(name);
     if (v == null) {
       return null;
     } else {
@@ -412,7 +351,7 @@ public class RecordSet implements RecordCursor {
     for (int i = 0; i < count; i++) {
       for (int j = 1; j < fieldCount; j++) {
         columnName = this.columnName[j];
-        AbstractList<byte[]> v = table.get(columnName);
+        List<byte[]> v = table.get(columnName);
         if (v == null) {
           value = null;
         } else {
@@ -428,13 +367,13 @@ public class RecordSet implements RecordCursor {
   /** Return the serialization stream in SQL statement execute finish. */
   @Override
   public Stream<RowSet> stream() {
-    return StreamSupport.stream(new RecordSpliterator(this, 0, count), false);
+    return StreamSupport.stream(new RecordSpliterator<RecordSet>(this, 0, count), false);
   }
 
   /** Return the parallel stream in SQL statement execute finish. */
   @Override
   public Stream<RowSet> parallelStream() {
-    return StreamSupport.stream(new RecordSpliterator(this, 0, count), true);
+    return StreamSupport.stream(new RecordSpliterator<RecordSet>(this, 0, count), true);
   }
 
   @Override
@@ -516,236 +455,127 @@ public class RecordSet implements RecordCursor {
   }
 
   /**
-   * Record of one row.
+   * Returns name of column.
    *
-   * @author Ray Li
+   * @param index index (range : 1 ~ < column.length)
    */
-  private static class Row implements RowSet {
-    private Map<String, byte[]> data;
+  @Override
+  public String getColumnName(int index) {
+    return columnName[index];
+  }
 
-    Row() {
-      data = new HashMap<>();
-    }
+  /**
+   * Returns column.
+   *
+   * @param columnName columnName
+   */
+  @Override
+  public List<byte[]> getColumn(String columnName) {
+    return table.get(columnName);
+  }
 
-    void put(String key, byte[] value) {
-      data.put(key, value);
-    }
+  /**
+   * Returns last insert id.
+   *
+   * @param statement statement
+   * @return id auto-increment id
+   * @throws SQLException SQLException
+   */
+  @Override
+  public int getLastInsertId(Statement statement) throws SQLException {
+    return resultConverter.getLastInsertId(statement);
+  }
 
+  private class ResultMySql implements ResultConverter {
     /**
-     * Take the value of that column`s value as a byte array by the column`s name.
+     * Convert the result of a query.
      *
-     * @param columnName column`s name
-     * @return the value of that column as a byte array.
+     * @param result Result of query.
+     * @throws SQLException SQLException
      */
     @Override
-    public byte[] getBlob(String columnName) {
-      return data.get(columnName);
-    }
+    public void convert(ResultSet result) throws SQLException {
+      int columnNum = result.getMetaData().getColumnCount();
+      String[] columnNames = new String[columnNum + 1];
 
-    /**
-     * Take the value of that column`s value as a String by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a String.
-     */
-    @Override
-    public String getString(String columnName) {
-      return getString(columnName, null);
-    }
-
-    /**
-     * Take the value of that column`s value as a String by character encoding and the column`s
-     * name.
-     *
-     * @param columnName column`s name
-     * @param charsetName etc. "UTF-8"
-     * @return the value of that column as a String.
-     */
-    @Override
-    public String getString(String columnName, String charsetName) {
-      try {
-        byte[] v = data.get(columnName);
-
-        if (charsetName == null) {
-          return (v == null) ? "" : new String(v);
-        } else {
-          return (v == null) ? "" : new String(v, charsetName);
-        }
-
-      } catch (Exception e) {
-        e.printStackTrace();
+      for (int i = 1; i <= columnNum; i++) {
+        columnNames[i] = result.getMetaData().getColumnLabel(i);
+        table.put(columnNames[i], newColumnContainer());
       }
-      return "";
+
+      while (result.next()) {
+        count++;
+        for (int i = 1; i <= columnNum; i++) {
+          List<byte[]> tmp = table.get(columnNames[i]);
+          byte[] value = result.getBytes(i);
+          tmp.add((value == null) ? null : value);
+        }
+      }
+      columnName = columnNames;
     }
 
     /**
-     * Take the value of that column`s value as a short by the column`s name.
+     * Returns last insert id.
      *
-     * @param columnName column`s name
-     * @return the value of that column as a short.
+     * @param statement statement
+     * @return id auto-increment id
+     * @throws SQLException SQLException
      */
     @Override
-    public short getShort(String columnName) {
-      String v = getString(columnName);
-
-      return Short.parseShort(v);
-    }
-
-    /**
-     * Take the value of that column`s value as a int by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as an int.
-     */
-    @Override
-    public int getInt(String columnName) {
-      String v = getString(columnName);
-
-      return Integer.parseInt(v);
-    }
-
-    /**
-     * Take the value of that column`s value as a long by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a long.
-     */
-    @Override
-    public long getLong(String columnName) {
-      String v = getString(columnName);
-
-      return Long.parseLong(v);
-    }
-
-    /**
-     * Take the value of that column`s value as a float by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a float.
-     */
-    @Override
-    public float getFloat(String columnName) {
-      String v = getString(columnName);
-
-      return Float.parseFloat(v);
-    }
-
-    /**
-     * Take the value of that column`s value as a double by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a double.
-     */
-    @Override
-    public double getDouble(String columnName) {
-      String v = getString(columnName);
-
-      return Double.parseDouble(v);
-    }
-
-    /**
-     * Take the value of that column`s value as a double by the column`s name. Using the BigDecimal
-     * transform the double value.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a {@link BigDecimal#doubleValue()}
-     */
-    @Override
-    public double getDoubleDecima(String columnName) {
-      String v = getString(columnName);
-
-      return new BigDecimal(v).doubleValue();
-    }
-
-    /**
-     * Take the value of that column`s value as a BigDecimal by the column`s name.
-     *
-     * @param columnName column`s name
-     * @return the value of that column as a big decimal.
-     */
-    @Override
-    public BigDecimal getBigDecimal(String columnName) {
-      String v = getString(columnName);
-
-      return new BigDecimal(v);
-    }
-
-    /**
-     * Checking database null equals the value of that column`s value by the column`s name.
-     *
-     * @param columnName column`s name
-     */
-    @Override
-    public boolean isNull(String columnName) {
-      return data.get(columnName) == null;
-    }
-
-    void clear() {
-      data.clear();
+    public int getLastInsertId(Statement statement) throws SQLException {
+      try (ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID() AS lastid"); ) {
+        ResultMySql.this.convert(rs);
+        return Integer.parseInt(field("lastid"));
+      }
     }
   }
 
-  private static class RecordSpliterator implements Spliterator<RowSet> {
-    private final RecordSet record;
-    private int origin;
-    private final int fence;
-
-    public RecordSpliterator(RecordSet record, int origin, int fence) {
-      this.record = record;
-      this.origin = origin;
-      this.fence = fence;
-    }
-
+  private class ResultH2 implements ResultConverter {
+    /**
+     * Convert the result of a query.
+     *
+     * @param result Result of query.
+     * @throws SQLException SQLException
+     */
     @Override
-    public long estimateSize() {
-      return (fence - origin) / 2;
-    }
+    public void convert(ResultSet result) throws SQLException {
+      int columnNum = result.getMetaData().getColumnCount();
+      String[] columnNames = new String[columnNum + 1];
 
-    @Override
-    public int characteristics() {
-      return ORDERED | SIZED | IMMUTABLE | SUBSIZED;
-    }
+      for (int i = 1; i <= columnNum; i++) {
+        columnNames[i] = result.getMetaData().getColumnLabel(i);
+        table.put(columnNames[i], newColumnContainer());
+      }
 
-    @Override
-    public boolean tryAdvance(Consumer<? super RowSet> action) {
-      if (origin < fence) {
-        int fieldCount = record.getFieldCount();
-        Row row = new Row();
-        String columnName = null;
-        byte[] value = null;
-
-        for (int j = 1; j < fieldCount; j++) {
-          columnName = record.columnName[j];
-          AbstractList<byte[]> v = record.table.get(columnName);
-
-          if (v == null) {
-            value = null;
-          } else {
-            value = v.get(origin);
+      while (result.next()) {
+        count++;
+        for (int i = 1; i <= columnNum; i++) {
+          List<byte[]> tmp = table.get(columnNames[i]);
+          Object obj = result.getObject(i);
+          byte[] value = null;
+          if (obj != null) {
+            value = obj.toString().getBytes();
           }
-          row.put(columnName, value);
+
+          tmp.add((value == null) ? null : value);
         }
-
-        action.accept(row);
-        origin++;
-
-        return true;
       }
-
-      return false;
+      columnName = columnNames;
     }
 
+    /**
+     * Returns last insert id.
+     *
+     * @param statement statement
+     * @return id auto-increment id
+     * @throws SQLException SQLException
+     */
     @Override
-    public Spliterator<RowSet> trySplit() {
-      int lo = origin;
-      int mid = ((lo + fence) >>> 1) & ~1;
-
-      if (lo < mid) {
-        origin = mid;
-        return new RecordSpliterator(this.record, lo, mid);
+    public int getLastInsertId(Statement statement) throws SQLException {
+      try (ResultSet rs = statement.executeQuery("CALL IDENTITY()"); ) {
+        ResultH2.this.convert(rs);
+        return Integer.parseInt(field("IDENTITY()"));
       }
-
-      return null;
     }
   }
 }

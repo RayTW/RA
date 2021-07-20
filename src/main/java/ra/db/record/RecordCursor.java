@@ -1,8 +1,9 @@
-package ra.db;
+package ra.db.record;
 
 import java.io.Closeable;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import ra.db.RowSet;
 
 /**
  * The result of query when executes SQL statement via statement executor.
@@ -159,14 +160,14 @@ public interface RecordCursor extends Closeable {
   public void forEach(Consumer<RowSet> action);
 
   /**
-   * Return ordered stream of the number of data after the query is completed.
+   * Returns ordered stream of the number of data after the query is completed.
    *
    * @return Stream
    */
   public Stream<RowSet> stream();
 
   /**
-   * Return parallel stream of the number of data after the query is completed.
+   * Returns parallel stream of the number of data after the query is completed.
    *
    * @return Stream
    */

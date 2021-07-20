@@ -12,11 +12,12 @@ public class DatabaseKeepAlive extends Thread {
 
   @Override
   public void run() {
+
     while (isRunning) {
       try {
         Thread.sleep(keepalive.interval());
-      } catch (Exception e) {
-        e.printStackTrace();
+      } catch (InterruptedException e) {
+        this.interrupt();
       }
 
       keepalive.keep();

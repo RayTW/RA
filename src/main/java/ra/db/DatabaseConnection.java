@@ -43,7 +43,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
    * @return StatementExecutor
    */
   public default StatementExecutor createStatementExecutor() {
-    return new StatementExecutor(this);
+    return new JdbcExecutor(this);
   }
 
   /**
@@ -120,7 +120,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
    */
   public default boolean connectIf(Consumer<StatementExecutor> executor) {
     if (connect()) {
-      executor.accept(new StatementExecutor(this));
+      executor.accept(new JdbcExecutor(this));
       return true;
     }
     return false;

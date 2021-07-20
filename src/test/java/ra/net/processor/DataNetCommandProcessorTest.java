@@ -44,7 +44,6 @@ public class DataNetCommandProcessorTest {
 
           @Override
           public void commandProcess(DataNetService.DataNetRequest request) {
-            System.out.println("==" + request.getData().getContent());
             assertArrayEquals(expected.getBytes(), request.getData().getContent());
             assertEquals(0, request.getIndex());
           }

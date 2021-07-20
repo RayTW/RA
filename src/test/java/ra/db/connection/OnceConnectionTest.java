@@ -17,12 +17,11 @@ import ra.db.DatabaseConnection;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
-import ra.db.RecordCursor;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.RecordCursor;
 import ra.ref.Reference;
 import ra.util.Utility;
-import test.mock.resultset.MockLastidResultSet;
 
 /** Test class. */
 public class OnceConnectionTest {
@@ -84,17 +83,15 @@ public class OnceConnectionTest {
           .setExecuteQueryListener(
               sql -> {
                 assertEquals("SELECT 1", sql);
-                return null;
+                return new MockResultSet();
               });
 
       db.createStatementExecutor().executeQuery("SELECT 1");
-    } catch (Exception e1) {
-      e1.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryUsingForeach() {
+  public void testExecuteQueryUsingForeach() throws Exception {
     MysqlParameters.Builder builder = new MysqlParameters.Builder();
 
     builder
@@ -125,8 +122,6 @@ public class OnceConnectionTest {
             assertEquals(row.getString("name"), "testUser");
             assertEquals(row.getInt("age"), 1);
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -154,9 +149,6 @@ public class OnceConnectionTest {
         }) {
 
       db.connectIf(executor -> executor.execute(sql));
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -222,8 +214,6 @@ public class OnceConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -251,8 +241,6 @@ public class OnceConnectionTest {
         }) {
 
       db.connectIf(executor -> executor.execute(sql, exception -> {}));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -284,8 +272,6 @@ public class OnceConnectionTest {
           }
         }) {
       db.connectIf(executor -> executor.executeCommit(sqlList));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -321,13 +307,11 @@ public class OnceConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlConnected() {
+  public void testInsertSqlConnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -335,23 +319,26 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
 
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
+                connection.setExecuteUpdateListener(
+                    actual -> {
+                      assertEquals(sql, actual);
+                      return 1;
+                    });
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+                resultSet.addValue("lastid", expected);
 
-            return connection;
-          }
-        }) {
+                connection.setExecuteQueryListener(sql -> resultSet);
+
+                return connection;
+              }
+            }; ) {
 
       db.connectIf(
           executor -> {
@@ -359,14 +346,11 @@ public class OnceConnectionTest {
 
             assertEquals(expected, actual);
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlDisconnected() {
+  public void testInsertSqlDisconnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -374,23 +358,26 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
 
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
+                resultSet.addValue("lastid", expected);
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+                connection.setExecuteUpdateListener(
+                    actual -> {
+                      assertEquals(sql, actual);
+                      return 1;
+                    });
 
-            return connection;
-          }
-        }) {
+                connection.setExecuteQueryListener(sql -> resultSet);
+
+                return connection;
+              }
+            }) {
       db.connectIf(
           executor -> {
             executor.insert(
@@ -399,32 +386,32 @@ public class OnceConnectionTest {
                   assertThat(exception, instanceOf(ConnectException.class));
                 });
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryConnected() {
+  public void testExecuteQueryConnected() throws SQLException {
     String sql = "SELECT * FROM table;";
     Reference<String> actual = new Reference<>();
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
-            connection.setExecuteQueryListener(
-                sql -> {
-                  actual.set(sql);
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
+                connection.setExecuteQueryListener(
+                    sql -> {
+                      actual.set(sql);
+                      resultSet.addValue("lastid", 55);
 
-                  return new MockLastidResultSet(55);
-                });
-            return connection;
-          }
-        }) {
+                      return resultSet;
+                    });
+                return connection;
+              }
+            }) {
       db.connectIf(
           executor -> {
             RecordCursor record = executor.executeQuery(sql);
@@ -432,9 +419,6 @@ public class OnceConnectionTest {
             assertEquals(sql, actual.get());
             assertEquals("55", record.field("lastid"));
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -464,8 +448,6 @@ public class OnceConnectionTest {
                   assertThat(exception, instanceOf(ConnectException.class));
                 });
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -483,15 +465,13 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection getConnection() {
-            return null;
+            return new MockConnection();
           }
         }) {
 
       db.createStatementExecutor()
           .executeCommit(
               sqlList, exception -> assertThat(exception, instanceOf(ConnectException.class)));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -520,8 +500,6 @@ public class OnceConnectionTest {
       int result = db.tryExecute(sql, exception -> {});
 
       assertEquals(1, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -535,7 +513,7 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            return null;
+            return new MockConnection();
           }
         }) {
       db.connect();
@@ -545,8 +523,6 @@ public class OnceConnectionTest {
               sql, exception -> assertThat(exception, instanceOf(ConnectException.class)));
 
       assertEquals(0, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 

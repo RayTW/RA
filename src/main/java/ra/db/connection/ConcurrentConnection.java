@@ -50,7 +50,7 @@ public class ConcurrentConnection implements DatabaseConnection {
   @Override
   public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
     synchronized (lock) {
-      return consumer.applay(connection);
+      return consumer.applay(getConnection());
     }
   }
 

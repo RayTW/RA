@@ -15,16 +15,17 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
-import ra.db.RecordSet;
+import ra.db.DatabaseCategory;
+import ra.db.record.RecordSet;
 
 /** Test class. */
 public class UtilityTest {
@@ -33,10 +34,10 @@ public class UtilityTest {
   public void testSetFieldsUsingSerializedName() {
     Data data = new Data();
     RecordSet record =
-        new RecordSet() {
+        new RecordSet(DatabaseCategory.MYSQL) {
           @Override
-          protected Map<String, AbstractList<byte[]>> newTable() {
-            Map<String, AbstractList<byte[]>> map = new HashMap<String, AbstractList<byte[]>>();
+          protected Map<String, List<byte[]>> newTable() {
+            Map<String, List<byte[]>> map = new HashMap<String, List<byte[]>>();
             Function<String, ArrayList<byte[]>> str2bytes =
                 (value) -> {
                   ArrayList<byte[]> ary = new ArrayList<>();
@@ -45,10 +46,10 @@ public class UtilityTest {
                   return ary;
                 };
 
-            map.put("mId", str2bytes.apply("A123456"));
-            map.put("mType", str2bytes.apply("1695609641"));
-            map.put("mCode", str2bytes.apply("123.4567"));
-            map.put("mIntegerType", str2bytes.apply("999"));
+            map.put("id", str2bytes.apply("A123456"));
+            map.put("type", str2bytes.apply("1695609641"));
+            map.put("code", str2bytes.apply("123.4567"));
+            map.put("integerType", str2bytes.apply("999"));
 
             return map;
           }
@@ -63,16 +64,16 @@ public class UtilityTest {
   }
 
   static class Data {
-    @SerializedName("mId")
+    @SerializedName("id")
     private String id;
 
-    @SerializedName("mType")
+    @SerializedName("type")
     private int type;
 
-    @SerializedName("mIntegerType")
+    @SerializedName("integerType")
     private int integerType;
 
-    @SerializedName("mCode")
+    @SerializedName("code")
     private double code;
 
     public String getId() {
