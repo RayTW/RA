@@ -17,7 +17,9 @@ import ra.db.DatabaseConnection;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
+import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
+import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
 import ra.db.record.RecordCursor;
 import ra.ref.Reference;
@@ -551,6 +553,33 @@ public class OnceConnectionTest {
       db.connect();
 
       db.keep();
+    }
+  }
+
+  @Test
+  public void testConnectToH2Database() throws SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(new H2Parameters.Builder().inMemory().setName("test").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
     }
   }
 }
