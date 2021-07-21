@@ -16,17 +16,11 @@ public class H2Parameters implements DatabaseParameters {
   private String dbName;
   private String dbUser;
   private String dbPassword;
-  private String dbType;
+  private String mode;
   private int dbPort = 3306;
-  private static final int SOCKET_TIMEOUT = 60000 * 3;
-  private static final int CONNECT_TIMEOUT = 60000 * 3;
   private Properties dbProperties;
 
   private H2Parameters() {}
-
-  public void setName(String name) {
-    dbName = name;
-  }
 
   @Override
   public String getHost() {
@@ -47,23 +41,19 @@ public class H2Parameters implements DatabaseParameters {
     return dbPassword;
   }
 
-  public String getType() {
-    return dbType;
-  }
-
   @Override
   public DatabaseCategory getCategory() {
-    return DatabaseCategory.H2MEM;
+    return DatabaseCategory.H2;
   }
 
   @Override
   public String getUrlSchema() {
-    return DatabaseCategory.H2MEM.getSchema();
+    return DatabaseCategory.H2.getSchema();
   }
 
   @Override
   public String getDriver() {
-    return DatabaseCategory.H2MEM.getDriver();
+    return DatabaseCategory.H2.getDriver();
   }
 
   @Override
@@ -81,25 +71,17 @@ public class H2Parameters implements DatabaseParameters {
     String queryString = "";
 
     if (properties != null) {
-      StringBuilder str = new StringBuilder();
-
-      properties
-          .entrySet()
-          .stream()
-          .forEach(
-              obj -> {
-                if (str.length() > 0) {
-                  str.append("&");
-                }
-                str.append(obj.getKey());
-                str.append("=");
-                str.append(obj.getValue());
-              });
-
-      queryString = "?" + str.toString();
+      queryString =
+          properties
+              .entrySet()
+              .stream()
+              .map(element -> element.getKey() + "=" + element.getValue())
+              .reduce("", (a, b) -> a + ";" + b);
+      ;
     }
 
-    return getUrlSchema() + getName() + queryString;
+    String url = getUrlSchema() + mode + getName() + queryString;
+    return url;
   }
 
   /** MysqlParameters. */
@@ -108,10 +90,9 @@ public class H2Parameters implements DatabaseParameters {
     private String dbName;
     private String dbUser;
     private String dbPassword;
-    private String dbType;
     private Integer dbPort;
-    private Boolean profileSql;
     private Properties dbProperties;
+    private String mode;
 
     public Builder setHost(String host) {
       dbHost = host;
@@ -133,29 +114,54 @@ public class H2Parameters implements DatabaseParameters {
       return this;
     }
 
-    public Builder setType(String type) {
-      dbType = type;
-      return this;
-    }
-
     public Builder setPort(Integer port) {
       dbPort = port;
       return this;
     }
 
+    /**
+     * Set connection setting and DbSettings.
+     *
+     * <pre>
+     * https://www.h2database.com/html/features.html
+     * https://www.h2database.com/javadoc/org/h2/engine/DbSettings.html
+     * </pre>
+     *
+     * @param supplier all properties
+     * @return Builder
+     */
     public Builder setProperties(Supplier<Properties> supplier) {
       dbProperties = supplier == null ? null : supplier.get();
       return this;
     }
 
-    /**
-     * enable/disable debug mode.
-     *
-     * @param enable enable/disable debug mode.
-     * @return Builder
-     */
-    public Builder setProfileSql(boolean enable) {
-      profileSql = enable;
+    /** Embedded (local) connection. */
+    public Builder localFile(String path) {
+      mode = path + "/";
+      return this;
+    }
+
+    /** In-memory mode. */
+    public Builder inMemory() {
+      mode = "mem:";
+      return this;
+    }
+
+    /** Server mode (remote connections) using TCP/IP. */
+    public Builder tcp() {
+      mode = "tcp:";
+      return this;
+    }
+
+    /** Using encrypted. */
+    public Builder ssl() {
+      mode = "ssl:";
+      return this;
+    }
+
+    /** Database in a zip file. */
+    public Builder zip() {
+      mode = "zip:";
       return this;
     }
 
@@ -167,51 +173,29 @@ public class H2Parameters implements DatabaseParameters {
     public H2Parameters build() {
       H2Parameters param = new H2Parameters();
 
+      if (mode == null) {
+        inMemory();
+      }
+
+      if (dbName == null) {
+        dbName = "";
+      }
+
+      param.mode = mode;
       param.dbHost = dbHost;
       param.dbName = dbName;
       param.dbUser = dbUser;
       param.dbPassword = dbPassword;
-      param.dbType = dbType;
 
       if (dbPort != null) {
         param.dbPort = dbPort.intValue();
       }
 
-      if (profileSql != null) {
-        if (dbProperties == null) {
-          dbProperties = new Properties();
-        }
-        dbProperties.put("profileSQL", profileSql.toString());
-      }
-
       if (dbProperties != null && dbProperties.size() > 0) {
-        // Keep the preset parameters and then new parameters.
-        Properties defaultProperties = new Properties();
-
-        setupDefaultProperty(defaultProperties);
-
-        defaultProperties.putAll(dbProperties);
-        param.dbProperties = defaultProperties;
-      } else {
-        Properties properties = new Properties();
-
-        setupDefaultProperty(properties);
-        param.dbProperties = properties;
+        param.dbProperties = dbProperties;
       }
 
       return param;
-    }
-
-    /**
-     * Load default properties before connecting database.
-     *
-     * @param defaultProperties default properties
-     */
-    public void setupDefaultProperty(Properties defaultProperties) {
-      defaultProperties.put("useUnicode", "true");
-      defaultProperties.put("characterEncoding", "utf8");
-      defaultProperties.put("socketTimeout", String.valueOf(SOCKET_TIMEOUT));
-      defaultProperties.put("connectTimeout", String.valueOf(CONNECT_TIMEOUT));
     }
   }
 
@@ -220,6 +204,6 @@ public class H2Parameters implements DatabaseParameters {
 
   @Override
   public String toString() {
-    return getHost() + "/" + getName();
+    return getDatabaseUrl();
   }
 }

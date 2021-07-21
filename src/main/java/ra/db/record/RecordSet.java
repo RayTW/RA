@@ -38,7 +38,7 @@ public class RecordSet implements Record {
       case MYSQL:
         resultConverter = new ResultMySql();
         break;
-      case H2MEM:
+      case H2:
         resultConverter = new ResultH2();
         break;
       default:
