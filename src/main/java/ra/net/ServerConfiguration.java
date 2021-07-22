@@ -71,7 +71,8 @@ public class ServerConfiguration {
     try {
       return Integer.parseInt(result);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Configuration no put key '" + key + "'.");
+      throw new IllegalArgumentException(
+          "Configuration no key '" + key + "' or no value '" + result + "'.");
     }
   }
 
@@ -88,7 +89,8 @@ public class ServerConfiguration {
     try {
       return result == null ? defaultValue : Integer.parseInt(result);
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Configuration no put key '" + key + "'.");
+      throw new IllegalArgumentException(
+          "Configuration no key '" + key + "' or no value '" + result + "'.");
     }
   }
 
