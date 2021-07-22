@@ -13,12 +13,7 @@ import ra.db.parameter.DatabaseParameters;
  *
  * @author Ray Li
  */
-public interface DatabaseConnection extends KeepAlive, AutoCloseable {
-
-  @Override
-  public default long interval() {
-    return 5000;
-  }
+public interface DatabaseConnection extends AutoCloseable {
 
   /**
    * Load driver.

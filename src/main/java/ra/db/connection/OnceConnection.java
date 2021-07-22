@@ -73,11 +73,6 @@ public class OnceConnection implements DatabaseConnection {
   }
 
   @Override
-  public void keep() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void close() {
     isLive = false;
     try {

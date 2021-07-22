@@ -2,6 +2,7 @@ package ra.db.connection;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +23,7 @@ import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
 import ra.db.record.RecordCursor;
+import ra.ref.BooleanReference;
 import ra.ref.Reference;
 import ra.util.Utility;
 
@@ -529,8 +531,8 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testOnCheckConnectThrowUnsupportedOperationException() {
-    exceptionRule.expect(UnsupportedOperationException.class);
+  public void testConnectionFailure() {
+    exceptionRule.expect(NullPointerException.class);
 
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -539,21 +541,35 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
-
-            connection.setExecuteQueryListener(
-                sql -> {
-                  assertEquals("select 1", sql);
-                  return new MockResultSet();
-                });
-
-            return connection;
+            throw new RuntimeException();
           }
         }) {
-      db.connect();
 
-      db.keep();
+      assertFalse(db.connect());
     }
+  }
+
+  @Test
+  public void testConnectionFailureThrowException() {
+    BooleanReference ref = new BooleanReference();
+    MysqlParameters param =
+        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
+
+    new OnceConnection(param) {
+      @Override
+      public Connection getConnection() {
+        return new MockConnection() {
+          @Override
+          public void close() throws SQLException {
+            super.close();
+            ref.set(true);
+            throw new SQLException("Unit Test");
+          }
+        };
+      }
+    }.close();
+
+    assertTrue(ref.get());
   }
 
   @Test

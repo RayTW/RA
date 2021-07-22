@@ -3,8 +3,8 @@ package ra.db.connection;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import ra.db.DatabaseConnection;
-import ra.db.DatabaseKeepAlive;
+import ra.db.DatabaseHeartbeat;
+import ra.db.KeepAvailable;
 import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
 
@@ -14,14 +14,14 @@ import ra.db.parameter.DatabaseParameters;
  *
  * @author Ray Li
  */
-public class OriginalConnection implements DatabaseConnection {
+public class OriginalConnection implements KeepAvailable {
   private boolean startThread = false;
   private StatementExecutor executor;
   private DatabaseParameters param;
   private Connection connection = null;
   private volatile boolean volatileIsLive = false;
 
-  private DatabaseKeepAlive isLive;
+  private DatabaseHeartbeat isLive;
 
   /**
    * Initialize.
@@ -32,7 +32,7 @@ public class OriginalConnection implements DatabaseConnection {
     this.param = param;
     loadDriveInstance(param);
     executor = createStatementExecutor();
-    isLive = new DatabaseKeepAlive(this);
+    isLive = new DatabaseHeartbeat(this);
     isLive.start();
   }
 

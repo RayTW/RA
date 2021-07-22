@@ -7,14 +7,14 @@ import org.junit.Test;
 import ra.ref.BooleanReference;
 
 /** Test class. */
-public class DatabaseKeepAliveTest {
+public class DatabaseHeartbeatTest {
 
   @Test
   public void testTnterrupt() throws InterruptedException {
     CountDownLatch countDownLatch = new CountDownLatch(1);
     BooleanReference isDone = new BooleanReference();
-    DatabaseKeepAlive obj =
-        new DatabaseKeepAlive(
+    DatabaseHeartbeat obj =
+        new DatabaseHeartbeat(
             new KeepAlive() {
 
               @Override

@@ -1,12 +1,12 @@
 package ra.db;
 
 /** Verify the database connection is alive. */
-public class DatabaseKeepAlive extends Thread {
+public class DatabaseHeartbeat extends Thread {
   private boolean isRunning = true;
 
   private KeepAlive keepalive;
 
-  public DatabaseKeepAlive(KeepAlive listener) {
+  public DatabaseHeartbeat(KeepAlive listener) {
     this.keepalive = listener;
   }
 
