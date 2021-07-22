@@ -19,7 +19,7 @@ public class DatabaseKeepAliveTest {
 
               @Override
               public long interval() {
-                return 1000;
+                return 2000;
               }
 
               @Override

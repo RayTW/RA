@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import ra.db.connection.OnceConnection;
-import ra.db.parameter.MysqlParameters;
+import ra.db.parameter.DatabaseParameters;
 
 /**
  * Get connection use asynchronous mode.
@@ -12,15 +12,15 @@ import ra.db.parameter.MysqlParameters;
  * @author Ray Li
  */
 public class OnceDatabaseFactory {
-  private Supplier<MysqlParameters> databaseParam;
+  private Supplier<DatabaseParameters> databaseParam;
   private AtomicLong databaseCount;
 
-  public OnceDatabaseFactory(Supplier<MysqlParameters> param) {
+  public OnceDatabaseFactory(Supplier<DatabaseParameters> param) {
     databaseParam = param;
     databaseCount = new AtomicLong(0);
   }
 
-  public OnceDatabaseFactory(MysqlParameters param) {
+  public OnceDatabaseFactory(DatabaseParameters param) {
     this(() -> param);
   }
 
