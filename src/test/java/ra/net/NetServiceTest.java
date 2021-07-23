@@ -239,8 +239,8 @@ public class NetServiceTest {
 
     socket.send(expected);
     letch.await();
-    serverSocket.close();
     socket.close();
+    serverSocket.close();
     threadPool.shutdownNow();
 
     assertThat(actual, hasItems(expected));
