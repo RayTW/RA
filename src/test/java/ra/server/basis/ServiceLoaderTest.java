@@ -27,7 +27,6 @@ public class ServiceLoaderTest {
 
   @Test
   public void testLoadServiceNotFound() throws ClassNotFoundException, IOException {
-    exceptionRule.expect(CommandNotFoundException.class);
     exceptionRule.expectMessage("\"/aaa/bbb/ccc\" not found");
 
     ServiceLoader<ServiceLite<Object>> obj = new ServiceLoader<>();

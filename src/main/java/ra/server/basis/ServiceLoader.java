@@ -70,8 +70,6 @@ public class ServiceLoader<T> {
       obj = holder.getServiceInstance();
 
     } catch (Exception e) {
-      e.printStackTrace();
-
       throw new CommandNotFoundException("\"" + command + "\" not found");
     }
     return obj;
