@@ -1,5 +1,6 @@
 package ra.db.parameter;
 
+import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -17,7 +18,7 @@ public class H2Parameters implements DatabaseParameters {
   private String dbUser;
   private String dbPassword;
   private String mode;
-  private int dbPort = 3306;
+  private Integer dbPort;
   private Properties dbProperties;
 
   private H2Parameters() {}
@@ -80,7 +81,17 @@ public class H2Parameters implements DatabaseParameters {
       ;
     }
 
-    String url = getUrlSchema() + mode + getName() + queryString;
+    String server = "";
+
+    if (dbHost != null) {
+      if (dbPort != null) {
+        server = String.format("//%s:%d/", dbHost, dbPort);
+      } else {
+        server = String.format("//%s/", dbHost);
+      }
+    }
+    String url = getUrlSchema() + mode + server + getName() + queryString;
+
     return url;
   }
 
@@ -171,15 +182,21 @@ public class H2Parameters implements DatabaseParameters {
      * @return MysqlParameters
      */
     public H2Parameters build() {
-      H2Parameters param = new H2Parameters();
-
       if (mode == null) {
         inMemory();
+      }
+
+      if (mode.equals("tcp:")) {
+        if (dbHost == null) {
+          throw new InvalidParameterException("The parameter 'dbHost' are required. ");
+        }
       }
 
       if (dbName == null) {
         dbName = "";
       }
+
+      H2Parameters param = new H2Parameters();
 
       param.mode = mode;
       param.dbHost = dbHost;

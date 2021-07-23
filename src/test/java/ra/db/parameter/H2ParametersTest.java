@@ -3,10 +3,14 @@ package ra.db.parameter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.security.InvalidParameterException;
+import java.sql.SQLException;
 import java.util.Properties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import ra.db.DatabaseCategory;
 
 /**
@@ -15,6 +19,7 @@ import ra.db.DatabaseCategory;
  * @author Ray Li
  */
 public class H2ParametersTest {
+  @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {}
@@ -102,5 +107,28 @@ public class H2ParametersTest {
     String actual = param.getDatabaseUrl();
 
     assertEquals("jdbc:h2:mem:", actual);
+  }
+
+  @Test
+  public void testTcpNotSetHost() throws SQLException {
+    exceptionRule.expect(InvalidParameterException.class);
+
+    new H2Parameters.Builder().tcp().setName("test").build();
+  }
+
+  @Test
+  public void testTcpHostPort() throws SQLException {
+    H2Parameters param =
+        new H2Parameters.Builder().tcp().setName("~/test").setHost("dbserv").setPort(8084).build();
+    System.out.println(param.getDatabaseUrl());
+    assertEquals("jdbc:h2:tcp://dbserv:8084/~/test", param.getDatabaseUrl());
+  }
+
+  @Test
+  public void testTcpHostNoPort() throws SQLException {
+    H2Parameters param =
+        new H2Parameters.Builder().tcp().setName("~/test").setHost("localhost").build();
+
+    assertEquals("jdbc:h2:tcp://localhost/~/test", param.getDatabaseUrl());
   }
 }

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -573,7 +574,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testConnectToH2Database() throws SQLException {
+  public void testConnectToH2DatabaseUseInMemory() throws SQLException {
     try (OnceConnection connection =
         new OnceConnection(new H2Parameters.Builder().inMemory().setName("test").build())) {
       connection.connect();
@@ -598,4 +599,37 @@ public class OnceConnectionTest {
       executor.execute("DROP TABLE DEMO_SCHEMA");
     }
   }
+
+  @Test
+  public void testConnectToH2DatabaseUseLocalFile() throws SQLException {
+    File file = new File("./data/sample");
+
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder().localFile(file.toString()).setName("test").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      Utility.get().deleteFiles(file);
+    }
+  }
+
 }
