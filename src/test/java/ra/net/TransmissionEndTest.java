@@ -26,7 +26,7 @@ public class TransmissionEndTest {
   public void testGetStringFromFeed() {
     assertEquals("\f", TransmissionEnd.FORM_FEED.getString());
   }
-  
+
   @Test
   public void testToString() {
     assertEquals("\f", TransmissionEnd.FORM_FEED.toString());
