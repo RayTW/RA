@@ -10,7 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import ra.util.SpaceUnit;
 import ra.util.Utility;
@@ -20,8 +21,13 @@ import ra.util.compression.CompressionMode;
 public class LogEveryDayTest {
   private static final String ROOT_FOLDER = "./log/";
 
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    new File(ROOT_FOLDER).mkdirs();
+  }
+
+  @After
+  public void tearDown() throws Exception {
     Utility.get().deleteFiles(ROOT_FOLDER);
   }
 
