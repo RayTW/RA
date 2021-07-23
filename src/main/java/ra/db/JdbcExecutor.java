@@ -56,10 +56,12 @@ public class JdbcExecutor implements StatementExecutor {
     int ret = 0;
     if (!isLive()) {
       String msg =
-          "Connect to database failed : "
+          "Connect to database failed, param :"
               + connection.getParam()
-              + "--->"
-              + connection.getConnection();
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + sql;
 
       if (listener != null) {
         listener.accept(new ConnectException(msg));
@@ -114,11 +116,12 @@ public class JdbcExecutor implements StatementExecutor {
 
     if (!isLive()) {
       String msg =
-          "Connect to database failed :"
+          "Connect to database failed, param :"
               + connection.getParam()
-              + "--->"
-              + connection.getConnection();
-      System.out.println(msg);
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + sql;
 
       if (listener != null) {
         listener.accept(new ConnectException(msg));
@@ -158,10 +161,12 @@ public class JdbcExecutor implements StatementExecutor {
 
     if (!isLive()) {
       String msg =
-          "Connect to database failed :"
+          "Connect to database failed, param :"
               + connection.getParam()
-              + "--->"
-              + connection.getConnection();
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + sql;
 
       if (listener != null) {
         listener.accept(new ConnectException(msg));
@@ -242,11 +247,12 @@ public class JdbcExecutor implements StatementExecutor {
 
     if (!isLive()) {
       String msg =
-          "Connect to database failed :"
+          "Connect to database failed, param :"
               + connection.getParam()
-              + "--->"
-              + connection.getConnection();
-      System.out.println(msg);
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + sql;
 
       if (errorListener != null) {
         errorListener.accept(new ConnectException(msg));
@@ -304,7 +310,7 @@ public class JdbcExecutor implements StatementExecutor {
   public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener) {
     if (!isLive()) {
       String msg =
-          "Connect to database failed :"
+          "Connect to database failed, param :"
               + connection.getParam()
               + ",connect="
               + connection.getConnection()
