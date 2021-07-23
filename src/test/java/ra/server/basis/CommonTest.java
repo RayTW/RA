@@ -1,4 +1,4 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -8,10 +8,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ra.net.MessageSender;
-import ra.server.basis.Common;
-import ra.server.basis.Global;
-import ra.server.basis.MockSendAdapter;
-import ra.server.basis.SenderAdapter;
 import ra.util.Utility;
 
 /** Test class. */

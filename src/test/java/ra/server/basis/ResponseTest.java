@@ -1,4 +1,4 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,8 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import ra.net.MessageSender;
-import ra.server.basis.MockSendAdapter;
-import ra.server.basis.Response;
 
 /** Test class. */
 public class ResponseTest {

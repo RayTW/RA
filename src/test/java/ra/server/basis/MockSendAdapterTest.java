@@ -1,4 +1,4 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import ra.net.MessageSender;
-import ra.server.basis.MockSendAdapter;
 
 /** Test class. */
 public class MockSendAdapterTest {

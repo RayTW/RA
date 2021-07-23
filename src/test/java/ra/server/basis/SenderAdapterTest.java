@@ -1,4 +1,4 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import ra.net.MessageSender;
 import ra.net.User;
-import ra.server.basis.SenderAdapter;
 import ra.util.Utility;
 import ra.util.logging.LogEveryDay;
 import ra.util.logging.LogSettings;

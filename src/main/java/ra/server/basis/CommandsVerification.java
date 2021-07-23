@@ -1,13 +1,14 @@
 package ra.server.basis;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,8 +23,8 @@ public class CommandsVerification {
   public static final String AUTHORIZATION_F5 = "F5";
   public static final String AUTHORIZATION_MONITOR = "Monitor";
 
-  // AUTHORIZATION_F5
-  public static final String PING = "/v1/server/ping";
+  // AUTHORIZATION_HEARTBEAT
+  public static final String HEARTBEAT = "/v1/server/heartbeat";
 
   // AUTHORIZATION_MONITOR
   public static final String MONITOR = "/v1/server/monitor";
@@ -34,40 +35,35 @@ public class CommandsVerification {
   private static Map<String, List<String>> commandsAuthorization = new ConcurrentHashMap<>();
 
   /**
-   * Initialize.
+   * Load commands.
    *
    * @param path path
+   * @throws IOException path
    */
-  public static void loadCommands(String path) {
-    try {
-      String text = new String(Files.readAllBytes(Paths.get(path)), "UTF-8");
-      JSONObject json = new JSONObject(text);
-      JSONArray tokens = json.getJSONArray("accessTokens");
-      JSONArray authorization = json.getJSONArray("commandsAuthorization");
+  public static void loadCommands(String path) throws IOException {
+    String text = new String(Files.readAllBytes(Paths.get(path)), "UTF-8");
+    JSONObject json = new JSONObject(text);
+    JSONArray tokens = json.getJSONArray("accessTokens");
+    JSONArray authorization = json.getJSONArray("commandsAuthorization");
 
-      StreamSupport.stream(tokens.spliterator(), true)
-          .map(JSONObject.class::cast)
-          .forEach(
-              o -> {
-                accessTokens.put(o.getString("accessToken"), o.getString("department"));
-              });
+    StreamSupport.stream(tokens.spliterator(), true)
+        .map(JSONObject.class::cast)
+        .forEach(
+            o -> {
+              accessTokens.put(o.getString("accessToken"), o.getString("department"));
+            });
 
-      StreamSupport.stream(authorization.spliterator(), true)
-          .map(JSONObject.class::cast)
-          .forEach(
-              o -> {
-                List<String> authDepartmentName = new CopyOnWriteArrayList<>();
+    StreamSupport.stream(authorization.spliterator(), true)
+        .map(JSONObject.class::cast)
+        .forEach(
+            o -> {
+              List<String> authDepartmentName = new CopyOnWriteArrayList<>();
 
-                StreamSupport.stream(o.getJSONArray("department").spliterator(), true)
-                    .map(String.class::cast)
-                    .forEach(authDepartmentName::add);
-                commandsAuthorization.put(o.getString("command"), authDepartmentName);
-              });
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+              StreamSupport.stream(o.getJSONArray("department").spliterator(), true)
+                  .map(String.class::cast)
+                  .forEach(authDepartmentName::add);
+              commandsAuthorization.put(o.getString("command"), authDepartmentName);
+            });
   }
 
   /**
@@ -101,7 +97,7 @@ public class CommandsVerification {
     switch (auth) {
       case AUTHORIZATION_F5:
         switch (command) {
-          case PING:
+          case HEARTBEAT:
             return true;
           default:
             throw new CommandNotFoundException("command '" + command + "' not found");
@@ -120,12 +116,30 @@ public class CommandsVerification {
   }
 
   /**
+   * Returns content size that access token of department.
+   *
+   * @return access token size
+   */
+  public static int getAccessTokensSize() {
+    return accessTokens.size();
+  }
+
+  /**
    * Returns access token of department.
    *
    * @return key:department name, value:departmentaccess token
    */
-  public static Map<String, String> getAccessTokens() {
-    return accessTokens;
+  public static Stream<Entry<String, String>> getAccessTokensStream() {
+    return accessTokens.entrySet().stream();
+  }
+
+  /**
+   * Returns list size of departments.
+   *
+   * @return key:command, value:department name
+   */
+  public static int getCommandsAuthorizationSize() {
+    return commandsAuthorization.size();
   }
 
   /**
@@ -133,7 +147,13 @@ public class CommandsVerification {
    *
    * @return key:command, value:department name
    */
-  public static Map<String, List<String>> getCommandsAuthorization() {
-    return commandsAuthorization;
+  public static Stream<Entry<String, List<String>>> getCommandsAuthorizationStream() {
+    return commandsAuthorization.entrySet().stream();
+  }
+
+  /** Clear all access token and commands. */
+  public static void clear() {
+    accessTokens.clear();
+    commandsAuthorization.clear();
   }
 }

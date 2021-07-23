@@ -1,4 +1,4 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -9,9 +9,6 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import ra.server.basis.CommandNotFoundException;
-import ra.server.basis.ServiceLite;
-import ra.server.basis.ServiceLoader;
 
 /** Test class. */
 public class ServiceLoaderTest {
@@ -21,7 +18,7 @@ public class ServiceLoaderTest {
   public void testLoadService() throws ClassNotFoundException, IOException {
     ServiceLoader<ServiceLite<Object>> obj = new ServiceLoader<>();
 
-    obj.loadClasses("ra.mock.server.basis.service");
+    obj.loadClasses("ra.server.basis.service");
 
     ServiceLite<Object> service = obj.getService("/fake/test");
 
@@ -35,7 +32,7 @@ public class ServiceLoaderTest {
 
     ServiceLoader<ServiceLite<Object>> obj = new ServiceLoader<>();
 
-    obj.loadClasses("com.chungyo.mock.server.basis.service");
+    obj.loadClasses("com.chungyo.server.basis.service");
 
     obj.getService("/aaa/bbb/ccc");
   }
@@ -53,7 +50,7 @@ public class ServiceLoaderTest {
   public void testToString() throws ClassNotFoundException, IOException {
     ServiceLoader<ServiceLite<Object>> obj = new ServiceLoader<>();
 
-    obj.loadClasses("ra.mock.server.basis.service");
+    obj.loadClasses("ra.server.basis.service");
 
     assertThat(obj.toString(), startsWith("Services["));
   }
@@ -62,7 +59,7 @@ public class ServiceLoaderTest {
   public void testLoadNoCacheService() throws ClassNotFoundException, IOException {
     ServiceLoader<ServiceLite<Object>> obj = new ServiceLoader<>();
 
-    obj.loadClasses("ra.mock.server.basis.service");
+    obj.loadClasses("ra.server.basis.service");
 
     ServiceLite<Object> service = obj.getService("/service/no-cache");
 
