@@ -104,27 +104,52 @@ public class H2Parameters implements DatabaseParameters {
     private Integer dbPort;
     private Properties dbProperties;
     private String mode;
+    private String dbPath;
 
     public Builder setHost(String host) {
       dbHost = host;
       return this;
     }
 
+    /**
+     * Set database name.
+     *
+     * @param name database name
+     * @return Builder
+     */
     public Builder setName(String name) {
       dbName = name;
       return this;
     }
 
+    /**
+     * Set database user name.
+     *
+     * @param user user name
+     * @return Builder
+     */
     public Builder setUser(String user) {
       dbUser = user;
       return this;
     }
 
+    /**
+     * Set database user password.
+     *
+     * @param password user password
+     * @return Builder
+     */
     public Builder setPassword(String password) {
       dbPassword = password;
       return this;
     }
 
+    /**
+     * Set the port of TCP mode.
+     *
+     * @param port server port
+     * @return Builder
+     */
     public Builder setPort(Integer port) {
       dbPort = port;
       return this;
@@ -146,9 +171,14 @@ public class H2Parameters implements DatabaseParameters {
       return this;
     }
 
-    /** Embedded (local) connection. */
-    public Builder localFile(String path) {
-      mode = path + "/";
+    /**
+     * Embedded (local) connection.
+     *
+     * @param dbPath database path
+     * @return Builder
+     */
+    public Builder localFile(String dbPath) {
+      mode = dbPath + "/";
       return this;
     }
 
@@ -158,9 +188,28 @@ public class H2Parameters implements DatabaseParameters {
       return this;
     }
 
-    /** Server mode (remote connections) using TCP/IP. */
-    public Builder tcp() {
+    /**
+     * Server mode (remote connections) using TCP/IP.
+     *
+     * <p>If no dbPath is specified, the default dbPath is used current working path.
+     *
+     * @param dbPath database path,example:"./sample/"
+     * @return Builder
+     */
+    public Builder tcp(String dbPath) {
       mode = "tcp:";
+      this.dbPath = dbPath == null ? "./" : dbPath;
+      return this;
+    }
+
+    /**
+     * Server mode (remote connections) using TCP/IP, and database use in-memory.
+     *
+     * @return Builder
+     */
+    public Builder tcpInMemory() {
+      mode = "tcp:";
+      this.dbPath = null;
       return this;
     }
 
@@ -177,7 +226,7 @@ public class H2Parameters implements DatabaseParameters {
     }
 
     /**
-     * build.
+     * Build H2Parameters.
      *
      * @return MysqlParameters
      */
@@ -189,6 +238,14 @@ public class H2Parameters implements DatabaseParameters {
       if (mode.equals("tcp:")) {
         if (dbHost == null) {
           throw new InvalidParameterException("The parameter 'dbHost' are required. ");
+        }
+        if (dbPath == null) {
+          if (dbName == null) {
+            throw new InvalidParameterException("The parameter 'dbName' are required. ");
+          }
+          dbName = "mem:" + dbName;
+        } else {
+          dbName = dbPath + dbName;
         }
       }
 

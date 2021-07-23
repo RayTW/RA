@@ -113,22 +113,41 @@ public class H2ParametersTest {
   public void testTcpNotSetHost() throws SQLException {
     exceptionRule.expect(InvalidParameterException.class);
 
-    new H2Parameters.Builder().tcp().setName("test").build();
+    new H2Parameters.Builder().tcp("").setHost(null).setName("test").build();
   }
 
   @Test
   public void testTcpHostPort() throws SQLException {
     H2Parameters param =
-        new H2Parameters.Builder().tcp().setName("~/test").setHost("dbserv").setPort(8084).build();
-    System.out.println(param.getDatabaseUrl());
+        new H2Parameters.Builder()
+            .tcp("~/")
+            .setName("test")
+            .setHost("dbserv")
+            .setPort(8084)
+            .build();
+
     assertEquals("jdbc:h2:tcp://dbserv:8084/~/test", param.getDatabaseUrl());
   }
 
   @Test
   public void testTcpHostNoPort() throws SQLException {
     H2Parameters param =
-        new H2Parameters.Builder().tcp().setName("~/test").setHost("localhost").build();
+        new H2Parameters.Builder().tcp("~/").setName("test").setHost("localhost").build();
 
     assertEquals("jdbc:h2:tcp://localhost/~/test", param.getDatabaseUrl());
+  }
+
+  @Test
+  public void testTcpInMemoryNoDbName() throws SQLException {
+    exceptionRule.expect(InvalidParameterException.class);
+    new H2Parameters.Builder().tcpInMemory().setHost("localhost").build();
+  }
+
+  @Test
+  public void testTcpInMemoryUseDbName() throws SQLException {
+    H2Parameters param =
+        new H2Parameters.Builder().tcpInMemory().setName("myDb").setHost("localhost").build();
+
+    assertEquals("jdbc:h2:tcp://localhost/mem:myDb", param.getDatabaseUrl());
   }
 }

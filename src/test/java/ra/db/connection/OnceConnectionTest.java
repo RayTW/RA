@@ -12,6 +12,7 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -632,4 +633,80 @@ public class OnceConnectionTest {
     }
   }
 
+  @Test
+  public void testConnectToH2DatabaseUseTcpInMemory() throws SQLException {
+    Server sever = Server.createTcpServer("-ifNotExists").start();
+    DatabaseParameters param =
+        new H2Parameters.Builder()
+            .tcpInMemory()
+            .setName("test")
+            .setHost("localhost")
+            .setPort(sever.getPort())
+            .build();
+
+    try (OnceConnection connection = new OnceConnection(param)) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      System.out.println(executor.executeQuery("SELECT * FROM DEMO_SCHEMA;"));
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      sever.stop();
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseTcpLocalFile() throws SQLException {
+    Server sever = Server.createTcpServer("-ifNotExists").start();
+    DatabaseParameters param =
+        new H2Parameters.Builder()
+            .tcp("./sample/")
+            .setName("test")
+            .setHost("localhost")
+            .setPort(sever.getPort())
+            .build();
+
+    try (OnceConnection connection = new OnceConnection(param)) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      sever.stop();
+      Utility.get().deleteFiles("./sample");
+    }
+  }
 }
