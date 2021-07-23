@@ -663,9 +663,6 @@ public class OnceConnectionTest {
       int actual = executor.insert(sql);
 
       assertEquals(3, actual);
-
-      System.out.println(executor.executeQuery("SELECT * FROM DEMO_SCHEMA;"));
-
       executor.execute("DROP TABLE DEMO_SCHEMA");
     } finally {
       sever.stop();
