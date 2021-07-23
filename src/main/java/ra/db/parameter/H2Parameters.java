@@ -213,18 +213,6 @@ public class H2Parameters implements DatabaseParameters {
       return this;
     }
 
-    /** Using encrypted. */
-    public Builder ssl() {
-      mode = "ssl:";
-      return this;
-    }
-
-    /** Database in a zip file. */
-    public Builder zip() {
-      mode = "zip:";
-      return this;
-    }
-
     /**
      * Build H2Parameters.
      *
