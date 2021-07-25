@@ -1,14 +1,12 @@
 package ra.db.parameter;
 
 import java.security.InvalidParameterException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.function.Supplier;
 import ra.db.DatabaseCategory;
 
 /**
- * MySQL database parameters.
+ * H2 database parameters.
  *
  * @author Ray Li
  */
@@ -260,9 +258,6 @@ public class H2Parameters implements DatabaseParameters {
       return param;
     }
   }
-
-  @Override
-  public void setupConnection(Connection connection) throws SQLException {}
 
   @Override
   public String toString() {

@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.function.Consumer;
+import ra.db.parameter.ConnectionSetupable;
 import ra.db.parameter.DatabaseParameters;
 
 /**
@@ -66,7 +67,11 @@ public interface DatabaseConnection extends AutoCloseable {
       connectionTemp = DriverManager.getConnection(dbconn);
     }
 
-    param.setupConnection(connectionTemp);
+    if (param instanceof ConnectionSetupable) {
+      ConnectionSetupable setupable = (ConnectionSetupable) param;
+      setupable.setupConnection(connectionTemp);
+    }
+
     dbconn = null;
 
     return connectionTemp;

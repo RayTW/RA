@@ -1,7 +1,5 @@
 package ra.db.parameter;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.function.Supplier;
 import ra.db.DatabaseCategory;
@@ -214,9 +212,6 @@ public class MysqlParameters implements DatabaseParameters {
       defaultProperties.put("connectTimeout", String.valueOf(CONNECT_TIMEOUT));
     }
   }
-
-  @Override
-  public void setupConnection(Connection connection) throws SQLException {}
 
   @Override
   public String toString() {

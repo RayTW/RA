@@ -1,7 +1,5 @@
 package ra.db.parameter;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import ra.db.DatabaseCategory;
 
 /**
@@ -12,30 +10,52 @@ import ra.db.DatabaseCategory;
 public interface DatabaseParameters {
   public DatabaseCategory getCategory();
 
+  /**
+   * Returns JDBC schema. Example: "jdbc:mysql:/
+   *
+   * @return port
+   */
   public String getUrlSchema();
 
+  /**
+   * Returns JDBC driver.
+   *
+   * @return port
+   */
   public String getDriver();
 
+  /**
+   * Returns host that connects to database.
+   *
+   * @return port
+   */
   public String getHost();
 
+  /**
+   * Returns port that connects to database.
+   *
+   * @return port
+   */
   public int getPort();
 
+  /**
+   * Returns database user.
+   *
+   * @return user
+   */
   public String getUser();
 
+  /**
+   * Returns database password.
+   *
+   * @return password
+   */
   public String getPassword();
 
   /**
-   * Take the url of Parameters.
+   * Returns the URL of parameters.
    *
-   * @return url of Parameters
+   * @return URL
    */
   public String getDatabaseUrl();
-
-  /**
-   * Take the Connection Object, after the Connection Object has connected. Than setting it.
-   *
-   * @param connection db`s connect object
-   * @throws SQLException SQL error response from database
-   */
-  public void setupConnection(Connection connection) throws SQLException;
 }
