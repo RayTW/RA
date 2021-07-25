@@ -629,7 +629,7 @@ public class OnceConnectionTest {
 
       executor.execute("DROP TABLE DEMO_SCHEMA");
     } finally {
-      Utility.get().deleteFiles(file);
+      Utility.get().deleteFiles(file.getParent());
     }
   }
 
