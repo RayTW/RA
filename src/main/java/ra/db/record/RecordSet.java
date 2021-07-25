@@ -457,7 +457,7 @@ public class RecordSet implements Record {
   /**
    * Returns name of column.
    *
-   * @param index index (range : 1 ~ < column.length)
+   * @param index index (range : 1 ~ column.length - 1)
    */
   @Override
   public String getColumnName(int index) {

@@ -180,7 +180,11 @@ public class H2Parameters implements DatabaseParameters {
       return this;
     }
 
-    /** In-memory mode. */
+    /**
+     * In-memory mode.
+     *
+     * @return Builder
+     */
     public Builder inMemory() {
       mode = "mem:";
       return this;

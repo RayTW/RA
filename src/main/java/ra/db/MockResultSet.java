@@ -23,7 +23,11 @@ public class MockResultSet extends ResultSetImpl {
   private static final byte[] ZERO_BYTE = new byte[0];
   private int cursor;
 
-  /** Initialize. */
+  /**
+   * Initialize.
+   *
+   * @param columnLabel column label
+   */
   public MockResultSet(String... columnLabel) {
     super(0, 0, null, null);
     cursor = 0;
