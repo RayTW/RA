@@ -1,9 +1,8 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import ra.server.basis.Global;
 import ra.util.compression.CompressionMode;
 import ra.util.logging.CompressionTimeUnit;
 import ra.util.logging.LogSettings;

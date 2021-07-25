@@ -1,16 +1,17 @@
-package ra.mock.server.basis;
+package ra.server.basis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import org.json.JSONObject;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import ra.net.MessageSender;
 import ra.net.User;
-import ra.server.basis.SenderAdapter;
 import ra.util.Utility;
 import ra.util.logging.LogEveryDay;
 import ra.util.logging.LogSettings;
@@ -20,9 +21,14 @@ public class SenderAdapterTest {
   private static String filePath = "./log/loggingTest";
   LogEveryDay mockLog = getMockLog();
 
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-    Utility.get().deleteFiles("./log/");
+  @Before
+  public void setUp() throws Exception {
+    new File(filePath).mkdirs();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    Utility.get().deleteFiles(filePath);
   }
 
   @Test

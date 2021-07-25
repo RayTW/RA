@@ -1,7 +1,5 @@
 package test.mock;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import ra.db.DatabaseCategory;
 import ra.db.parameter.DatabaseParameters;
 
@@ -54,10 +52,5 @@ public class MockDatabaseParameters implements DatabaseParameters {
   public String getDatabaseUrl() {
 
     return null;
-  }
-
-  @Override
-  public void setupConnection(Connection connection) throws SQLException {
-    //
   }
 }

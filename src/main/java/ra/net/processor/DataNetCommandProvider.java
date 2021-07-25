@@ -23,7 +23,8 @@ public class DataNetCommandProvider
   }
 
   public void receivedRequest(DataNetService.DataNetRequest request) {
-    System.out.println("data[" + request.getData() + "],request[" + request + "]");
+    System.out.println(
+        "class[" + this.getClass() + "],data[" + request.getData() + "],request[" + request + "]");
   }
 
   @Override

@@ -1,6 +1,7 @@
 package ra.db;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,15 +9,17 @@ import java.util.Optional;
 import org.junit.Test;
 import ra.db.connection.MockConcurrentConnection;
 import ra.db.connection.MockOriginalConnection;
-import test.mock.resultset.MockLastidResultSet;
+import ra.db.parameter.MysqlParameters;
+import ra.db.record.RecordCursor;
+import ra.ref.BooleanReference;
 
 /** Test class. */
-public class StatementExecutorTest {
+public class JdbcExecutorTest {
 
   @Test
   public void testExecuteWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(false);
 
@@ -28,7 +31,7 @@ public class StatementExecutorTest {
   @Test
   public void testTryExecuteWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(false);
 
@@ -41,7 +44,7 @@ public class StatementExecutorTest {
   @Test
   public void testTryExecuteWhenIsLiveTrue() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(true);
 
@@ -54,7 +57,7 @@ public class StatementExecutorTest {
   @Test
   public void testExecuteCommitWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(false);
     ArrayList<String> sqls = new ArrayList<>();
@@ -69,7 +72,7 @@ public class StatementExecutorTest {
   @Test
   public void testInsertWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(false);
 
@@ -82,7 +85,8 @@ public class StatementExecutorTest {
   @Test
   public void testMultiQueryWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
+    BooleanReference ref = new BooleanReference(false);
 
     connection.setIsLive(false);
 
@@ -90,20 +94,27 @@ public class StatementExecutorTest {
         exec -> {
           try {
             exec.executeQuery("SELECT 1");
+            ref.set(true);
 
           } catch (SQLException e) {
             e.printStackTrace();
           }
         });
+    assertFalse(ref.get());
   }
 
   @Test
   public void testMultiQueryExecptionListenerWhenIsLiveTrue() {
     MockConcurrentConnection connection = new MockConcurrentConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
-    connection.setIsLive(true);
-    connection.getMockConnection().setExecuteQueryListener(sql -> new MockLastidResultSet(22));
+    try (MockResultSet result = new MockResultSet("lastid")) {
+      result.addValue("lastid", 22);
+      connection.setIsLive(true);
+      connection.getMockConnection().setExecuteQueryListener(sql -> result);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
 
     executor.multiQuery(
         exec -> {
@@ -121,7 +132,7 @@ public class StatementExecutorTest {
   @Test
   public void testMultiQueryExecptionListenerWhenIsLiveFalse() {
     MockConcurrentConnection connection = new MockConcurrentConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+    StatementExecutor executor = new JdbcExecutor(connection);
 
     connection.setIsLive(false);
 
@@ -137,22 +148,27 @@ public class StatementExecutorTest {
   }
 
   @Test
-  public void testMultiQueryWhenIsLiveTrue() {
-    MockConcurrentConnection connection = new MockConcurrentConnection(null);
-    StatementExecutor executor = new StatementExecutor(connection);
+  public void testMultiQueryWhenIsLiveTrue() throws SQLException {
+    try (MockConcurrentConnection connection =
+            new MockConcurrentConnection(new MysqlParameters.Builder().build());
+        MockResultSet result = new MockResultSet("lastid")) {
 
-    connection.setIsLive(true);
-    connection.getMockConnection().setExecuteQueryListener(sql -> new MockLastidResultSet(22));
+      result.addValue("lastid", 22);
+      connection.setIsLive(true);
+      connection.getMockConnection().setExecuteQueryListener(sql -> result);
 
-    executor.multiQuery(
-        exec -> {
-          try {
-            RecordCursor record = exec.executeQuery("SELECT 1");
+      StatementExecutor executor = new JdbcExecutor(connection);
 
-            assertEquals("22", record.fieldFeedback("lastid", null));
-          } catch (SQLException e) {
-            e.printStackTrace();
-          }
-        });
+      executor.multiQuery(
+          exec -> {
+            try {
+              RecordCursor record = exec.executeQuery("SELECT 1");
+
+              assertEquals("22", record.fieldFeedback("lastid", null));
+            } catch (SQLException e) {
+              e.printStackTrace();
+            }
+          });
+    }
   }
 }

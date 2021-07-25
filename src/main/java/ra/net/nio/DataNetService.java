@@ -115,7 +115,9 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
   @Override
   public void close() {
     try {
-      sender.close();
+      if (sender != null) {
+        sender.close();
+      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }

@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.function.Consumer;
+import ra.db.parameter.ConnectionSetupable;
 import ra.db.parameter.DatabaseParameters;
 
 /**
@@ -13,12 +14,7 @@ import ra.db.parameter.DatabaseParameters;
  *
  * @author Ray Li
  */
-public interface DatabaseConnection extends KeepAlive, AutoCloseable {
-
-  @Override
-  public default long interval() {
-    return 5000;
-  }
+public interface DatabaseConnection extends AutoCloseable {
 
   /**
    * Load driver.
@@ -43,7 +39,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
    * @return StatementExecutor
    */
   public default StatementExecutor createStatementExecutor() {
-    return new StatementExecutor(this);
+    return new JdbcExecutor(this);
   }
 
   /**
@@ -71,7 +67,11 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
       connectionTemp = DriverManager.getConnection(dbconn);
     }
 
-    param.setupConnection(connectionTemp);
+    if (param instanceof ConnectionSetupable) {
+      ConnectionSetupable setupable = (ConnectionSetupable) param;
+      setupable.setupConnection(connectionTemp);
+    }
+
     dbconn = null;
 
     return connectionTemp;
@@ -120,7 +120,7 @@ public interface DatabaseConnection extends KeepAlive, AutoCloseable {
    */
   public default boolean connectIf(Consumer<StatementExecutor> executor) {
     if (connect()) {
-      executor.accept(new StatementExecutor(this));
+      executor.accept(new JdbcExecutor(this));
       return true;
     }
     return false;

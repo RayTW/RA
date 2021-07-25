@@ -17,11 +17,6 @@ repositories {
 }
 
 dependencies {
-  implementation group: 'org.json', name: 'json', version: '20210307'
-  implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.7'
-  implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.48'
-  implementation group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.8.4'
-  
   implementation 'io.github.raytw:ra:0.3.0'
 }
 ```

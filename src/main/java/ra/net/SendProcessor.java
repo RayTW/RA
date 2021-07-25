@@ -88,7 +88,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
         }
 
         synchronized (this) {
-          wait(100);
+          wait(50);
         }
       } catch (Exception e) {
         e.printStackTrace();

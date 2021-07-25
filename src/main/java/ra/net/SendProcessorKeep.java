@@ -58,7 +58,7 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
           if (isClearQueue) {
             clearQueue();
           }
-          netSocketPrintKeep.close();
+          netSocketPrintKeep.closeSocket();
 
           if (!isClearQueue) {
             break;

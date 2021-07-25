@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import org.junit.Test;
+import ra.db.record.RecordCursor;
 
 /** Test class. */
 public class MockStatementExecutorTest {

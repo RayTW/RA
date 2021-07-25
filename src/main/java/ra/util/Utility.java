@@ -13,9 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -24,7 +24,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ra.db.RecordCursor;
+import ra.db.record.RecordCursor;
 import ra.util.parser.VisitClassStrategy;
 
 /**
@@ -566,21 +566,15 @@ public class Utility {
    * @param file file
    */
   public void deleteFiles(File file) {
-    Consumer<File> deleteFile =
-        (f) -> {
-          file.delete();
-        };
-
-    if (!file.isDirectory()) {
-      deleteFile.accept(file);
-      return;
+    try {
+      Files.walk(Paths.get(file.getPath()))
+          .sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          .forEach(File::delete);
+      file.delete();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    for (File f : file.listFiles()) {
-      deleteFiles(f);
-    }
-
-    deleteFile.accept(file);
   }
 
   /**

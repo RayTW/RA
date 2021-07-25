@@ -31,6 +31,7 @@ public class NetSocketWriterKeep extends Thread {
   private Socket socket;
   private boolean readable = true;
   private boolean isRunning = false;
+  private boolean isClose = false;
   private String regedit = "";
   private String host = "";
   private int port;
@@ -73,6 +74,9 @@ public class NetSocketWriterKeep extends Thread {
 
   /** Connect. */
   public void connect() {
+    if (isClose) {
+      return;
+    }
     try {
       socket = new Socket(host, port);
       bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
@@ -206,7 +210,15 @@ public class NetSocketWriterKeep extends Thread {
     bufferedOutputStream.flush();
   }
 
-  void close() {
+  /** Close connection and stop reconnect. */
+  public void close() {
+    readable = false;
+    isRunning = false;
+    isClose = true;
+    closeSocket();
+  }
+
+  void closeSocket() {
     try {
       if (socket != null) {
         socket.close();

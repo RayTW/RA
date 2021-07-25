@@ -48,10 +48,19 @@ public class ServerConfigurationTest {
   @Test
   public void testGetIntMismatchKeyThrowIllegalArgumentException() throws IOException {
     exceptionRule.expect(IllegalArgumentException.class);
-    exceptionRule.expectMessage("Configuration no put key 'abc'.");
+    exceptionRule.expectMessage("Configuration no key 'abc' or no value 'null'.");
 
     ServerConfiguration config = new ServerConfiguration(path);
     config.getPropertyAsInt("abc");
+  }
+
+  @Test
+  public void testGetIntMismatchKeyDefaultValueThrowIllegalArgumentException() throws IOException {
+    exceptionRule.expect(IllegalArgumentException.class);
+    exceptionRule.expectMessage("Configuration no key 'notint' or no value '\"aabbcc\"'.");
+
+    ServerConfiguration config = new ServerConfiguration(path);
+    config.getPropertyAsInt("notint", 1);
   }
 
   @Test

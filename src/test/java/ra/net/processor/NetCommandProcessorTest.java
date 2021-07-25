@@ -6,16 +6,13 @@ import org.junit.Before;
 import org.junit.Test;
 import ra.net.NetService;
 import ra.ref.Reference;
-import ra.server.basis.CommandsVerification;
 import ra.util.Utility;
 
 /** Test class. */
 public class NetCommandProcessorTest {
 
   @Before
-  public void setUp() throws Exception {
-    CommandsVerification.loadCommands("./unittest/commands.json");
-  }
+  public void setUp() throws Exception {}
 
   @Test
   public void testSucessHeartbeat() {

@@ -22,15 +22,12 @@ public class GzipFileStringInput implements StringInput {
    *
    * @param file source format
    * @param charset file charset
+   * @throws IOException IOException
    */
-  public GzipFileStringInput(File file, String charset) {
-    try {
-      fileInputStream = new FileInputStream(file);
-      compressionInputStream = new GZIPInputStream(fileInputStream);
-      bufferedInput = new BufferedReader(new InputStreamReader(compressionInputStream, charset));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public GzipFileStringInput(File file, String charset) throws IOException {
+    fileInputStream = new FileInputStream(file);
+    compressionInputStream = new GZIPInputStream(fileInputStream);
+    bufferedInput = new BufferedReader(new InputStreamReader(compressionInputStream, charset));
   }
 
   @Override

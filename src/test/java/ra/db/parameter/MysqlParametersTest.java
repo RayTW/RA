@@ -2,11 +2,9 @@ package ra.db.parameter;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.sql.SQLException;
 import java.util.Properties;
 import org.junit.Test;
 import ra.db.DatabaseCategory;
@@ -76,20 +74,5 @@ public class MysqlParametersTest {
             .build();
 
     assertNotNull(obj.toString());
-  }
-
-  @Test
-  public void testParamSetupConnection() {
-    boolean throwException = false;
-    final MysqlParameters obj = new MysqlParameters.Builder().build();
-
-    try {
-      obj.setupConnection(null);
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throwException = true;
-    }
-
-    assertFalse(throwException);
   }
 }

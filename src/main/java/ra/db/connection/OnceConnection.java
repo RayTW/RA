@@ -34,7 +34,7 @@ public class OnceConnection implements DatabaseConnection {
 
   @Override
   public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
-    return consumer.applay(connection);
+    return consumer.applay(getConnection());
   }
 
   /**
@@ -70,11 +70,6 @@ public class OnceConnection implements DatabaseConnection {
   @Override
   public boolean isLive() {
     return isLive;
-  }
-
-  @Override
-  public void keep() {
-    throw new UnsupportedOperationException();
   }
 
   @Override

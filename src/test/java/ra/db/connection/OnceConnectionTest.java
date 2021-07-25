@@ -2,14 +2,17 @@ package ra.db.connection;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -17,12 +20,14 @@ import ra.db.DatabaseConnection;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
-import ra.db.RecordCursor;
+import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
+import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.RecordCursor;
+import ra.ref.BooleanReference;
 import ra.ref.Reference;
 import ra.util.Utility;
-import test.mock.resultset.MockLastidResultSet;
 
 /** Test class. */
 public class OnceConnectionTest {
@@ -84,17 +89,15 @@ public class OnceConnectionTest {
           .setExecuteQueryListener(
               sql -> {
                 assertEquals("SELECT 1", sql);
-                return null;
+                return new MockResultSet();
               });
 
       db.createStatementExecutor().executeQuery("SELECT 1");
-    } catch (Exception e1) {
-      e1.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryUsingForeach() {
+  public void testExecuteQueryUsingForeach() throws Exception {
     MysqlParameters.Builder builder = new MysqlParameters.Builder();
 
     builder
@@ -125,8 +128,6 @@ public class OnceConnectionTest {
             assertEquals(row.getString("name"), "testUser");
             assertEquals(row.getInt("age"), 1);
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -154,9 +155,6 @@ public class OnceConnectionTest {
         }) {
 
       db.connectIf(executor -> executor.execute(sql));
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -222,8 +220,6 @@ public class OnceConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -251,8 +247,6 @@ public class OnceConnectionTest {
         }) {
 
       db.connectIf(executor -> executor.execute(sql, exception -> {}));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -284,8 +278,6 @@ public class OnceConnectionTest {
           }
         }) {
       db.connectIf(executor -> executor.executeCommit(sqlList));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -321,13 +313,11 @@ public class OnceConnectionTest {
                   exception -> {
                     assertThat(exception, instanceOf(ConnectException.class));
                   }));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlConnected() {
+  public void testInsertSqlConnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -335,23 +325,26 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
 
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
+                connection.setExecuteUpdateListener(
+                    actual -> {
+                      assertEquals(sql, actual);
+                      return 1;
+                    });
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+                resultSet.addValue("lastid", expected);
 
-            return connection;
-          }
-        }) {
+                connection.setExecuteQueryListener(sql -> resultSet);
+
+                return connection;
+              }
+            }; ) {
 
       db.connectIf(
           executor -> {
@@ -359,14 +352,11 @@ public class OnceConnectionTest {
 
             assertEquals(expected, actual);
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testInsertSqlDisconnected() {
+  public void testInsertSqlDisconnected() throws SQLException {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -374,23 +364,26 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
 
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
+                resultSet.addValue("lastid", expected);
 
-            connection.setExecuteQueryListener(sql -> new MockLastidResultSet(expected));
+                connection.setExecuteUpdateListener(
+                    actual -> {
+                      assertEquals(sql, actual);
+                      return 1;
+                    });
 
-            return connection;
-          }
-        }) {
+                connection.setExecuteQueryListener(sql -> resultSet);
+
+                return connection;
+              }
+            }) {
       db.connectIf(
           executor -> {
             executor.insert(
@@ -399,32 +392,32 @@ public class OnceConnectionTest {
                   assertThat(exception, instanceOf(ConnectException.class));
                 });
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testExecuteQueryConnected() {
+  public void testExecuteQueryConnected() throws SQLException {
     String sql = "SELECT * FROM table;";
     Reference<String> actual = new Reference<>();
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (OnceConnection db =
-        new OnceConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
-            connection.setExecuteQueryListener(
-                sql -> {
-                  actual.set(sql);
+    try (MockResultSet resultSet = new MockResultSet("lastid");
+        OnceConnection db =
+            new OnceConnection(param) {
+              @Override
+              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+                MockConnection connection = new MockConnection();
+                connection.setExecuteQueryListener(
+                    sql -> {
+                      actual.set(sql);
+                      resultSet.addValue("lastid", 55);
 
-                  return new MockLastidResultSet(55);
-                });
-            return connection;
-          }
-        }) {
+                      return resultSet;
+                    });
+                return connection;
+              }
+            }) {
       db.connectIf(
           executor -> {
             RecordCursor record = executor.executeQuery(sql);
@@ -432,9 +425,6 @@ public class OnceConnectionTest {
             assertEquals(sql, actual.get());
             assertEquals("55", record.field("lastid"));
           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -464,8 +454,6 @@ public class OnceConnectionTest {
                   assertThat(exception, instanceOf(ConnectException.class));
                 });
           });
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -483,15 +471,13 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection getConnection() {
-            return null;
+            return new MockConnection();
           }
         }) {
 
       db.createStatementExecutor()
           .executeCommit(
               sqlList, exception -> assertThat(exception, instanceOf(ConnectException.class)));
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -520,8 +506,6 @@ public class OnceConnectionTest {
       int result = db.tryExecute(sql, exception -> {});
 
       assertEquals(1, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -535,7 +519,7 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            return null;
+            return new MockConnection();
           }
         }) {
       db.connect();
@@ -545,14 +529,12 @@ public class OnceConnectionTest {
               sql, exception -> assertThat(exception, instanceOf(ConnectException.class)));
 
       assertEquals(0, result);
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
   @Test
-  public void testOnCheckConnectThrowUnsupportedOperationException() {
-    exceptionRule.expect(UnsupportedOperationException.class);
+  public void testConnectionFailure() {
+    exceptionRule.expect(NullPointerException.class);
 
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -561,20 +543,167 @@ public class OnceConnectionTest {
         new OnceConnection(param) {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-            MockConnection connection = new MockConnection();
-
-            connection.setExecuteQueryListener(
-                sql -> {
-                  assertEquals("select 1", sql);
-                  return new MockResultSet();
-                });
-
-            return connection;
+            throw new RuntimeException();
           }
         }) {
-      db.connect();
 
-      db.keep();
+      assertFalse(db.connect());
+    }
+  }
+
+  @Test
+  public void testConnectionFailureThrowException() {
+    BooleanReference ref = new BooleanReference();
+    MysqlParameters param =
+        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
+
+    new OnceConnection(param) {
+      @Override
+      public Connection getConnection() {
+        return new MockConnection() {
+          @Override
+          public void close() throws SQLException {
+            super.close();
+            ref.set(true);
+            throw new SQLException("Unit Test");
+          }
+        };
+      }
+    }.close();
+
+    assertTrue(ref.get());
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseInMemory() throws SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(new H2Parameters.Builder().inMemory().setName("test").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseLocalFile() throws SQLException {
+    File file = new File("./data/sample");
+
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder().localFile(file.toString()).setName("test").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      Utility.get().deleteFiles(file.getParent());
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseTcpInMemory() throws SQLException {
+    Server sever = Server.createTcpServer("-ifNotExists").start();
+    DatabaseParameters param =
+        new H2Parameters.Builder()
+            .tcpInMemory()
+            .setName("test")
+            .setHost("localhost")
+            .setPort(sever.getPort())
+            .build();
+
+    try (OnceConnection connection = new OnceConnection(param)) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      sever.stop();
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseTcpLocalFile() throws SQLException {
+    Server sever = Server.createTcpServer("-ifNotExists").start();
+    DatabaseParameters param =
+        new H2Parameters.Builder()
+            .tcp("./sample/")
+            .setName("test")
+            .setHost("localhost")
+            .setPort(sever.getPort())
+            .build();
+
+    try (OnceConnection connection = new OnceConnection(param)) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      String sql =
+          "INSERT INTO DEMO_SCHEMA SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+      executor.execute(sql);
+      executor.execute(sql);
+      int actual = executor.insert(sql);
+
+      assertEquals(3, actual);
+
+      executor.execute("DROP TABLE DEMO_SCHEMA");
+    } finally {
+      sever.stop();
+      Utility.get().deleteFiles("./sample");
     }
   }
 }
