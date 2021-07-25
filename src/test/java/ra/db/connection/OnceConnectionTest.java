@@ -12,6 +12,7 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Properties;
 import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
@@ -704,6 +705,73 @@ public class OnceConnectionTest {
     } finally {
       sever.stop();
       Utility.get().deleteFiles("./sample");
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseInMemoryGetRow() {
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder()
+                .inMemory()
+                .setName("databaseName")
+                .setProperties(
+                    () -> {
+                      Properties properties = new Properties();
+
+                      // default is true
+                      properties.put("DATABASE_TO_UPPER", false);
+
+                      return properties;
+                    })
+                .build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `col_int` int(10) UNSIGNED NOT NULL,"
+              + "  `col_double` DOUBLE UNSIGNED DEFAULT NULL,"
+              + "  `col_boolean` BOOLEAN DEFAULT NULL ,"
+              + "  `col_tinyint` tinyint(1) NOT NULL ,"
+              + "  `col_enum` enum('default','enum1','enum2') DEFAULT NULL ,"
+              + "  `col_decimal` decimal(20,3) DEFAULT 0.000 ,"
+              + "  `col_varchar` varchar(50) NOT NULL ,"
+              + "  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),"
+              + "  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() "
+              + "ON UPDATE current_timestamp()"
+              + ");";
+
+      executor.execute(createTableSql);
+
+      String sql =
+          "INSERT INTO test_table SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+
+      executor.execute(sql);
+
+      RecordCursor record =
+          connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
+
+      record
+          .stream()
+          .forEach(
+              row -> {
+                System.out.println("xx=" + row.getInt("col_int"));
+                assertEquals(1, row.getInt("col_int"));
+              });
+
+      executor.execute("DROP TABLE test_table");
+      // Require to close when uses once connection.
+      connection.close();
     }
   }
 }
