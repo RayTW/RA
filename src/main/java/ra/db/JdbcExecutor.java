@@ -19,6 +19,11 @@ import ra.db.record.RecordSet;
 public class JdbcExecutor implements StatementExecutor {
   private DatabaseConnection connection;
 
+  /**
+   * Initialize.
+   *
+   * @param db database connection.
+   */
   public JdbcExecutor(DatabaseConnection db) {
     connection = db;
   }
@@ -406,6 +411,11 @@ public class JdbcExecutor implements StatementExecutor {
         });
   }
 
+  /**
+   * Returns instance of inheriting Record.
+   *
+   * @return Record
+   */
   public Record buildRecord() {
     return new RecordSet(this.connection.getParam().getCategory());
   }

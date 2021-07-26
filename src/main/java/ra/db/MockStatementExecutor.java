@@ -28,38 +28,79 @@ public class MockStatementExecutor extends JdbcExecutor {
   private Consumer<String> multiQueryListener;
   private Consumer<String> openListener;
 
+  /** Initialize. */
   public MockStatementExecutor() {
     super(new MockOnceConnection(new MysqlParameters.Builder().build()));
   }
 
+  /**
+   * Initialize.
+   *
+   * @param db database connection
+   */
   public MockStatementExecutor(DatabaseConnection db) {
     super(db);
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setInsertListener(Function<String, Integer> listener) {
     insertListener = listener;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setTryExecuteListener(Function<String, Integer> listener) {
     tryExecuteListener = listener;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setExecuteListener(Function<String, Integer> listener) {
     executeListener = listener;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setExecuteCommitListenerListener(Function<List<String>, Integer> listener) {
     executeCommitListener = listener;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setMultiOpenListener(Consumer<String> listener) {
     multiQueryListener = listener;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setOpenListener(Consumer<String> listener) {
     openListener = listener;
   }
 
+  /**
+   * Set mock database state whether available.
+   *
+   * @param isLive database state
+   */
   public void setIsLive(boolean isLive) {
     this.isLive = isLive;
   }
@@ -168,18 +209,34 @@ public class MockStatementExecutor extends JdbcExecutor {
     }
   }
 
+  /**
+   * Add fake data.
+   *
+   * @param data single row data
+   */
   public void addFakeQuery(List<String> data) {
     fakeQueryData.add(data.toArray(new String[data.size()]));
   }
 
+  /**
+   * Add fake data.
+   *
+   * @param data single row data
+   */
   public void addFakeQuery(String[] data) {
     fakeQueryData.add(data);
   }
 
+  /**
+   * Set column name.
+   *
+   * @param columnsName column name
+   */
   public void setFakeQueryColumnsName(String[] columnsName) {
     fakeQueryColumnsName = columnsName;
   }
 
+  /** Clear all fake data. */
   public void clearFakeQuery() {
     fakeQueryData.clear();
   }

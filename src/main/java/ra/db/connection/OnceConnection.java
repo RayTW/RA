@@ -17,6 +17,11 @@ public class OnceConnection implements DatabaseConnection {
   private Connection connection = null;
   private volatile boolean isLive = false;
 
+  /**
+   * Initialize.
+   *
+   * @param param database settings.
+   */
   public OnceConnection(DatabaseParameters param) {
     this.param = param;
     loadDriveInstance(param);

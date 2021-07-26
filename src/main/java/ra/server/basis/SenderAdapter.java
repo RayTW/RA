@@ -59,6 +59,12 @@ public class SenderAdapter extends MessageSender {
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message, index));
   }
 
+  /**
+   * Send message to specify user by index.
+   *
+   * @param json message
+   * @param index index
+   */
   public void send(JSONObject json, int index) {
     sender.send(json.toString(), index);
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, "" + json, index));
@@ -70,6 +76,12 @@ public class SenderAdapter extends MessageSender {
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, message, index));
   }
 
+  /**
+   * Ensure send message to specify user before close connection.
+   *
+   * @param json message
+   * @param index index
+   */
   public void sendClose(JSONObject json, int index) {
     sender.sendClose(json.toString(), index);
     commonLog.ifPresent(log -> log.writeln(LOG_TAG_RESPONSE, "" + json, index));

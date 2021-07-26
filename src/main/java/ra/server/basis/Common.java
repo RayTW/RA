@@ -111,23 +111,43 @@ public final class Common {
     sendAdapter.sendClose(obj.toString(), index);
   }
 
+  /**
+   * Returns request counts that current processing.
+   *
+   * @return request count
+   */
   public long getRequestCount() {
     return countMachine.get();
   }
 
+  /**
+   * Returns response sender.
+   *
+   * @return sender
+   */
   public SenderAdapter getSendData() {
     return sendAdapter;
   }
 
+  /**
+   * Returns machine counter.
+   *
+   * @return counter
+   */
   public AtomicInteger getCountMachine() {
     return countMachine;
   }
 
+  /**
+   * Returns host address that current server.
+   *
+   * @return host address
+   */
   public String getServerIp() {
     return "" + monitor.optLocalHostAddress(JSONObject.NULL);
   }
 
-  /** Common. */
+  /** Builder. */
   public static class Builder {
     private String serverName;
     private String serverAlias;
@@ -136,31 +156,67 @@ public final class Common {
     private String heartbeat;
     private SenderAdapter sender;
 
+    /**
+     * Set sender.
+     *
+     * @param sender sender
+     * @return Builder
+     */
     public Builder setSenderAdapter(SenderAdapter sender) {
       this.sender = sender;
       return this;
     }
 
+    /**
+     * Set server name.
+     *
+     * @param name server name
+     * @return Builder
+     */
     public Builder setServerName(String name) {
       serverName = name;
       return this;
     }
 
+    /**
+     * Set server alias.
+     *
+     * @param alias server alias
+     * @return Builder
+     */
     public Builder setServerAlias(String alias) {
       serverAlias = alias;
       return this;
     }
 
+    /**
+     * Set server port.
+     *
+     * @param port server port
+     * @return Builder
+     */
     public Builder setServerPort(int port) {
       serverPort = port;
       return this;
     }
 
+    /**
+     * Set server version.
+     *
+     * @param version server version
+     * @return Builder
+     */
     public Builder setServerVersion(String version) {
       serverVersion = version;
       return this;
     }
 
+    /**
+     * Set server heart beat.
+     *
+     * @param heartbeat heart beat
+     * @return Builder
+     */
     public Builder setHeartbeat(String heartbeat) {
       this.heartbeat = heartbeat;
       return this;

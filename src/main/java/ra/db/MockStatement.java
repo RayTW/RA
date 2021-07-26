@@ -29,14 +29,29 @@ public class MockStatement implements Statement {
     executeListener = Optional.ofNullable(null);
   }
 
+  /**
+   * Register listener on event that execute the update.
+   *
+   * @param listener listener
+   */
   public void setExecuteUpdateListener(Function<String, Integer> listener) {
     executeUpdateListener = Optional.ofNullable(listener);
   }
 
+  /**
+   * Register listener on event that execute the query.
+   *
+   * @param listener listener
+   */
   public void setExecuteQueryListener(Function<String, ResultSet> listener) {
     executeQueryListener = Optional.ofNullable(listener);
   }
 
+  /**
+   * Register listener on event that execute operate.
+   *
+   * @param listener listener
+   */
   public void setExecuteListener(Function<String, Boolean> listener) {
     executeListener = Optional.ofNullable(listener);
   }
@@ -81,7 +96,6 @@ public class MockStatement implements Statement {
 
   @Override
   public int[] executeBatch() throws SQLException {
-
     return null;
   }
 
@@ -112,109 +126,91 @@ public class MockStatement implements Statement {
 
   @Override
   public Connection getConnection() throws SQLException {
-
     return null;
   }
 
   @Override
   public int getFetchDirection() throws SQLException {
-
     return 0;
   }
 
   @Override
   public int getFetchSize() throws SQLException {
-
     return 0;
   }
 
   @Override
   public ResultSet getGeneratedKeys() throws SQLException {
-
     return null;
   }
 
   @Override
   public int getMaxFieldSize() throws SQLException {
-
     return 0;
   }
 
   @Override
   public int getMaxRows() throws SQLException {
-
     return 0;
   }
 
   @Override
   public boolean getMoreResults() throws SQLException {
-
     return false;
   }
 
   @Override
   public boolean getMoreResults(int current) throws SQLException {
-
     return false;
   }
 
   @Override
   public int getQueryTimeout() throws SQLException {
-
     return 0;
   }
 
   @Override
   public ResultSet getResultSet() throws SQLException {
-
     return null;
   }
 
   @Override
   public int getResultSetConcurrency() throws SQLException {
-
     return 0;
   }
 
   @Override
   public int getResultSetHoldability() throws SQLException {
-
     return 0;
   }
 
   @Override
   public int getResultSetType() throws SQLException {
-
     return 0;
   }
 
   @Override
   public int getUpdateCount() throws SQLException {
-
     return 0;
   }
 
   @Override
   public SQLWarning getWarnings() throws SQLException {
-
     return null;
   }
 
   @Override
   public boolean isCloseOnCompletion() throws SQLException {
-
     return false;
   }
 
   @Override
   public boolean isClosed() throws SQLException {
-
     return false;
   }
 
   @Override
   public boolean isPoolable() throws SQLException {
-
     return false;
   }
 
@@ -244,13 +240,11 @@ public class MockStatement implements Statement {
 
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
-
     return false;
   }
 
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
-
     return null;
   }
 
@@ -265,7 +259,6 @@ public class MockStatement implements Statement {
 
   @Override
   public InputStream getLocalInfileInputStream() {
-
     return null;
   }
 
@@ -274,7 +267,6 @@ public class MockStatement implements Statement {
 
   @Override
   public ExceptionInterceptor getExceptionInterceptor() {
-
     return null;
   }
 
@@ -283,7 +275,6 @@ public class MockStatement implements Statement {
 
   @Override
   public int getOpenResultSetCount() {
-
     return 0;
   }
 
@@ -292,7 +283,6 @@ public class MockStatement implements Statement {
 
   @Override
   public int getId() {
-
     return 0;
   }
 }

@@ -14,6 +14,11 @@ public class MockConcurrentConnection extends ConcurrentConnection {
   private MockConnection mockConnection = new MockConnection();
   private boolean isKeepLive = true;
 
+  /**
+   * Initialize.
+   *
+   * @param param database settings.
+   */
   public MockConcurrentConnection(MysqlParameters param) {
     super(param);
   }
@@ -21,10 +26,20 @@ public class MockConcurrentConnection extends ConcurrentConnection {
   @Override
   public void loadDriveInstance(DatabaseParameters param) {}
 
+  /**
+   * Set state of database connection.
+   *
+   * @param isLive database available
+   */
   public void setIsLive(boolean isLive) {
     isKeepLive = isLive;
   }
 
+  /**
+   * Returns mock connection.
+   *
+   * @return MockConnection
+   */
   public MockConnection getMockConnection() {
     return mockConnection;
   }

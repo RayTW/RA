@@ -11,6 +11,11 @@ import ra.db.record.RecordCursor;
  */
 public interface StatementExecutor {
 
+  /**
+   * Returns database state whether available.
+   *
+   * @return database state
+   */
   public boolean isLive();
 
   /**

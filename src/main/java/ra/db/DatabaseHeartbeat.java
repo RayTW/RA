@@ -6,6 +6,11 @@ public class DatabaseHeartbeat extends Thread {
 
   private KeepAlive keepalive;
 
+  /**
+   * Initialize.
+   *
+   * @param listener listener
+   */
   public DatabaseHeartbeat(KeepAlive listener) {
     this.keepalive = listener;
   }
@@ -26,6 +31,7 @@ public class DatabaseHeartbeat extends Thread {
     keepalive = null;
   }
 
+  /** Close heart beat. */
   public void close() {
     isRunning = false;
     this.interrupt();

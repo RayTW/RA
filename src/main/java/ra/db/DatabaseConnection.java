@@ -133,6 +133,11 @@ public interface DatabaseConnection extends AutoCloseable {
    */
   public abstract boolean connect();
 
+  /**
+   * Returns database properties settings.
+   *
+   * @return DatabaseParameters
+   */
   public abstract DatabaseParameters getParam();
 
   /**
@@ -142,13 +147,34 @@ public interface DatabaseConnection extends AutoCloseable {
    */
   public abstract Connection getConnection();
 
+  /**
+   * Get current database connection.
+   *
+   * @param consumer consumer
+   * @return Database original connection.
+   * @throws SQLException SQLException
+   * @throws ConnectException if can't to connect database.
+   */
   public abstract int getConnection(ConnectionFunction consumer)
       throws SQLException, ConnectException;
 
+  /**
+   * Returns database state whether available.
+   *
+   * @return database state
+   */
   public abstract boolean isLive();
 
   /** Get current database connection. */
   public static interface ConnectionFunction {
+    /**
+     * Get current database connection.
+     *
+     * @param connection connection
+     * @return result
+     * @throws SQLException SQLException
+     * @throws ConnectException if can't to connect database.
+     */
     public abstract int applay(Connection connection) throws SQLException, ConnectException;
   }
 }

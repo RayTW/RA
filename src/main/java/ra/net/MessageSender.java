@@ -10,6 +10,11 @@ import java.util.Map;
 public class MessageSender {
   private NetServiceProvider serviceProvider;
 
+  /**
+   * Set NetServiceProvider.
+   *
+   * @param serviceProvider serviceProvider
+   */
   public void setNetServiceProvider(NetServiceProvider serviceProvider) {
     this.serviceProvider = serviceProvider;
   }

@@ -12,10 +12,17 @@ import java.util.Map;
 public class Row implements RowSet {
   private Map<String, byte[]> data;
 
+  /** Initialize. */
   public Row() {
     data = new HashMap<>();
   }
 
+  /**
+   * Put the value specifies key in single rows.
+   *
+   * @param key column name
+   * @param value data
+   */
   public void put(String key, byte[] value) {
     data.put(key, value);
   }
@@ -168,6 +175,7 @@ public class Row implements RowSet {
     return data.get(columnName) == null;
   }
 
+  /** Clear all value of a single row. */
   public void clear() {
     data.clear();
   }
