@@ -18,6 +18,10 @@ import javax.xml.stream.XMLStreamReader;
  */
 public class XmlConfigParser implements ConfigParser {
 
+  /**
+   * A lightweight set of re-usable functions for general purpose parsing. support XML parsing
+   * styles.
+   */
   public XmlConfigParser() {}
 
   /**
