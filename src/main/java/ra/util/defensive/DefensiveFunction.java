@@ -37,5 +37,10 @@ public interface DefensiveFunction
     return true;
   }
 
+  /**
+   * Returns reason.
+   *
+   * @return reason
+   */
   DefensiveReason getReason();
 }

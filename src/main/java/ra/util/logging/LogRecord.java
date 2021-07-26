@@ -36,6 +36,11 @@ public class LogRecord {
     simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
   }
 
+  /**
+   * Register listener to receive events when not enough space.
+   *
+   * @param listener listener
+   */
   public void setOnNotEnoughSpaceListener(OnNotEnoughSpaceListener listener) {
     onNotEnoughSpaceListener = listener;
   }
@@ -151,7 +156,7 @@ public class LogRecord {
   }
 
   /**
-   * Get the file name of the Log file.
+   * Returns the file name of the log file.
    *
    * @return file name of the Log file
    */
@@ -159,6 +164,11 @@ public class LogRecord {
     return logFileName;
   }
 
+  /**
+   * Returns log file.
+   *
+   * @return file
+   */
   public File getLogFileFolder() {
     return logFileFolder;
   }

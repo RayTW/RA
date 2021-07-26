@@ -57,6 +57,12 @@ public class NetServerApplication implements NetServiceProvider {
     }
   }
 
+  /**
+   * Put the user into user pool.
+   *
+   * @param index index
+   * @param listener listener
+   */
   public void putUser(int index, User listener) {
     userList.put("" + index, listener);
   }
@@ -114,18 +120,42 @@ public class NetServerApplication implements NetServiceProvider {
     return servicePool.get(NET + index);
   }
 
+  /**
+   * Returns service.
+   *
+   * @param key key
+   * @return service
+   */
   public Serviceable<?> getService(String key) {
     return servicePool.get(key);
   }
 
+  /**
+   * Returns service.
+   *
+   * @param index specify index
+   * @return NetService
+   */
   public NetService getNetService(int index) {
     return (NetService) servicePool.get(NET + index);
   }
 
+  /**
+   * Returns service.
+   *
+   * @param index specify index
+   * @return DataNetService
+   */
   public DataNetService getDataNetService(int index) {
     return (DataNetService) servicePool.get(NET + index);
   }
 
+  /**
+   * Returns user.
+   *
+   * @param index specify index
+   * @return User
+   */
   public User getUser(int index) {
     return userList.get("" + index);
   }
@@ -135,10 +165,20 @@ public class NetServerApplication implements NetServiceProvider {
     return userList;
   }
 
+  /**
+   * Returns message sender.
+   *
+   * @return MessageSender
+   */
   public MessageSender getMessageSender() {
     return sender;
   }
 
+  /**
+   * Returns server configuration.
+   *
+   * @return ServerConfiguration
+   */
   public ServerConfiguration getConfiguration() {
     return configuration;
   }
