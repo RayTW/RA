@@ -132,7 +132,7 @@ dependencies {
       executor.execute(sql);
 
       RecordCursor record =
-          connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
+          executor.executeQuery("SELECT * FROM `test_table`");
 
       record
           .stream()
