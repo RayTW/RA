@@ -87,7 +87,7 @@ public class CaughtExceptionHandler {
    *
    * <pre>
    * 1.When use System.err.println(..)
-   * 2.When use {@link MysqlParameters.Builder#setProfileSql(boolean)} set true.
+   * 2.When use {@link ra.db.parameter.MysqlParameters.Builder#setProfileSql(boolean)} set true.
    * </pre>
    *
    * @param listener error
