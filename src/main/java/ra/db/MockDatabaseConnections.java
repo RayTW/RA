@@ -11,12 +11,23 @@ import ra.db.parameter.DatabaseParameters;
 public class MockDatabaseConnections extends DatabaseConnections {
   private MockStatementExecutor mockStatementExecutor = new MockStatementExecutor();
 
+  /** Initialize. */
   public MockDatabaseConnections() {}
 
+  /**
+   * Initialize.
+   *
+   * @param name name
+   */
   public MockDatabaseConnections(String name) {
     super(name);
   }
 
+  /**
+   * Set listener.
+   *
+   * @param mock mock statement executor
+   */
   public void setMockStatementExecutor(MockStatementExecutor mock) {
     mockStatementExecutor = mock;
   }

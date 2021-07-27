@@ -19,14 +19,16 @@ import org.json.JSONObject;
  * @author Ray Li
  */
 public class CommandsVerification {
-  // AUTHORIZATION
+  /** authorization F5. */
   public static final String AUTHORIZATION_F5 = "F5";
+
+  /** authorization Monitor. */
   public static final String AUTHORIZATION_MONITOR = "Monitor";
 
-  // AUTHORIZATION_HEARTBEAT
+  /** command heart beat. */
   public static final String HEARTBEAT = "/v1/server/heartbeat";
 
-  // AUTHORIZATION_MONITOR
+  /** command monitor. */
   public static final String MONITOR = "/v1/server/monitor";
 
   /** key:depart, value:department access token. */

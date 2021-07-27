@@ -20,6 +20,11 @@ public class MessageReceiver extends Thread {
   private ReentrantLock lock = new ReentrantLock();
   private Condition condition = lock.newCondition();
 
+  /**
+   * Initialize.
+   *
+   * @param listener listener
+   */
   public MessageReceiver(Consumer<String> listener) {
     onReceiveMessageListener = listener;
   }
@@ -71,10 +76,20 @@ public class MessageReceiver extends Thread {
     }
   }
 
+  /**
+   * Put the message to queue.
+   *
+   * @param msg message
+   */
   public void put(String msg) {
     queue.add(msg.getBytes());
   }
 
+  /**
+   * Put the message to the queue and awake queue.
+   *
+   * @param msg message
+   */
   public void putAndAwake(String msg) {
     put(msg);
     awake();
@@ -90,6 +105,11 @@ public class MessageReceiver extends Thread {
     }
   }
 
+  /**
+   * Returns running state.
+   *
+   * @return running state
+   */
   public boolean isRun() {
     return isRunning;
   }

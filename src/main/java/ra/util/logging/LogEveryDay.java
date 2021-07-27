@@ -27,7 +27,7 @@ public class LogEveryDay {
   private boolean logEnable;
 
   /**
-   * .
+   * Initialize.
    *
    * @param enable enable of write log into Log file
    * @param setting settings of Log Object
@@ -52,6 +52,11 @@ public class LogEveryDay {
     logRecord.init(folderPath, fileName, charset);
   }
 
+  /**
+   * Enable log.
+   *
+   * @param logEnable enable
+   */
   public void setLogEnable(boolean logEnable) {
     this.logEnable = logEnable;
   }
@@ -154,10 +159,16 @@ public class LogEveryDay {
     logRecord.setMaxFileSize(space, unit);
   }
 
+  /**
+   * Returns instance of record logs.
+   *
+   * @return LogRecord
+   */
   public LogRecord getLogRecord() {
     return logRecord;
   }
 
+  /** Close record logs. */
   public void close() {
     logRecord.close();
   }

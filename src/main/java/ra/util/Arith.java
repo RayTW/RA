@@ -115,6 +115,12 @@ public class Arith {
     return b.divide(one, scale, BigDecimal.ROUND_DOWN).doubleValue();
   }
 
+  /**
+   * Returns double value convert to plain string.
+   *
+   * @param v value
+   * @return string
+   */
   public static String toPlainString(double v) {
     BigDecimal c = new BigDecimal(String.valueOf(v));
     return c.toPlainString();

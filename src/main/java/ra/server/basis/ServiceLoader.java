@@ -25,6 +25,7 @@ import ra.util.annotation.RequestCommand;
 public class ServiceLoader<T> {
   private Map<String, ServiceHolder<T>> serviceClass;
 
+  /** Initialize. */
   public ServiceLoader() {
     serviceClass = new ConcurrentHashMap<>();
   }

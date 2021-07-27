@@ -18,6 +18,7 @@ public class PackageHandleInput {
   private ByteArrayOutputStream headerBuffer;
   private byte[] buffer = new byte[4096];
 
+  /** Initialize. */
   public PackageHandleInput() {
     contextBuffer = new ByteArrayOutputStream();
     headerBuffer = new ByteArrayOutputStream();

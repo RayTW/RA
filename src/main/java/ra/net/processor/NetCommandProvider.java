@@ -20,6 +20,11 @@ public class NetCommandProvider implements CommandProcessorProvider<NetService.N
     };
   }
 
+  /**
+   * Process event that received the request.
+   *
+   * @param request request
+   */
   public void receivedRequest(NetService.NetRequest request) {
     System.out.println(
         "class[" + this.getClass() + "],text[" + request.getText() + "],request[" + request + "]");

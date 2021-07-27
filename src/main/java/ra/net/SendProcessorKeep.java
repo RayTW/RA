@@ -20,6 +20,11 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
   private Condition condition = lock.newCondition();
   private boolean isClearQueue = true;
 
+  /**
+   * Initialize.
+   *
+   * @param net net
+   */
   public SendProcessorKeep(NetSocketWriterKeep net) {
     netSocketPrintKeep = net;
   }

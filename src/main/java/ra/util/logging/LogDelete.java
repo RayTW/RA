@@ -21,11 +21,18 @@ public class LogDelete extends Thread {
   private Object lock = new Object();
   private boolean isRun = true;
 
+  /**
+   * Initialize.
+   *
+   * @param folderPath The path that targets file.
+   * @param days keep days
+   */
   public LogDelete(String folderPath, int days) {
     this();
     logFileRoot.add(new DelRecordSettings(folderPath, days));
   }
 
+  /** Initialize. */
   public LogDelete() {
     simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
   }
@@ -134,6 +141,7 @@ public class LogDelete extends Thread {
     }
   }
 
+  /** Close. */
   public void close() {
     isRun = false;
     requestDelete();
@@ -166,6 +174,12 @@ public class LogDelete extends Thread {
     private String logFileRoot; // the path to save files
     private int saveDays = 7; // keep days
 
+    /**
+     * Initialize.
+     *
+     * @param folderPath The path that targets file.
+     * @param days keep days
+     */
     public DelRecordSettings(String folderPath, int days) {
       logFileRoot = folderPath;
       saveDays = days;

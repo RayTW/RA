@@ -11,41 +11,88 @@ public class BiReference<L, R> {
   private L left;
   private R right;
 
+  /** Initialize. */
   public BiReference() {}
 
+  /**
+   * Initialize.
+   *
+   * @param left left
+   * @param right right
+   */
   public BiReference(L left, R right) {
     this.left = left;
     this.right = right;
   }
 
+  /**
+   * Returns element of left.
+   *
+   * @return element
+   */
   public L getLeft() {
     return left;
   }
 
+  /**
+   * Set element of the left.
+   *
+   * @param left left
+   */
   public void setLeft(L left) {
     this.left = left;
   }
 
+  /**
+   * Returns the left whether is null.
+   *
+   * @return element is null.
+   */
   public boolean isLeftNull() {
     return left == null;
   }
 
+  /**
+   * Returns the left whether not null.
+   *
+   * @return element not null.
+   */
   public boolean isNotLeftNull() {
     return left != null;
   }
 
+  /**
+   * Returns element of right.
+   *
+   * @return element
+   */
   public R getRight() {
     return right;
   }
 
+  /**
+   * Set element of the right.
+   *
+   * @param right right
+   */
   public void setRight(R right) {
     this.right = right;
   }
 
+  /**
+   * Returns the right whether is null.
+   *
+   * @return element is null.
+   */
   public boolean isRightNull() {
     return right == null;
   }
 
+  /**
+   * Returns the left whether not null.
+   *
+   * @return element not null.
+   */
   public boolean isNotRightNull() {
     return right != null;
   }

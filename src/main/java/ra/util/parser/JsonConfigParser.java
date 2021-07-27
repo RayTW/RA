@@ -15,6 +15,10 @@ import ra.util.Utility;
  */
 public class JsonConfigParser implements ConfigParser {
 
+  /**
+   * A lightweight set of re-usable functions for general purpose parsing. support JSON parsing
+   * styles.
+   */
   public JsonConfigParser() {}
 
   /**

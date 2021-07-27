@@ -14,28 +14,56 @@ public class LogSettings {
   private CompressionTimeUnit timeUnit = CompressionTimeUnit.DAY;
   private CompressionMode mode = CompressionMode.LOG;
 
-  public LogSettings() {}
-
+  /**
+   * Returns log enable.
+   *
+   * @return enable
+   */
   public boolean getEnable() {
     return enable;
   }
 
+  /**
+   * Set log enable.
+   *
+   * @param enable enable
+   */
   public void setEnable(boolean enable) {
     this.enable = enable;
   }
 
+  /**
+   * Returns log path.
+   *
+   * @return path
+   */
   public String getPath() {
     return path;
   }
 
+  /**
+   * Set log path.
+   *
+   * @param path path
+   */
   public void setPath(String path) {
     this.path = path;
   }
 
+  /**
+   * Returns log keep days.
+   *
+   * @return log keep days
+   */
   public int getKeepDays() {
     return keepDays;
   }
 
+  /**
+   * Set log keep days.
+   *
+   * @param keepdays log keep days
+   */
   public void setKeepDays(int keepdays) {
     keepDays = keepdays;
   }
@@ -58,6 +86,11 @@ public class LogSettings {
     this.timeUnit = timeUnit;
   }
 
+  /**
+   * Set the time unit of the split log.
+   *
+   * @return CompressionTimeUnit
+   */
   public CompressionTimeUnit getCompressionTimeUnit() {
     return timeUnit;
   }

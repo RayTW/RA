@@ -6,16 +6,24 @@ package ra.net.nio;
  * @author Ray Li
  */
 public enum DataType {
+  /** Text. */
   TEXT(0x0000),
+  /** File. */
   FILE(0x0010);
   private final int type;
 
+  /** File name. */
   public static final String FILE_NAME = "{\"name\":\"%s\"}";
 
   private DataType(int type) {
     this.type = type;
   }
 
+  /**
+   * Returns type of data.
+   *
+   * @return data type
+   */
   public int getType() {
     return type;
   }

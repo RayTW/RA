@@ -23,6 +23,11 @@ public class Global {
     logDelete.start();
   }
 
+  /**
+   * Set enable that server log.
+   *
+   * @param logEnable enable
+   */
   public void setServerLogEnable(Supplier<LogSettings> logEnable) {
     setServerLogEnable(logEnable.get());
   }
@@ -39,6 +44,11 @@ public class Global {
     logDelete.requestDelete();
   }
 
+  /**
+   * Set enable that server error log.
+   *
+   * @param errorLogEnable enable
+   */
   public void setErrorLogEnable(Supplier<LogSettings> errorLogEnable) {
     setErrorLogEnable(errorLogEnable.get());
   }
@@ -55,14 +65,29 @@ public class Global {
     logDelete.requestDelete();
   }
 
+  /**
+   * Returns server log.
+   *
+   * @return LogEveryDay
+   */
   public LogEveryDay getServerLog() {
     return logEveryDay;
   }
 
+  /**
+   * Returns server error log.
+   *
+   * @return LogEveryDay
+   */
   public LogEveryDay getErrorLog() {
     return errorLogEveryDay;
   }
 
+  /**
+   * Returns instance of delete log.
+   *
+   * @return LogEveryDay
+   */
   public LogDelete getLogDelete() {
     return logDelete;
   }

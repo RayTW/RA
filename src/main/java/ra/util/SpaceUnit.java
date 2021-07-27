@@ -6,16 +6,22 @@ package ra.util;
  * @author Ray Li
  */
 public enum SpaceUnit {
+  /** Bytes. */
   Bytes,
+  /** Kilobytes. */
   KB,
+  /** Megabytes. */
   MB,
+  /** Gigabytes. */
   GB,
+  /** Terabytes. */
   TB,
+  /** Petabytes. */
   PB;
 
   /**
-   * For example, to convert 2048 bytes to KB, use: <tt>SpaceUnit.KB.convert(2048L,
-   * SpaceUnit.Bytes)</tt>.
+   * For example, to convert 2048 bytes to KB, use: <b>SpaceUnit.KB.convert(2048L,
+   * SpaceUnit.Bytes)</b>.
    *
    * @param value space amount
    * @param unit space unit
@@ -46,8 +52,8 @@ public enum SpaceUnit {
   }
 
   /**
-   * For example, to convert 2048 bytes to KB, use: <tt>SpaceUnit.KB.convert(2048L,
-   * SpaceUnit.Bytes)</tt>.
+   * For example, to convert 2048 bytes to KB, use: <b>SpaceUnit.KB.convert(2048L,
+   * SpaceUnit.Bytes)</b>.
    *
    * @param value space amount
    * @param unit space unit

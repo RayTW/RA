@@ -22,6 +22,7 @@ public class DatabaseConnections {
   private int index = 0;
   private StampedLock lock;
 
+  /** Create database connection. */
   public DatabaseConnections() {
     this(null);
   }
@@ -123,10 +124,22 @@ public class DatabaseConnections {
     return connectionPool.get(index).statementExecutor;
   }
 
+  /**
+   * Returns SQL statement executer.
+   *
+   * @param index index
+   * @return StatementExecutor
+   */
   public StatementExecutor getStatementExecutor(int index) {
     return connectionPool.get(index).statementExecutor;
   }
 
+  /**
+   * Returns database connection.
+   *
+   * @param index index
+   * @return DatabaseConnection
+   */
   public DatabaseConnection getConnection(int index) {
     return connectionPool.get(index).dbConnection;
   }
@@ -147,8 +160,14 @@ public class DatabaseConnections {
     private StatementExecutor statementExecutor;
     private DatabaseConnection dbConnection;
 
-    DatabaseConnectionHolder(DatabaseConnection db, StatementExecutor set) {
-      statementExecutor = set;
+    /**
+     * Initialize.
+     *
+     * @param db database connection
+     * @param executor executor
+     */
+    DatabaseConnectionHolder(DatabaseConnection db, StatementExecutor executor) {
+      statementExecutor = executor;
       dbConnection = db;
     }
   }

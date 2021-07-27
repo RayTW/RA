@@ -22,6 +22,11 @@ public class DataNetCommandProvider
     };
   }
 
+  /**
+   * Process event that received the request.
+   *
+   * @param request request
+   */
   public void receivedRequest(DataNetService.DataNetRequest request) {
     System.out.println(
         "class[" + this.getClass() + "],data[" + request.getData() + "],request[" + request + "]");

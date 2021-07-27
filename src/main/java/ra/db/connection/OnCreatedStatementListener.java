@@ -9,5 +9,11 @@ import java.sql.Statement;
  * @author Ray Li
  */
 public interface OnCreatedStatementListener {
+  /**
+   * Register listener that receives create SQL statements.
+   *
+   * @param st SQL statement
+   * @throws SQLException SQLException
+   */
   void onCreatedStatement(Statement st) throws SQLException;
 }

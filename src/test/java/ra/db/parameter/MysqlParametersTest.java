@@ -21,7 +21,6 @@ public class MysqlParametersTest {
             .setPassword("xxx")
             .setPort(0)
             .setProperties(() -> null)
-            .setType("")
             .setUser("user")
             .setProfileSql(true)
             .build();
@@ -41,7 +40,6 @@ public class MysqlParametersTest {
     assertEquals(obj.getPort(), 0);
     assertEquals(obj.getUser(), "user");
     assertEquals(obj.getProperties().get("profileSQL"), "true");
-    assertEquals(obj.getType(), "");
     assertEquals(obj.getDriver(), DatabaseCategory.MYSQL.getDriver());
 
     assertNotNull(obj);

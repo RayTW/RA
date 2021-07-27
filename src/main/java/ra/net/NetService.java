@@ -113,10 +113,20 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     }
   }
 
+  /**
+   * Set command processor.
+   *
+   * @param provider CommandProcessorProvider
+   */
   public void setCommandProcessorProvider(CommandProcessorProvider<NetRequest> provider) {
     this.processorProvider = provider;
   }
 
+  /**
+   * Returns index.
+   *
+   * @return index
+   */
   public int getIndex() {
     return index;
   }
@@ -190,21 +200,45 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
       return service;
     }
 
+    /**
+     * Set ServerSocket.
+     *
+     * @param serverSocket serverSocket
+     * @return Builder
+     */
     public Builder setServerSocket(ServerSocket serverSocket) {
       this.serverSocket = serverSocket;
       return this;
     }
 
+    /**
+     * Set executor service.
+     *
+     * @param executor executor
+     * @return Builder
+     */
     public Builder setSendExecutor(Executor executor) {
       this.sendPool = executor;
       return this;
     }
 
+    /**
+     * Set index.
+     *
+     * @param index index
+     * @return Builder
+     */
     public Builder setIndex(int index) {
       this.index = index;
       return this;
     }
 
+    /**
+     * Enable/disable SO_TIMEOUT with the specified timeout, in milliseconds.
+     *
+     * @param socketSoTimeout the specified timeout, in milliseconds.
+     * @return Builder
+     */
     public Builder setSocketSoTimeout(Duration socketSoTimeout) {
       this.socketSoTimeout = socketSoTimeout.toMillis();
       return this;
@@ -228,14 +262,29 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     private Sendable<String> sender;
     private String text;
 
+    /**
+     * Initialize.
+     *
+     * @param request request
+     */
     public NetRequest(Request request) {
       super(request);
     }
 
+    /**
+     * Returns sender.
+     *
+     * @return sender
+     */
     public Sendable<String> getSender() {
       return sender;
     }
 
+    /**
+     * Returns text.
+     *
+     * @return text
+     */
     public String getText() {
       return text;
     }

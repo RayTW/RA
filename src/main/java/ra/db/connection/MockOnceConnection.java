@@ -14,6 +14,11 @@ public class MockOnceConnection extends OnceConnection {
   private MockConnection mockConnection = new MockConnection();
   private boolean isKeepLive = true;
 
+  /**
+   * Initialize.
+   *
+   * @param param database settings.
+   */
   public MockOnceConnection(MysqlParameters param) {
     super(param);
   }
@@ -21,10 +26,20 @@ public class MockOnceConnection extends OnceConnection {
   @Override
   public void loadDriveInstance(DatabaseParameters param) {}
 
+  /**
+   * Set database available state.
+   *
+   * @param isLive database state
+   */
   public void setIsLive(boolean isLive) {
     isKeepLive = isLive;
   }
 
+  /**
+   * Returns mock database connection.
+   *
+   * @return MockConnection
+   */
   public MockConnection getMockConnection() {
     return mockConnection;
   }

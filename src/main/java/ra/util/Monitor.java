@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 public class Monitor {
   private OperatingSystemProxy operatingSystem;
 
+  /** Initialize. */
   public Monitor() {
     operatingSystem = new OperatingSystemProxy();
   }

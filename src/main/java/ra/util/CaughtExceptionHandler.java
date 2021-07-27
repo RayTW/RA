@@ -73,6 +73,11 @@ public class CaughtExceptionHandler {
     return instance;
   }
 
+  /**
+   * To register listener event that caught exception.
+   *
+   * @param listener listener
+   */
   public void setCaughtExceptionHandler(Consumer<Throwable> listener) {
     caughtExceptionHandler = listener;
   }

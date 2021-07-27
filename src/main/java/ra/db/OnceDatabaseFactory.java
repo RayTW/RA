@@ -15,11 +15,21 @@ public class OnceDatabaseFactory {
   private Supplier<DatabaseParameters> databaseParam;
   private AtomicLong databaseCount;
 
+  /**
+   * Initialize.
+   *
+   * @param param database settings.
+   */
   public OnceDatabaseFactory(Supplier<DatabaseParameters> param) {
     databaseParam = param;
     databaseCount = new AtomicLong(0);
   }
 
+  /**
+   * Initialize.
+   *
+   * @param param database settings.
+   */
   public OnceDatabaseFactory(DatabaseParameters param) {
     this(() -> param);
   }

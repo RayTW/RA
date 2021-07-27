@@ -14,7 +14,6 @@ public class MysqlParameters implements DatabaseParameters {
   private String dbName;
   private String dbUser;
   private String dbPassword;
-  private String dbType;
   private int dbPort = 3306;
   private static final int SOCKET_TIMEOUT = 60000 * 3;
   private static final int CONNECT_TIMEOUT = 60000 * 3;
@@ -22,6 +21,11 @@ public class MysqlParameters implements DatabaseParameters {
 
   private MysqlParameters() {}
 
+  /**
+   * Set database name.
+   *
+   * @param name database name
+   */
   public void setName(String name) {
     dbName = name;
   }
@@ -31,6 +35,11 @@ public class MysqlParameters implements DatabaseParameters {
     return dbHost;
   }
 
+  /**
+   * Returns database name.
+   *
+   * @return String
+   */
   public String getName() {
     return dbName;
   }
@@ -43,10 +52,6 @@ public class MysqlParameters implements DatabaseParameters {
   @Override
   public String getPassword() {
     return dbPassword;
-  }
-
-  public String getType() {
-    return dbType;
   }
 
   @Override
@@ -69,6 +74,11 @@ public class MysqlParameters implements DatabaseParameters {
     return dbPort;
   }
 
+  /**
+   * Returns DbSettings.
+   *
+   * @return DbSettings
+   */
   public Properties getProperties() {
     return dbProperties;
   }
@@ -106,41 +116,71 @@ public class MysqlParameters implements DatabaseParameters {
     private String dbName;
     private String dbUser;
     private String dbPassword;
-    private String dbType;
     private Integer dbPort;
     private Boolean profileSql;
     private Properties dbProperties;
 
+    /**
+     * Set host of databases.
+     *
+     * @param host host
+     * @return Builder
+     */
     public Builder setHost(String host) {
       dbHost = host;
       return this;
     }
 
+    /**
+     * Set database name.
+     *
+     * @param name database name
+     * @return Builder
+     */
     public Builder setName(String name) {
       dbName = name;
       return this;
     }
 
+    /**
+     * Set database user name.
+     *
+     * @param user user name
+     * @return Builder
+     */
     public Builder setUser(String user) {
       dbUser = user;
       return this;
     }
 
+    /**
+     * Set database user password.
+     *
+     * @param password user password
+     * @return Builder
+     */
     public Builder setPassword(String password) {
       dbPassword = password;
       return this;
     }
 
-    public Builder setType(String type) {
-      dbType = type;
-      return this;
-    }
-
+    /**
+     * Set database port.
+     *
+     * @param port database port
+     * @return Builder
+     */
     public Builder setPort(Integer port) {
       dbPort = port;
       return this;
     }
 
+    /**
+     * Set connection setting and DbSettings.
+     *
+     * @param supplier all properties
+     * @return Builder
+     */
     public Builder setProperties(Supplier<Properties> supplier) {
       dbProperties = supplier == null ? null : supplier.get();
       return this;
@@ -169,7 +209,6 @@ public class MysqlParameters implements DatabaseParameters {
       param.dbName = dbName;
       param.dbUser = dbUser;
       param.dbPassword = dbPassword;
-      param.dbType = dbType;
 
       if (dbPort != null) {
         param.dbPort = dbPort.intValue();

@@ -19,14 +19,31 @@ public class MockSendAdapter extends SenderAdapter {
   private String sendMsg;
   private BiConsumer<Method, String> sendListener;
 
+  /**
+   * initialize.
+   *
+   * @param sender sender
+   */
   public MockSendAdapter(MessageSender sender) {
     super(sender);
   }
 
+  /**
+   * initialize.
+   *
+   * @param sender sender
+   * @param commonLog commonLog
+   * @param errorLog errorLog
+   */
   public MockSendAdapter(MessageSender sender, LogEveryDay commonLog, LogEveryDay errorLog) {
     super(sender, commonLog, errorLog);
   }
 
+  /**
+   * Set listener.
+   *
+   * @param listener listener
+   */
   public void setSendLstener(BiConsumer<Method, String> listener) {
     sendListener = listener;
   }
@@ -110,10 +127,20 @@ public class MockSendAdapter extends SenderAdapter {
   @Override
   public <T extends User> void broadcast(String obj, Map<String, T> userlist) {}
 
+  /**
+   * Returns had sent messages.
+   *
+   * @return message
+   */
   public String getSendMessgae() {
     return sendMsg;
   }
 
+  /**
+   * Returns had sent messages.
+   *
+   * @return message
+   */
   public String getSendCloseMessgae() {
     return sendCloseMsg;
   }

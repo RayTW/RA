@@ -164,31 +164,67 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
       return service;
     }
 
+    /**
+     * Set server socket.
+     *
+     * @param serverSocket serverSocket
+     * @return Builder
+     */
     public Builder setServerSocket(ServerSocket serverSocket) {
       this.serverSocket = serverSocket;
       return this;
     }
 
+    /**
+     * Set CommandProcessorProvider.
+     *
+     * @param provider provider
+     * @return Builder
+     */
     public Builder setCommandProcessorProvider(CommandProcessorProvider<DataNetRequest> provider) {
       this.processorProvider = provider;
       return this;
     }
 
+    /**
+     * Set index.
+     *
+     * @param index index
+     * @return Builder
+     */
     public Builder setIndex(int index) {
       this.index = index;
       return this;
     }
 
+    /**
+     * Set timeout.
+     *
+     * @param socketSoTimeout socketSoTimeout
+     * @return Builder
+     */
     public Builder setSocketSoTimeout(Duration socketSoTimeout) {
       this.socketSoTimeout = socketSoTimeout.toMillis();
       return this;
     }
 
+    /**
+     * Register listener.
+     *
+     * @param listener listener
+     * @return Builder
+     */
     public Builder setTransferListener(Transfer listener) {
       transferListener = listener;
       return this;
     }
 
+    /**
+     * Set executor service.
+     *
+     * @param executor executor
+     * @return Builder
+     */
     public Builder setSendExecutor(Executor executor) {
       this.sendPool = executor;
       return this;
@@ -221,14 +257,29 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     private Sendable<Data> sender;
     private Data data;
 
+    /**
+     * Initialize.
+     *
+     * @param request request
+     */
     public DataNetRequest(Request request) {
       super(request);
     }
 
+    /**
+     * Returns data.
+     *
+     * @return Sendable
+     */
     public Sendable<Data> getSender() {
       return sender;
     }
 
+    /**
+     * Returns the data.
+     *
+     * @return Data
+     */
     public Data getData() {
       return data;
     }

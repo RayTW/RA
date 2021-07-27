@@ -47,10 +47,20 @@ public class RecordSet implements Record {
     table = newTable();
   }
 
+  /**
+   * Create record table.
+   *
+   * @return map
+   */
   protected Map<String, List<byte[]>> newTable() {
     return new ConcurrentHashMap<String, List<byte[]>>();
   }
 
+  /**
+   * Create column container.
+   *
+   * @return list
+   */
   protected List<byte[]> newColumnContainer() {
     return Collections.synchronizedList(new ArrayList<byte[]>());
   }
