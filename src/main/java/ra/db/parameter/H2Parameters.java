@@ -19,6 +19,7 @@ public class H2Parameters implements DatabaseParameters {
   private Integer dbPort;
   private Properties dbProperties;
 
+  /** Initialize. */
   private H2Parameters() {}
 
   @Override
@@ -26,6 +27,11 @@ public class H2Parameters implements DatabaseParameters {
     return dbHost;
   }
 
+  /**
+   * Returns database name.
+   *
+   * @return database name
+   */
   public String getName() {
     return dbName;
   }
@@ -60,6 +66,11 @@ public class H2Parameters implements DatabaseParameters {
     return dbPort;
   }
 
+  /**
+   * Returns DbSettings.
+   *
+   * @return DbSettings
+   */
   public Properties getProperties() {
     return dbProperties;
   }
@@ -104,6 +115,12 @@ public class H2Parameters implements DatabaseParameters {
     private String mode;
     private String dbPath;
 
+    /**
+     * Set host of databases.
+     *
+     * @param host host
+     * @return Builder
+     */
     public Builder setHost(String host) {
       dbHost = host;
       return this;

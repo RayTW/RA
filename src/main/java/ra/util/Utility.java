@@ -38,6 +38,11 @@ public class Utility {
 
   private Utility() {}
 
+  /**
+   * Returns instance of class Utility.
+   *
+   * @return instance
+   */
   public static Utility get() {
     return instance;
   }
@@ -281,6 +286,12 @@ public class Utility {
     return recursiveClassFields(clazz.getSuperclass(), strategy);
   }
 
+  /**
+   * Read file.
+   *
+   * @param filePath target file path
+   * @return String
+   */
   public String readFile(String filePath) {
     return readFile(filePath, "UTF-8");
   }

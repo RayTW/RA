@@ -13,18 +13,6 @@ import ra.net.processor.CommandProcessorProvider;
 /**
  * Socket connection output.
  *
- * <pre>{@code
- * example:
- * NetSocketPrintKeep obj = new NetSocketPrintKeep.Builder()
- * .setHost("127.0.0.1")
- * .setPort(1234)
- * .setCommandProcessorProvider(...)
- * .build();
- *
- * obj.connectToSocket();
- * obj.start();
- * }</pre>
- *
  * @author Ray Li
  */
 public class NetSocketWriterKeep extends Thread {
@@ -32,14 +20,14 @@ public class NetSocketWriterKeep extends Thread {
   private boolean readable = true;
   private boolean isRunning = false;
   private boolean isClose = false;
-  private String regedit = "";
+  private String registration = "";
   private String host = "";
   private int port;
   private int index;
   private BufferedOutputStream bufferedOutputStream;
   private BufferedInputStream bufferedInputStream;
   private CommandProcessorListener<NetService.NetRequest> commandProcessorListener;
-  private SendProcessorKeep sendThreadKeep;
+  private SendProcessorKeep sendKeep;
   private MessageReceiver receiveThread;
   private byte[] readBuffer = new byte[1024];
   private byte[] appendBuffer = new byte[readBuffer.length * 2];
@@ -49,15 +37,15 @@ public class NetSocketWriterKeep extends Thread {
   private NetSocketWriterKeep() {}
 
   private void setup(Boolean enableClearQueue) {
-    sendThreadKeep = new SendProcessorKeep(this);
+    sendKeep = new SendProcessorKeep(this);
     if (enableClearQueue != null) {
-      sendThreadKeep.enableClearQueue(enableClearQueue);
+      sendKeep.enableClearQueue(enableClearQueue);
     }
-    sendThreadKeep.start();
+    sendKeep.start();
 
     NetRequest.Builder builder = new NetRequest.Builder();
 
-    builder.setSender(sendThreadKeep);
+    builder.setSender(sendKeep);
 
     receiveThread =
         new MessageReceiver(
@@ -72,7 +60,7 @@ public class NetSocketWriterKeep extends Thread {
     receiveThread.start();
   }
 
-  /** Connect. */
+  /** Connect to server. */
   public void connect() {
     if (isClose) {
       return;
@@ -81,8 +69,8 @@ public class NetSocketWriterKeep extends Thread {
       socket = new Socket(host, port);
       bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
       bufferedInputStream = new BufferedInputStream(socket.getInputStream());
-      if (!regedit.isEmpty()) {
-        send(regedit);
+      if (!registration.isEmpty()) {
+        send(registration);
       }
       if (!isRunning) {
         isRunning = true;
@@ -180,16 +168,31 @@ public class NetSocketWriterKeep extends Thread {
     public void onReadLine(String line) throws IOException;
   }
 
+  /**
+   * Returns the index.
+   *
+   * @return index
+   */
   public int getIndex() {
     return index;
   }
 
+  /**
+   * Send code when first connected.
+   *
+   * @param code code
+   */
   public void setRegeditCode(String code) {
-    this.regedit = code;
+    this.registration = code;
   }
 
+  /**
+   * Returns the registration code.
+   *
+   * @return code
+   */
   public String getRegeditCode() {
-    return this.regedit;
+    return this.registration;
   }
 
   private void reconnect() {
@@ -201,10 +204,21 @@ public class NetSocketWriterKeep extends Thread {
     }
   }
 
+  /**
+   * Send message.
+   *
+   * @param message message
+   */
   public void send(String message) {
-    sendThreadKeep.send(message);
+    sendKeep.send(message);
   }
 
+  /**
+   * Send message.
+   *
+   * @param message message
+   * @throws IOException IOException
+   */
   void write(String message) throws IOException {
     bufferedOutputStream.write(TransmissionEnd.appendFeedNewLine(message).getBytes());
     bufferedOutputStream.flush();
@@ -218,6 +232,7 @@ public class NetSocketWriterKeep extends Thread {
     closeSocket();
   }
 
+  /** Close connection. */
   void closeSocket() {
     try {
       if (socket != null) {
@@ -229,7 +244,7 @@ public class NetSocketWriterKeep extends Thread {
     }
   }
 
-  /** build NetSocketPrintKeep. */
+  /** Build NetSocketPrintKeep. */
   public static class Builder {
     private String host;
     private int port;
@@ -237,16 +252,34 @@ public class NetSocketWriterKeep extends Thread {
     private Boolean enableClearQueue;
     private CommandProcessorProvider<NetService.NetRequest> commandProcessorProvider;
 
+    /**
+     * Set server host.
+     *
+     * @param host host
+     * @return Builder
+     */
     public Builder setHost(String host) {
       this.host = host;
       return this;
     }
 
+    /**
+     * Set server port.
+     *
+     * @param port port
+     * @return Builder
+     */
     public Builder setPort(int port) {
       this.port = port;
       return this;
     }
 
+    /**
+     * Set specify index.
+     *
+     * @param index index
+     * @return Builder
+     */
     public Builder setIndex(int index) {
       this.index = index;
       return this;
@@ -263,6 +296,12 @@ public class NetSocketWriterKeep extends Thread {
       return this;
     }
 
+    /**
+     * Set CommandProcessorProvider.
+     *
+     * @param provider provider
+     * @return Builder
+     */
     public Builder setCommandProcessorProvider(
         CommandProcessorProvider<NetService.NetRequest> provider) {
       commandProcessorProvider = provider;

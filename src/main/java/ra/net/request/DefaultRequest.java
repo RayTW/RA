@@ -38,50 +38,110 @@ public class DefaultRequest extends Request {
     this.authorization = json.optString("authorization", null);
   }
 
+  /**
+   * Returns command.
+   *
+   * @return command
+   */
   public String getCommand() {
     return command;
   }
 
+  /**
+   * Set command of the request.
+   *
+   * @param command command
+   */
   public void setCommand(String command) {
     this.command = command;
   }
 
+  /**
+   * Returns receive time of the request.
+   *
+   * @return millisecond
+   */
   public long getReciveTime() {
     return reciveTimestamp;
   }
 
+  /**
+   * Set receive time of the request.
+   *
+   * @param timestamp millisecond
+   */
   public void setReciveTime(long timestamp) {
     reciveTimestamp = timestamp;
   }
 
+  /**
+   * Returns authorization of the request.
+   *
+   * @return String
+   */
   public String getAuthorization() {
     return authorization;
   }
 
+  /**
+   * Set authorization of the request.
+   *
+   * @param authorization authorization
+   */
   public void setAuthorization(String authorization) {
     this.authorization = authorization;
   }
 
+  /**
+   * Returns source text of the request.
+   *
+   * @return String
+   */
   public String getSource() {
     return source;
   }
 
+  /**
+   * Set source text of the request.
+   *
+   * @param source source
+   */
   public void setSource(String source) {
     this.source = source;
   }
 
+  /**
+   * Returns JSONObject of the request.
+   *
+   * @return JSONObject
+   */
   public JSONObject getJson() {
     return json;
   }
 
+  /**
+   * Set JSONObject of the request.
+   *
+   * @param json json
+   */
   public void setJson(JSONObject json) {
     this.json = json;
   }
 
+  /**
+   * Send message as a response.
+   *
+   * @param message message
+   */
   public void send(String message) {
     this.sender.send(message);
   }
 
+  /**
+   * Send message as a response and close connection.
+   *
+   * @param message message
+   */
   public void sendClose(String message) {
     this.sender.sendClose(message);
   }

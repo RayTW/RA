@@ -200,6 +200,11 @@ public class Sender<E> extends Thread implements Sendable<Data> {
     }
   }
 
+  /**
+   * Returns send close of the flag.
+   *
+   * @return flag
+   */
   public boolean isSendClose() {
     return sendClose;
   }

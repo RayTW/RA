@@ -31,6 +31,7 @@ import java.net.SocketException;
 public class PackageHandleOutput implements Transfer {
   private byte[] buffer;
 
+  /** Initialize. */
   public PackageHandleOutput() {
     buffer = new byte[HEADER_LENGTH + MTU];
   }

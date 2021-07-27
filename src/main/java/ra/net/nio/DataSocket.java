@@ -125,10 +125,20 @@ public class DataSocket {
     }
   }
 
+  /**
+   * Write message.
+   *
+   * @param json message
+   */
   public void write(JSONObject json) {
     write(json.toString());
   }
 
+  /**
+   * Write message.
+   *
+   * @param json message
+   */
   public void write(JSONArray json) {
     write(json.toString());
   }
@@ -170,10 +180,20 @@ public class DataSocket {
     }
   }
 
+  /**
+   * Write file.
+   *
+   * @param file file
+   */
   public void write(File file) {
     write(Paths.get(file.toString()));
   }
 
+  /**
+   * Close connection.
+   *
+   * @throws IOException IOException
+   */
   public void close() throws IOException {
     socket.close();
   }
@@ -202,6 +222,11 @@ public class DataSocket {
     return false;
   }
 
+  /**
+   * Register listener.
+   *
+   * @param listener listener
+   */
   public void setOnReadLineListener(Consumer<Data> listener) {
     onReadListener = listener;
   }

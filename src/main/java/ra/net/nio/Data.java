@@ -42,6 +42,13 @@ public class Data {
     }
   }
 
+  /**
+   * Create data.
+   *
+   * @param type type
+   * @param source source
+   * @return Data
+   */
   public static Data parse(DataType type, byte[] source) {
     return new Data(type, source);
   }
@@ -79,14 +86,29 @@ public class Data {
     System.arraycopy(source, offset, content, 0, content.length);
   }
 
+  /**
+   * Returns data type.
+   *
+   * @return DataType
+   */
   public DataType getDataType() {
     return dataType;
   }
 
+  /**
+   * Returns title.
+   *
+   * @return title
+   */
   public String getTitle() {
     return this.title;
   }
 
+  /**
+   * Returns content.
+   *
+   * @return content
+   */
   public byte[] getContent() {
     return content;
   }

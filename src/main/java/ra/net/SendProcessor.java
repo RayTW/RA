@@ -21,7 +21,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
   private Socket socket;
   private BufferedOutputStream bufferedOutputStream;
   private int timeOut = 0;
-  private boolean sendCompilete = false;
+  private boolean sendComplete = false;
 
   /**
    * Initialize.
@@ -38,12 +38,17 @@ public class SendProcessor extends Thread implements Sendable<String> {
     bufferedOutputStream = new BufferedOutputStream(socket.getOutputStream());
   }
 
-  public SendProcessor(NetServiceable net) {
-    netServiceable = net;
+  /**
+   * Initialize.
+   *
+   * @param service service
+   */
+  public SendProcessor(NetServiceable service) {
+    netServiceable = service;
   }
 
   /** Clear message in queue. */
-  public void clearQue() {
+  public void clearQueue() {
     try {
       queue.clear();
     } catch (Exception e) {
@@ -82,7 +87,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
         msg = "";
       }
       try {
-        if (sendCompilete) {
+        if (sendComplete) {
           close();
           netServiceable.onClose();
         }
@@ -95,8 +100,8 @@ public class SendProcessor extends Thread implements Sendable<String> {
       }
     }
 
-    flushQue();
-    clearQue();
+    flushQueue();
+    clearQueue();
 
     release();
   }
@@ -144,7 +149,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
   @Override
   public void sendClose(String message) {
     send(message);
-    setSendCompilete(true);
+    setSendComplete(true);
   }
 
   private void flushMessage(String msg) throws Exception {
@@ -155,7 +160,7 @@ public class SendProcessor extends Thread implements Sendable<String> {
     socket.setSoTimeout(timeOut);
   }
 
-  private void flushQue() {
+  private void flushQueue() {
     String message;
     while (queue.size() > 0) {
       try {
@@ -194,11 +199,16 @@ public class SendProcessor extends Thread implements Sendable<String> {
     }
   }
 
+  /**
+   * Return whether completed that sent the message.
+   *
+   * @return whether sent completed
+   */
   public boolean getSendCompilete() {
-    return sendCompilete;
+    return sendComplete;
   }
 
-  private void setSendCompilete(boolean compilete) {
-    sendCompilete = compilete;
+  private void setSendComplete(boolean complete) {
+    sendComplete = complete;
   }
 }

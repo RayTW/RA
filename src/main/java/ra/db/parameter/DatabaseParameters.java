@@ -8,6 +8,11 @@ import ra.db.DatabaseCategory;
  * @author Ray Li
  */
 public interface DatabaseParameters {
+  /**
+   * Returns DatabaseCategory.
+   *
+   * @return DatabaseCategory
+   */
   public DatabaseCategory getCategory();
 
   /**

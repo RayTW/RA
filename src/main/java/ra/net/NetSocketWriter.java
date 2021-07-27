@@ -104,16 +104,34 @@ public class NetSocketWriter {
       return obj;
     }
 
+    /**
+     * Set server host.
+     *
+     * @param host host
+     * @return Builder
+     */
     public Builder setHost(String host) {
       this.host = host;
       return this;
     }
 
+    /**
+     * Set server port.
+     *
+     * @param port port
+     * @return Builder
+     */
     public Builder setPort(int port) {
       this.port = port;
       return this;
     }
 
+    /**
+     * Set timeout that to send message.
+     *
+     * @param timeout timeout
+     * @return Builder
+     */
     public Builder setSendTimeOut(int timeout) {
       this.sendTimeout = timeout;
       return this;

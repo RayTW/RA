@@ -6,11 +6,17 @@ package ra.util;
  * @author Ray Li
  */
 public enum SpaceUnit {
+  /** Bytes. */
   Bytes,
+  /** Kilobytes. */
   KB,
+  /** Megabytes. */
   MB,
+  /** Gigabytes. */
   GB,
+  /** Terabytes. */
   TB,
+  /** Petabytes. */
   PB;
 
   /**

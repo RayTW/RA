@@ -34,7 +34,11 @@ public class BiReference<L, R> {
     return left;
   }
 
-  /** Set element of the left. */
+  /**
+   * Set element of the left.
+   *
+   * @param left left
+   */
   public void setLeft(L left) {
     this.left = left;
   }
@@ -66,7 +70,11 @@ public class BiReference<L, R> {
     return right;
   }
 
-  /** Set element of the right. */
+  /**
+   * Set element of the right.
+   *
+   * @param right right
+   */
   public void setRight(R right) {
     this.right = right;
   }
