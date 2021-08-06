@@ -564,7 +564,11 @@ public class RecordSet implements Record {
           Object obj = result.getObject(i);
           byte[] value = null;
           if (obj != null) {
-            value = obj.toString().getBytes();
+            if (obj instanceof byte[]) {
+              value = (byte[]) obj;
+            } else {
+              value = obj.toString().getBytes();
+            }
           }
 
           tmp.add((value == null) ? null : value);

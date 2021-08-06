@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.function.Consumer;
-import ra.db.parameter.MysqlParameters;
 
 /**
  * It is used to observe the log of calling Exception.printStackTrace() in the process.
@@ -87,7 +86,7 @@ public class CaughtExceptionHandler {
    *
    * <pre>
    * 1.When use System.err.println(..)
-   * 2.When use {@link MysqlParameters.Builder#setProfileSql(boolean)} set true.
+   * 2.When use {@link ra.db.parameter.MysqlParameters.Builder#setProfileSql(boolean)} set true.
    * </pre>
    *
    * @param listener error
