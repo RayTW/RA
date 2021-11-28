@@ -14,7 +14,7 @@ import java.util.Objects;
  *
  * @author Ray Li, Kevin Tasi
  */
-public class SendProcessor extends Thread implements Sendable<String> {
+public class SendProcessor implements Runnable, Sendable<String> {
   private NetServiceable netServiceable;
   private boolean isRunning = true;
   private List<String> queue = Collections.synchronizedList(new ArrayList<String>());
