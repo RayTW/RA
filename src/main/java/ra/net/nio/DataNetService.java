@@ -126,7 +126,6 @@ public class DataNetService extends Thread implements Serviceable<Data>, AutoClo
     } catch (IOException e) {
       e.printStackTrace();
     }
-    isRunning = false;
     offline();
   }
 

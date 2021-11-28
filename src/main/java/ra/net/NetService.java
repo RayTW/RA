@@ -157,7 +157,6 @@ public class NetService extends Thread implements NetServiceable, AutoCloseable 
     } catch (Exception ex) {
       ex.printStackTrace();
     }
-    isRunning = false;
     offline();
   }
 
