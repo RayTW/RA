@@ -4,10 +4,9 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Provide sent message from the queue.
@@ -17,7 +16,7 @@ import java.util.Objects;
 public class SendProcessor implements Runnable, Sendable<String> {
   private NetServiceable netServiceable;
   private boolean isRunning = true;
-  private List<String> queue = Collections.synchronizedList(new ArrayList<String>());
+  private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
   private Socket socket;
   private BufferedOutputStream bufferedOutputStream;
   private int timeOut = 0;
@@ -59,41 +58,23 @@ public class SendProcessor implements Runnable, Sendable<String> {
   /** Close and clear message in queue. */
   public void close() {
     isRunning = false;
-    try {
-      synchronized (this) {
-        notifyAll();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   @Override
   public void run() {
     while (isRunning) {
-      String msg;
-      while (queue.size() > 0) {
-        try {
-          msg = queue.get(0);
-          flushMessage(msg);
-          queue.remove(0);
-
-        } catch (Exception e) {
-          close();
-          netServiceable.onClose();
-          e.printStackTrace();
-          break;
-        }
-        msg = "";
+      try {
+        flushMessage(queue.take());
+      } catch (Exception e) {
+        close();
+        netServiceable.onClose();
+        e.printStackTrace();
+        break;
       }
       try {
         if (sendComplete) {
           close();
           netServiceable.onClose();
-        }
-
-        synchronized (this) {
-          wait(50);
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -136,9 +117,6 @@ public class SendProcessor implements Runnable, Sendable<String> {
   public void send(String message) {
     Objects.requireNonNull(message, "The message requires a non null, message = " + message);
     queue.add(message);
-    synchronized (this) {
-      notifyAll();
-    }
   }
 
   /**
@@ -164,10 +142,9 @@ public class SendProcessor implements Runnable, Sendable<String> {
     String message;
     while (queue.size() > 0) {
       try {
-        message = queue.get(0);
+        message = queue.poll();
         flushMessage(message);
-        queue.remove(0);
-      } catch (Exception e) { // 若送出訊息發生IOException則不繼續執行清queue
+      } catch (Exception e) {
         e.printStackTrace();
         break;
       }

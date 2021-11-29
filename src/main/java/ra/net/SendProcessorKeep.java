@@ -1,11 +1,7 @@
 package ra.net;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * The queue of message.
@@ -15,9 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SendProcessorKeep extends Thread implements Sendable<String> {
   private NetSocketWriterKeep netSocketPrintKeep;
   private boolean isRunning = true;
-  private List<String> queue = Collections.synchronizedList(new LinkedList<String>());
-  private ReentrantLock lock = new ReentrantLock();
-  private Condition condition = lock.newCondition();
+  private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
   private boolean isClearQueue = true;
 
   /**
@@ -50,14 +44,10 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
   @Override
   public void run() {
     while (isRunning) {
-      String message;
 
       while (queue.size() > 0) {
         try {
-          message = queue.get(0);
-
-          netSocketPrintKeep.write(message);
-          queue.remove(0);
+          netSocketPrintKeep.write(queue.take());
         } catch (Exception e) {
           e.printStackTrace();
           if (isClearQueue) {
@@ -69,16 +59,6 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
             break;
           }
         }
-        message = "";
-      }
-
-      lock.lock();
-      try {
-        condition.await(50, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } finally {
-        lock.unlock();
       }
     }
   }
@@ -91,23 +71,11 @@ public class SendProcessorKeep extends Thread implements Sendable<String> {
   @Override
   public void send(String message) {
     queue.add(message);
-    lock.lock();
-    try {
-      condition.signalAll();
-    } finally {
-      lock.unlock();
-    }
   }
 
   /** Close sender. */
   public void close() {
     isRunning = false;
-    lock.lock();
-    try {
-      condition.signalAll();
-    } finally {
-      lock.unlock();
-    }
   }
 
   @Override
