@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import ra.util.annotation.RequestCommand;
@@ -40,7 +41,7 @@ public class ServiceLoader<T> {
    */
   @SuppressWarnings("unchecked")
   public void loadClasses(String packageName) throws ClassNotFoundException, IOException {
-    ArrayList<Class<?>> classes = getClasses(packageName);
+    List<Class<?>> classes = getClasses(packageName);
 
     classes
         .stream()
@@ -76,12 +77,11 @@ public class ServiceLoader<T> {
     return obj;
   }
 
-  private ArrayList<Class<?>> getClasses(String packageName)
-      throws ClassNotFoundException, IOException {
+  private List<Class<?>> getClasses(String packageName) throws ClassNotFoundException, IOException {
     ProtectionDomain domain = getClass().getProtectionDomain();
     CodeSource codeSource = domain.getCodeSource();
     Optional<URL> urlfrom = Optional.ofNullable(codeSource.getLocation());
-    ArrayList<Class<?>> classes = null;
+    List<Class<?>> classes = null;
 
     if (urlfrom.isPresent()) {
       classes = loadCleasses(urlfrom.get(), packageName);
@@ -107,21 +107,21 @@ public class ServiceLoader<T> {
     return classes;
   }
 
-  private ArrayList<Class<?>> loadCleasses(URL url, String packageName) {
-    ArrayList<Class<?>> classes = null;
+  private List<Class<?>> loadCleasses(URL url, String packageName) {
+    ArrayList<Class<?>> classes = new ArrayList<>();
     File jar = new File(url.getFile());
 
     if (jar.isFile()) {
-      classes = loadCleassesFromFile(jar, packageName);
+      classes.addAll(loadCleassesFromFile(jar, packageName));
     } else {
       File[] jarFileList = jar.listFiles();
 
       for (File file : jarFileList) {
-        classes = loadCleassesFromFile(file, packageName);
+        classes.addAll(loadCleassesFromFile(file, packageName));
       }
     }
 
-    return classes;
+    return classes.stream().distinct().collect(Collectors.toList());
   }
 
   private ArrayList<Class<?>> loadCleassesFromFile(File file, String packageName) {
@@ -131,7 +131,6 @@ public class ServiceLoader<T> {
       for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
         if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
           String className = entry.getName().replace('/', '.'); // including ".class"
-
           if (className.startsWith(packageName)) {
             classes.add(
                 Class.forName(className.substring(0, className.length() - ".class".length())));
@@ -172,9 +171,12 @@ public class ServiceLoader<T> {
 
   @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-
-    serviceClass.forEach((key, value) -> str.append(key + "=" + value + System.lineSeparator()));
+    String str =
+        serviceClass
+            .entrySet()
+            .stream()
+            .map(e -> e.getKey() + e.getValue())
+            .collect(Collectors.joining(System.lineSeparator()));
 
     return "Services[" + str.toString() + "]";
   }
