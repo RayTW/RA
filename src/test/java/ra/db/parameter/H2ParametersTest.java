@@ -46,7 +46,7 @@ public class H2ParametersTest {
 
     String actual = param.getDatabaseUrl();
 
-    assertEquals("jdbc:h2:file:./data/sample/myDb;USER=ray;PASSWORD=abc", actual);
+    assertEquals("jdbc:h2:file:./data/sample/myDb;PASSWORD=abc;USER=ray", actual);
   }
 
   @Test

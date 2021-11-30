@@ -15,7 +15,7 @@ import ra.net.Serviceable;
  *
  * @author Ray Li
  */
-public class Sender<E> extends Thread implements Sendable<Data> {
+public class Sender<E> implements Runnable, Sendable<Data> {
   private Serviceable<E> netListener;
   private Transfer transferListener;
   private boolean isRunning = true;

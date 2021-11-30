@@ -1,5 +1,6 @@
 package ra.net;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,9 @@ public class ServerConfiguration {
     properties = new Properties();
 
     if (path != null) {
-      properties.load(Files.newBufferedReader(path));
+      try (BufferedReader buf = Files.newBufferedReader(path)) {
+        properties.load(buf);
+      }
     }
   }
 

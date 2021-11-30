@@ -86,6 +86,7 @@ public class H2Parameters implements DatabaseParameters {
               .entrySet()
               .stream()
               .map(element -> element.getKey() + "=" + element.getValue())
+              .sorted()
               .reduce("", (a, b) -> a + ";" + b);
       ;
     }
