@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'io.github.raytw:ra:0.4.0'
+  implementation 'io.github.raytw:ra:0.4.2'
 }
 ```
 
