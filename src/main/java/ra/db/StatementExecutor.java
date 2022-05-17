@@ -58,6 +58,8 @@ public interface StatementExecutor {
    * Execute SQL statements.
    *
    * @param executor executor
+   * @throws ConnectException ConnectException
+   * @throws SQLException SQLException
    */
   public void executeTransaction(TransactionExecutor executor)
       throws ConnectException, SQLException;

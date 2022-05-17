@@ -10,5 +10,13 @@ import ra.db.JdbcExecutor.Transaction;
  * @author ray_lee
  */
 public interface TransactionExecutor {
-  public boolean apply(Transaction transacation) throws ConnectException, SQLException;
+  /**
+   * Returns Instance of transaction.
+   *
+   * @param transaction transaction
+   * @return boolean if true will to roll back operation of commit in database.
+   * @throws ConnectException ConnectException
+   * @throws SQLException SQLException
+   */
+  public boolean apply(Transaction transaction) throws ConnectException, SQLException;
 }
