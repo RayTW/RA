@@ -4,8 +4,6 @@ import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import ra.db.JdbcExecutor.Transaction;
 import ra.db.record.RecordCursor;
 
 /**
@@ -61,7 +59,7 @@ public interface StatementExecutor {
    *
    * @param executor executor
    */
-  public void executeTransaction(Function<Transaction, Boolean> executor)
+  public void executeTransaction(TransactionExecutor executor)
       throws ConnectException, SQLException;
 
   /**
