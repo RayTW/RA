@@ -1,7 +1,11 @@
 package ra.db;
 
+import java.net.ConnectException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import ra.db.JdbcExecutor.Transaction;
 import ra.db.record.RecordCursor;
 
 /**
@@ -51,6 +55,14 @@ public interface StatementExecutor {
    * @return affected rows
    */
   public int tryExecute(String sql, Consumer<Exception> listener);
+
+  /**
+   * Execute SQL statements.
+   *
+   * @param executor executor
+   */
+  public void executeTransaction(Function<Transaction, Boolean> executor)
+      throws ConnectException, SQLException;
 
   /**
    * Execute SQL statements.

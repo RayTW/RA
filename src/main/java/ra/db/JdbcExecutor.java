@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import ra.db.connection.OnCreatedStatementListener;
 import ra.db.record.Record;
 import ra.db.record.RecordCursor;
@@ -135,6 +136,44 @@ public class JdbcExecutor implements StatementExecutor {
     }
 
     return connection.tryExecute(sql, listener);
+  }
+
+  /**
+   * transaction.
+   *
+   * @throws SQLException SQLException
+   * @throws ConnectException ConnectException
+   */
+  public void executeTransaction(Function<Transaction, Boolean> executor)
+      throws ConnectException, SQLException {
+    this.connection.getConnection(
+        dbConnection -> {
+          Boolean ret = Boolean.TRUE;
+
+          if (connection == null) {
+            throw new ConnectException("Connect to database failed.");
+          }
+          try {
+            dbConnection.setAutoCommit(false);
+            try (Statement st = dbConnection.createStatement()) {
+              Transaction tran = new Transaction(st);
+              ret = executor.apply(tran);
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+          } finally {
+            if (ret) {
+              dbConnection.commit();
+            } else {
+              try {
+                dbConnection.rollback();
+              } catch (SQLException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+          return 0;
+        });
   }
 
   /**
@@ -418,5 +457,26 @@ public class JdbcExecutor implements StatementExecutor {
    */
   public Record buildRecord() {
     return new RecordSet(this.connection.getParam().getCategory());
+  }
+
+  class Transaction {
+    private Statement statement;
+
+    public Transaction(Statement statement) {
+      this.statement = statement;
+    }
+
+    public int executeUpdate(String sql) throws SQLException {
+      return statement.executeUpdate(sql);
+    }
+
+    public RecordCursor executeQuery(String sql) throws SQLException {
+      Record record = buildRecord();
+      ResultSet rs = statement.executeQuery(sql);
+
+      record.convert(rs);
+
+      return record;
+    }
   }
 }
