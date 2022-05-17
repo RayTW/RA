@@ -4,6 +4,7 @@ import java.net.ConnectException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import ra.db.connection.OnCreatedStatementListener;
@@ -135,6 +136,45 @@ public class JdbcExecutor implements StatementExecutor {
     }
 
     return connection.tryExecute(sql, listener);
+  }
+
+  /**
+   * transaction.
+   *
+   * @throws SQLException SQLException
+   * @throws ConnectException ConnectException
+   */
+  public void executeTransaction(TransactionExecutor executor)
+      throws ConnectException, SQLException {
+    if (connection == null) {
+      throw new ConnectException("Connect to database failed.");
+    }
+
+    this.connection.getConnection(
+        dbConnection -> {
+          boolean ret = true;
+
+          try {
+            dbConnection.setAutoCommit(false);
+            try (Statement st = dbConnection.createStatement()) {
+              Transaction tran = new Transaction(st);
+              ret = executor.apply(tran);
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+          } finally {
+            if (ret) {
+              dbConnection.commit();
+            } else {
+              try {
+                dbConnection.rollback();
+              } catch (SQLException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+          return 0;
+        });
   }
 
   /**
@@ -418,5 +458,77 @@ public class JdbcExecutor implements StatementExecutor {
    */
   public Record buildRecord() {
     return new RecordSet(this.connection.getParam().getCategory());
+  }
+
+  /**
+   * Transaction.
+   *
+   * @author ray_lee
+   */
+  public class Transaction {
+    private Statement statement;
+
+    public Transaction(Statement statement) {
+      this.statement = statement;
+    }
+
+    /**
+     * Execute multiple SQL using a batch.
+     *
+     * @param sqls sqls
+     * @return result
+     * @throws SQLException SQLException
+     */
+    public List<Integer> executeUpdate(List<String> sqls) throws SQLException {
+      ArrayList<Integer> rets = new ArrayList<>();
+      for (int i = 0; i < sqls.size(); i++) {
+        String sql = sqls.get(i);
+
+        int ret = statement.executeUpdate(sql);
+        rets.add(ret);
+      }
+      return rets;
+    }
+
+    /**
+     * Execute a SQL using a batch.
+     *
+     * @param sql sql
+     * @return execute count
+     * @throws SQLException SQLException
+     */
+    public int executeUpdate(String sql) throws SQLException {
+      return statement.executeUpdate(sql);
+    }
+
+    /**
+     * Execute a SQL using a batch.
+     *
+     * @param sql sql
+     * @return last id
+     * @throws SQLException SQLException
+     */
+    public int insertAndLastId(String sql) throws SQLException {
+      if (statement.executeUpdate(sql) > 0) {
+        return buildRecord().getLastInsertId(statement);
+      }
+      return -1;
+    }
+
+    /**
+     * Execute a query SQL using a batch.
+     *
+     * @param sql sql
+     * @return RecordCursor
+     * @throws SQLException SQLException
+     */
+    public RecordCursor executeQuery(String sql) throws SQLException {
+      Record record = buildRecord();
+      ResultSet rs = statement.executeQuery(sql);
+
+      record.convert(rs);
+
+      return record;
+    }
   }
 }
