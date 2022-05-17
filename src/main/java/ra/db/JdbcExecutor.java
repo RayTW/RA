@@ -144,6 +144,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @throws SQLException SQLException
    * @throws ConnectException ConnectException
    */
+  @Override
   public void executeTransaction(TransactionExecutor executor)
       throws ConnectException, SQLException {
     if (connection == null) {
