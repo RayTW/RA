@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -191,7 +192,9 @@ public class ServiceLoader<T> {
       this.cache = cache;
     }
 
-    public T getServiceInstance() throws InstantiationException, IllegalAccessException {
+    public T getServiceInstance()
+        throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, NoSuchMethodException, SecurityException {
       T obj = null;
 
       if (cache) {
@@ -202,13 +205,13 @@ public class ServiceLoader<T> {
             obj = cacheInstance;
 
             if (obj == null) {
-              obj = serviceClass.newInstance();
+              obj = serviceClass.getDeclaredConstructor().newInstance();
               cacheInstance = obj;
             }
           }
         }
       } else {
-        obj = serviceClass.newInstance();
+        obj = serviceClass.getDeclaredConstructor().newInstance();
       }
 
       return obj;

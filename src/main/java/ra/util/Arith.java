@@ -1,6 +1,7 @@
 package ra.util;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Since Java's primitive types cannot accurately perform operations on floating-point numbers, this
@@ -79,7 +80,7 @@ public class Arith {
     }
     BigDecimal b1 = new BigDecimal(Double.toString(v1));
     BigDecimal b2 = new BigDecimal(Double.toString(v2));
-    return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP).doubleValue();
+    return b1.divide(b2, scale, RoundingMode.HALF_UP).doubleValue();
   }
 
   /**
@@ -95,7 +96,7 @@ public class Arith {
     }
     BigDecimal b = new BigDecimal(Double.toString(v));
     BigDecimal one = new BigDecimal("1");
-    return b.divide(one, scale, BigDecimal.ROUND_HALF_UP).doubleValue();
+    return b.divide(one, scale, RoundingMode.HALF_UP).doubleValue();
   }
 
   /**
@@ -112,7 +113,7 @@ public class Arith {
     }
     BigDecimal b = new BigDecimal(Double.toString(value));
     BigDecimal one = new BigDecimal("1");
-    return b.divide(one, scale, BigDecimal.ROUND_DOWN).doubleValue();
+    return b.divide(one, scale, RoundingMode.HALF_UP).doubleValue();
   }
 
   /**
