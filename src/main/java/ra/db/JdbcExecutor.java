@@ -153,7 +153,7 @@ public class JdbcExecutor implements StatementExecutor {
 
     this.connection.getConnection(
         dbConnection -> {
-          boolean ret = true;
+          boolean ret = false;
 
           try {
             dbConnection.setAutoCommit(false);
@@ -161,8 +161,6 @@ public class JdbcExecutor implements StatementExecutor {
               Transaction tran = new Transaction(st);
               ret = executor.apply(tran);
             }
-          } catch (Exception e) {
-            e.printStackTrace();
           } finally {
             if (ret) {
               dbConnection.commit();
