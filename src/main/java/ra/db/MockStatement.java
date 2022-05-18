@@ -1,14 +1,10 @@
 package ra.db;
 
-import com.mysql.jdbc.ExceptionInterceptor;
-import com.mysql.jdbc.PingTarget;
-import com.mysql.jdbc.ResultSetInternalMethods;
-import com.mysql.jdbc.Statement;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -246,43 +242,5 @@ public class MockStatement implements Statement {
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
     return null;
-  }
-
-  @Override
-  public void enableStreamingResults() throws SQLException {}
-
-  @Override
-  public void disableStreamingResults() throws SQLException {}
-
-  @Override
-  public void setLocalInfileInputStream(InputStream stream) {}
-
-  @Override
-  public InputStream getLocalInfileInputStream() {
-    return null;
-  }
-
-  @Override
-  public void setPingTarget(PingTarget pingTarget) {}
-
-  @Override
-  public ExceptionInterceptor getExceptionInterceptor() {
-    return null;
-  }
-
-  @Override
-  public void removeOpenResultSet(ResultSetInternalMethods rs) {}
-
-  @Override
-  public int getOpenResultSetCount() {
-    return 0;
-  }
-
-  @Override
-  public void setHoldResultsOpenOverClose(boolean holdResultsOpenOverClose) {}
-
-  @Override
-  public int getId() {
-    return 0;
   }
 }

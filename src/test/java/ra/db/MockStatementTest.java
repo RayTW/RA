@@ -30,18 +30,8 @@ public class MockStatementTest {
     mockStatement.setMaxRows(0);
     mockStatement.setPoolable(false);
     mockStatement.setQueryTimeout(0);
-    mockStatement.enableStreamingResults();
-    mockStatement.disableStreamingResults();
-    mockStatement.setLocalInfileInputStream(null);
-    mockStatement.setPingTarget(null);
-    mockStatement.removeOpenResultSet(null);
-    mockStatement.setHoldResultsOpenOverClose(false);
     mockStatement.setExecuteListener(null);
 
-    assertEquals(0, mockStatement.getId());
-    assertEquals(0, mockStatement.getOpenResultSetCount());
-    assertNull(mockStatement.getExceptionInterceptor());
-    assertNull(mockStatement.getLocalInfileInputStream());
     assertNull(mockStatement.unwrap(Object.class));
     assertFalse(mockStatement.isWrapperFor(Object.class));
     assertFalse(mockStatement.isPoolable());

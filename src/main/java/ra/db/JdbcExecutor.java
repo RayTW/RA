@@ -153,7 +153,7 @@ public class JdbcExecutor implements StatementExecutor {
 
     this.connection.getConnection(
         dbConnection -> {
-          boolean ret = true;
+          boolean ret = false;
 
           try {
             dbConnection.setAutoCommit(false);
@@ -161,8 +161,6 @@ public class JdbcExecutor implements StatementExecutor {
               Transaction tran = new Transaction(st);
               ret = executor.apply(tran);
             }
-          } catch (Exception e) {
-            e.printStackTrace();
           } finally {
             if (ret) {
               dbConnection.commit();
@@ -324,7 +322,7 @@ public class JdbcExecutor implements StatementExecutor {
           dbConnection.setAutoCommit(true);
           try (Statement st = dbConnection.createStatement()) {
             synchronized (st) {
-              if (st.executeUpdate(sql) > 0) {
+              if (st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
                 return buildRecord().getLastInsertId(st);
               }
             }
@@ -510,7 +508,7 @@ public class JdbcExecutor implements StatementExecutor {
      * @throws SQLException SQLException
      */
     public int insertAndLastId(String sql) throws SQLException {
-      if (statement.executeUpdate(sql) > 0) {
+      if (statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
         return buildRecord().getLastInsertId(statement);
       }
       return -1;

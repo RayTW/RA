@@ -586,9 +586,9 @@ public class RecordSet implements Record {
      */
     @Override
     public int getLastInsertId(Statement statement) throws SQLException {
-      try (ResultSet rs = statement.executeQuery("CALL IDENTITY()"); ) {
+      try (ResultSet rs = statement.getGeneratedKeys(); ) {
         ResultH2.this.convert(rs);
-        return Integer.parseInt(field("IDENTITY()"));
+        return Integer.parseInt(field("ID"));
       }
     }
   }

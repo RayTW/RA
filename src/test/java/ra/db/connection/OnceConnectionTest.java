@@ -578,7 +578,19 @@ public class OnceConnectionTest {
   @Test
   public void testConnectToH2DatabaseUseInMemory() throws SQLException {
     try (OnceConnection connection =
-        new OnceConnection(new H2Parameters.Builder().inMemory().setName("test").build())) {
+        new OnceConnection(
+            new H2Parameters.Builder()
+                .inMemory()
+                .setName("test")
+                .setProperties(
+                    () -> {
+                      Properties properties = new Properties();
+
+                      properties.put("MODE", "MYSQL");
+
+                      return properties;
+                    })
+                .build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
@@ -608,7 +620,18 @@ public class OnceConnectionTest {
 
     try (OnceConnection connection =
         new OnceConnection(
-            new H2Parameters.Builder().localFile(file.toString()).setName("test").build())) {
+            new H2Parameters.Builder()
+                .localFile(file.toString())
+                .setName("test")
+                .setProperties(
+                    () -> {
+                      Properties properties = new Properties();
+
+                      properties.put("MODE", "MYSQL");
+
+                      return properties;
+                    })
+                .build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
@@ -643,6 +666,14 @@ public class OnceConnectionTest {
             .setName("test")
             .setHost("localhost")
             .setPort(sever.getPort())
+            .setProperties(
+                () -> {
+                  Properties properties = new Properties();
+
+                  properties.put("MODE", "MYSQL");
+
+                  return properties;
+                })
             .build();
 
     try (OnceConnection connection = new OnceConnection(param)) {
@@ -679,6 +710,14 @@ public class OnceConnectionTest {
             .setName("test")
             .setHost("localhost")
             .setPort(sever.getPort())
+            .setProperties(
+                () -> {
+                  Properties properties = new Properties();
+
+                  properties.put("MODE", "MYSQL");
+
+                  return properties;
+                })
             .build();
 
     try (OnceConnection connection = new OnceConnection(param)) {

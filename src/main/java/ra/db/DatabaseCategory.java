@@ -7,7 +7,7 @@ package ra.db;
  */
 public enum DatabaseCategory {
   /** The driver that MySQL database. */
-  MYSQL("jdbc:mysql://", "com.mysql.jdbc.Driver"),
+  MYSQL("jdbc:mysql://", "com.mysql.cj.jdbc.Driver"),
   /** The driver that H2 database. */
   H2("jdbc:h2:", "org.h2.Driver");
   private final String schema;

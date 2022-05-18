@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'io.github.raytw:ra:0.4.2'
+  implementation 'io.github.raytw:ra:0.5.1'
 }
 ```
 
@@ -94,6 +94,7 @@ dependencies {
 
                       // default is true
                       properties.put("DATABASE_TO_UPPER", false);
+                      properties.put("MODE", "MYSQL");
 
                       return properties;
                     })
