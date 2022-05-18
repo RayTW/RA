@@ -1,6 +1,10 @@
 package ra.db;
 
-import com.mysql.jdbc.ResultSetImpl;
+import com.mysql.cj.jdbc.JdbcConnection;
+import com.mysql.cj.jdbc.StatementImpl;
+import com.mysql.cj.jdbc.result.ResultSetImpl;
+import com.mysql.cj.protocol.a.NativePacketPayload;
+import com.mysql.cj.protocol.a.result.OkPacket;
 import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,7 +33,10 @@ public class MockResultSet extends ResultSetImpl {
    * @param columnLabel column label
    */
   public MockResultSet(String... columnLabel) {
-    super(0, 0, null, null);
+    super(
+        OkPacket.parse(new NativePacketPayload(NativePacketPayload.TYPE_ID_ERROR), "utf-8"),
+        (JdbcConnection) null,
+        (StatementImpl) null);
     cursor = 0;
     this.columnLabel = columnLabel;
     data = new ConcurrentHashMap<>();
