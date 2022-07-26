@@ -9,89 +9,19 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.gson.annotations.SerializedName;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
-import ra.db.DatabaseCategory;
-import ra.db.record.RecordSet;
 
 /** Test class. */
 public class UtilityTest {
-
-  @Test
-  public void testSetFieldsUsingSerializedName() {
-    Data data = new Data();
-    RecordSet record =
-        new RecordSet(DatabaseCategory.MYSQL) {
-          @Override
-          protected Map<String, List<byte[]>> newTable() {
-            Map<String, List<byte[]>> map = new HashMap<String, List<byte[]>>();
-            Function<String, ArrayList<byte[]>> str2bytes =
-                (value) -> {
-                  ArrayList<byte[]> ary = new ArrayList<>();
-                  ary.add(value.getBytes());
-
-                  return ary;
-                };
-
-            map.put("id", str2bytes.apply("A123456"));
-            map.put("type", str2bytes.apply("1695609641"));
-            map.put("code", str2bytes.apply("123.4567"));
-            map.put("integerType", str2bytes.apply("999"));
-
-            return map;
-          }
-        };
-
-    Utility.get().setFieldsUsingSerializedName(data, record);
-
-    assertEquals("A123456", data.getId());
-    assertEquals(1695609641, data.getType());
-    assertEquals(123.4567, data.getCode(), 4);
-    assertEquals(999, data.getIntegerType());
-  }
-
-  static class Data {
-    @SerializedName("id")
-    private String id;
-
-    @SerializedName("type")
-    private int type;
-
-    @SerializedName("integerType")
-    private int integerType;
-
-    @SerializedName("code")
-    private double code;
-
-    public String getId() {
-      return id;
-    }
-
-    public int getType() {
-      return type;
-    }
-
-    public double getCode() {
-      return code;
-    }
-
-    public int getIntegerType() {
-      return integerType;
-    }
-  }
 
   @Test
   public void testGetThrowableDetail() {
@@ -105,13 +35,6 @@ public class UtilityTest {
     String actual = Utility.get().toExceptionStackTrace(new RuntimeException());
 
     assertThat(actual, startsWith("java.lang.RuntimeException"));
-  }
-
-  @Test
-  public void testSprintf() {
-    double actual = Utility.get().sprintf(3, 0.3333333);
-
-    assertEquals(0.333, actual, 3);
   }
 
   @Test

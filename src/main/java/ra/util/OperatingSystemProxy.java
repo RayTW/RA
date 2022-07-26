@@ -58,16 +58,7 @@ public class OperatingSystemProxy {
    * @return virtual memory
    */
   public long getCommittedVirtualMemory() {
-    long result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.COMMITTED_VIRTUAL_MEMOTY_SIZE);
-      result = (long) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return result;
+    return getValue(MethodType.COMMITTED_VIRTUAL_MEMOTY_SIZE);
   }
 
   /**
@@ -76,16 +67,7 @@ public class OperatingSystemProxy {
    * @return memory size
    */
   public long getFreePhysicalMemorySize() {
-    long result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.FREE_PHYSICAL_MEMOTY_SIZE);
-      result = (long) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return result;
+    return getValue(MethodType.FREE_PHYSICAL_MEMOTY_SIZE);
   }
 
   /**
@@ -94,16 +76,7 @@ public class OperatingSystemProxy {
    * @return swap space
    */
   public long getFreeSwapSpace() {
-    long result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.FREE_SWAP_SPACE_SIZE);
-      result = (long) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return result;
+    return getValue(MethodType.FREE_SWAP_SPACE_SIZE);
   }
 
   /**
@@ -112,20 +85,7 @@ public class OperatingSystemProxy {
    * @return When get no CPU status will return -1.0.
    */
   public double getSystemCpuLoad() {
-    double result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.SYSTEM_CPU_LOAD);
-      result = (double) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    if (result < 0.0) {
-      return result;
-    }
-    return result;
+    return getValue(MethodType.SYSTEM_CPU_LOAD);
   }
 
   /**
@@ -135,16 +95,7 @@ public class OperatingSystemProxy {
    * @return When get no CPU time will return 0.
    */
   public long getProcessCpuTime() {
-    long result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.PROCESS_CPU_TIME);
-      result = (long) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return result;
+    return getValue(MethodType.PROCESS_CPU_TIME);
   }
 
   /**
@@ -153,20 +104,7 @@ public class OperatingSystemProxy {
    * @return When get no CPU loading will return -1.0 .
    */
   public double getProcessCpuLoad() {
-    double result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.PROCESS_CPU_LOAD);
-      result = (double) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    if (result < 0.0) {
-      return result;
-    }
-    return result;
+    return getValue(MethodType.PROCESS_CPU_LOAD);
   }
 
   /**
@@ -175,16 +113,7 @@ public class OperatingSystemProxy {
    * @return memory
    */
   public long getTotalPhysicalMemory() {
-    long result = 0;
-
-    Object obj = ManagementFactory.getOperatingSystemMXBean();
-    try {
-      Method method = methodsCache.get(MethodType.TOTAL_PHYSICAL_MEMORY_SIZE);
-      result = (long) method.invoke(obj);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return result;
+    return getValue(MethodType.TOTAL_PHYSICAL_MEMORY_SIZE);
   }
 
   /**
@@ -193,12 +122,17 @@ public class OperatingSystemProxy {
    * @return memory
    */
   public long getTotalSwapSpaceSize() {
-    long result = 0;
+    return getValue(MethodType.TOTAL_SWAP_SPACE_SIZE);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T getValue(MethodType type) {
+    T result = null;
 
     Object obj = ManagementFactory.getOperatingSystemMXBean();
     try {
-      Method method = methodsCache.get(MethodType.TOTAL_SWAP_SPACE_SIZE);
-      result = (long) method.invoke(obj);
+      Method method = methodsCache.get(type);
+      result = (T) method.invoke(obj);
     } catch (Exception e) {
       e.printStackTrace();
     }

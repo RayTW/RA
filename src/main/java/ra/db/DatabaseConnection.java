@@ -1,5 +1,6 @@
 package ra.db;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,12 +24,14 @@ public interface DatabaseConnection extends AutoCloseable {
    */
   public default void loadDriveInstance(DatabaseParameters param) {
     try {
-      Class.forName(param.getDriver()).newInstance();
-    } catch (InstantiationException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
+      Class.forName(param.getDriver()).getDeclaredConstructor().newInstance();
+    } catch (InstantiationException
+        | IllegalAccessException
+        | IllegalArgumentException
+        | InvocationTargetException
+        | NoSuchMethodException
+        | SecurityException
+        | ClassNotFoundException e) {
       e.printStackTrace();
     }
   }
