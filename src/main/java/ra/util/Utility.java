@@ -1,6 +1,5 @@
 package ra.util;
 
-import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +15,6 @@ import java.text.DecimalFormat;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -24,7 +22,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ra.db.record.RecordCursor;
 import ra.util.parser.VisitClassStrategy;
 
 /**
@@ -74,17 +71,6 @@ public class Utility {
     exception.printStackTrace(new PrintWriter(writer));
 
     return writer.toString();
-  }
-
-  /**
-   * Standardized floating point output.
-   *
-   * @param points floating point
-   * @param value value
-   * @return Returns value of already formatted.
-   */
-  public double sprintf(int points, double value) {
-    return Arith.round(value, points);
   }
 
   /**
@@ -586,47 +572,6 @@ public class Utility {
     } catch (IOException e) {
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Assign an object member value.
-   *
-   * @param object object.
-   * @param record record.
-   */
-  public void setFieldsUsingSerializedName(Object object, RecordCursor record) {
-    setAllFieldsValue(object, record, o -> o.value());
-  }
-
-  /**
-   * Assign an object member value.
-   *
-   * @param object object
-   * @param record record
-   * @param alternateIndex alternate index
-   */
-  public void setFieldsUsingAlternate(Object object, RecordCursor record, int alternateIndex) {
-    setAllFieldsValue(
-        object, record, o -> o.alternate().length > 0 ? o.alternate()[alternateIndex] : o.value());
-  }
-
-  /**
-   * Assign value to object member from {@link RecordCursor}.
-   *
-   * @param object source object
-   * @param record The record of query from database.
-   * @param listener value
-   */
-  public void setAllFieldsValue(
-      Object object, RecordCursor record, Function<SerializedName, String> listener) {
-    recursiveClassFields(
-        object.getClass(),
-        (field) -> {
-          SerializedName serializedName = field.getAnnotation(SerializedName.class);
-          String value = record.field(listener.apply(serializedName));
-
-          setValue(object, field, value);
-        });
   }
 
   /**
