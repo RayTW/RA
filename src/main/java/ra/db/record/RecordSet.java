@@ -1,7 +1,9 @@
 package ra.db.record;
 
+import com.mysql.cj.util.StringUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -588,7 +590,12 @@ public class RecordSet implements Record {
     public int getLastInsertId(Statement statement) throws SQLException {
       try (ResultSet rs = statement.getGeneratedKeys(); ) {
         ResultH2.this.convert(rs);
-        return Integer.parseInt(field("ID"));
+        String lastId = field(1);
+
+        if (StringUtils.isNullOrEmpty(lastId)) {
+          throw new SQLWarning("Failed to get last insert ID.");
+        }
+        return Integer.parseInt(lastId);
       }
     }
   }
