@@ -8,9 +8,14 @@ ra.net.processor
 ra.net.request
 ra.ref
 ra.server.basis
+ra.server.basis.service
 ra.util
 ra.util.annotation
 ra.util.compression
 ra.util.logging
 ra.util.parser
 ra.util.sql
+test
+test.mock
+test.mock.annotationclass
+test.mock.resultset

@@ -1,5 +1,6 @@
 package ra.db.record;
 
+import com.mysql.cj.util.StringUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -13,9 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import com.mysql.cj.util.StringUtils;
-
 import ra.db.DatabaseCategory;
 import ra.db.Row;
 import ra.db.RowSet;
