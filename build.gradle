@@ -96,10 +96,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.json/json
   implementation group: 'org.json', name: 'json', version: '20220320'
 
-  implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.29'
+  implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.30'
 
   // https://mvnrepository.com/artifact/com.h2database/h2
-  implementation group: 'com.h2database', name: 'h2', version: '2.1.212'
+  implementation group: 'com.h2database', name: 'h2', version: '2.1.214'
   
   // https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java
   implementation group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.8.4'
