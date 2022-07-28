@@ -586,6 +586,7 @@ public class OnceConnectionTest {
                     () -> {
                       Properties properties = new Properties();
 
+                      properties.put("DATABASE_TO_UPPER", false);
                       properties.put("MODE", "MYSQL");
 
                       return properties;
