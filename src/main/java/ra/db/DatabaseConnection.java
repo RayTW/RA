@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.function.Consumer;
-import ra.db.parameter.ConnectionSetupable;
+import ra.db.parameter.Accountable;
 import ra.db.parameter.DatabaseParameters;
 
 /**
@@ -64,15 +64,17 @@ public interface DatabaseConnection extends AutoCloseable {
     String dbconn = param.getDatabaseUrl();
     Connection connectionTemp = null;
 
-    if (param.getUser() != null && param.getPassword() != null) {
-      connectionTemp = DriverManager.getConnection(dbconn, param.getUser(), param.getPassword());
+    if (param instanceof Accountable) {
+      Accountable account = (Accountable) param;
+
+      if (account.getUser() != null && account.getPassword() != null) {
+        connectionTemp =
+            DriverManager.getConnection(dbconn, account.getUser(), account.getPassword());
+      } else {
+        connectionTemp = DriverManager.getConnection(dbconn);
+      }
     } else {
       connectionTemp = DriverManager.getConnection(dbconn);
-    }
-
-    if (param instanceof ConnectionSetupable) {
-      ConnectionSetupable setupable = (ConnectionSetupable) param;
-      setupable.setupConnection(connectionTemp);
     }
 
     dbconn = null;

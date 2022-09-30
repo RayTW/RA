@@ -22,6 +22,7 @@ import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
 import ra.db.StatementExecutor;
+import ra.db.parameter.BigQueryParameters;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
@@ -812,6 +813,66 @@ public class OnceConnectionTest {
       executor.execute("DROP TABLE test_table");
       // Require to close when uses once connection.
       connection.close();
+    }
+  }
+
+  @Test
+  public void testExecuteQueryBigQueryDisconnected() {
+    String sql = "SELECT * FROM table;";
+    BigQueryParameters param = BigQueryParameters.newBuilder("projectId", 1).build();
+
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+            return new MockConnection();
+          }
+
+          @Override
+          public boolean isLive() {
+            return false;
+          }
+        }) {
+      db.connectIf(
+          executor -> {
+            executor.executeQuery(
+                sql,
+                exception -> {
+                  assertThat(exception, instanceOf(ConnectException.class));
+                });
+          });
+    }
+  }
+
+  @Test
+  public void testInsertSqlConnectedBigQuery() throws SQLException {
+    String sql =
+        "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
+            + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
+    BigQueryParameters param = BigQueryParameters.newBuilder("projectId", 1).build();
+
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+            MockConnection connection = new MockConnection();
+
+            connection.setExecuteUpdateListener(
+                actual -> {
+                  assertEquals(sql, actual);
+                  return 1;
+                });
+
+            return connection;
+          }
+        }; ) {
+
+      db.connectIf(
+          executor -> {
+            int actual = executor.insert(sql, exception -> {});
+
+            assertEquals(-1, actual);
+          });
     }
   }
 }

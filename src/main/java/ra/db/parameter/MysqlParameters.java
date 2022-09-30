@@ -9,7 +9,7 @@ import ra.db.DatabaseCategory;
  *
  * @author Ray Li
  */
-public class MysqlParameters implements DatabaseParameters {
+public class MysqlParameters implements DatabaseParameters, Accountable {
   private String dbHost;
   private String dbName;
   private String dbUser;

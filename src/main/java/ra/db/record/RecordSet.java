@@ -43,6 +43,9 @@ public class RecordSet implements Record {
       case H2:
         resultConverter = new ResultH2();
         break;
+      case BIGQUERY:
+        resultConverter = new ResultBigQuery();
+        break;
       default:
         throw new UnsupportedOperationException("Unsupport category = " + category);
     }
@@ -509,7 +512,7 @@ public class RecordSet implements Record {
     public void convert(ResultSet result) throws SQLException {
       int columnNum = result.getMetaData().getColumnCount();
       String[] columnNames = new String[columnNum + 1];
-
+      
       for (int i = 1; i <= columnNum; i++) {
         columnNames[i] = result.getMetaData().getColumnLabel(i);
         table.put(columnNames[i], newColumnContainer());
@@ -597,6 +600,60 @@ public class RecordSet implements Record {
         }
         return Integer.parseInt(lastId);
       }
+    }
+  }
+
+  private class ResultBigQuery implements ResultConverter {
+
+    /**
+     * Convert the result of a query.
+     *
+     * @param result Result of query.
+     * @throws SQLException SQLException
+     */
+    @Override
+    public void convert(ResultSet result) throws SQLException {
+      int columnNum = result.getMetaData().getColumnCount();
+      String[] columnNames = new String[columnNum + 1];
+      int[] columnTypes = new int[columnNum + 1];
+
+      for (int i = 1; i <= columnNum; i++) {
+        columnNames[i] = result.getMetaData().getColumnLabel(i);
+        columnTypes[i] = result.getMetaData().getColumnType(i);
+        table.put(columnNames[i], newColumnContainer());
+      }
+
+      while (result.next()) {
+        count++;
+        for (int i = 1; i <= columnNum; i++) {
+          List<byte[]> tmp = table.get(columnNames[i]);
+
+          if (isBinaryType(columnTypes[i])) {
+            tmp.add(result.getBytes(i));
+          } else {
+            String value = result.getString(i);
+
+            tmp.add((value == null) ? null : value.getBytes());
+          }
+        }
+      }
+      columnName = columnNames;
+    }
+
+    private boolean isBinaryType(int n) {
+      return n == -2 || n == -3 || n == -4;
+    }
+
+    /**
+     * Unsupported.
+     *
+     * @param statement statement
+     * @return id auto-increment id
+     * @throws SQLException SQLException
+     */
+    @Override
+    public int getLastInsertId(Statement statement) throws SQLException {
+      return -1;
     }
   }
 }

@@ -1,10 +1,11 @@
 package test.mock;
 
 import ra.db.DatabaseCategory;
+import ra.db.parameter.Accountable;
 import ra.db.parameter.DatabaseParameters;
 
 /** Test class. */
-public class MockDatabaseParameters implements DatabaseParameters {
+public class MockDatabaseParameters implements DatabaseParameters, Accountable {
 
   @Override
   public DatabaseCategory getCategory() {

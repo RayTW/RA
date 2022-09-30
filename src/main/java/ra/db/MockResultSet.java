@@ -8,6 +8,9 @@ import com.mysql.cj.protocol.a.result.OkPacket;
 import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,11 +24,19 @@ import javax.sql.rowset.RowSetMetaDataImpl;
  */
 public class MockResultSet extends ResultSetImpl {
   private RowSetMetaDataImpl metaData;
-  private String[] columnLabel;
+  private List<Integer> columnType;
+  private List<String> columnLabel;
   private Map<Integer, String> columnMapping;
   private Map<String, List<byte[]>> data;
   private static final byte[] ZERO_BYTE = new byte[0];
   private int cursor;
+
+  private MockResultSet() {
+    super(
+        OkPacket.parse(new NativePacketPayload(NativePacketPayload.TYPE_ID_ERROR), "utf-8"),
+        (JdbcConnection) null,
+        (StatementImpl) null);
+  }
 
   /**
    * Initialize.
@@ -33,17 +44,29 @@ public class MockResultSet extends ResultSetImpl {
    * @param columnLabel column label
    */
   public MockResultSet(String... columnLabel) {
-    super(
-        OkPacket.parse(new NativePacketPayload(NativePacketPayload.TYPE_ID_ERROR), "utf-8"),
-        (JdbcConnection) null,
-        (StatementImpl) null);
+    this();
+
+    setColumnTypeLabel(null, Arrays.asList(columnLabel));
+  }
+
+  /**
+   * Initialize.
+   *
+   * @param columnLabel column label
+   */
+  private void setColumnTypeLabel(List<Integer> columnType, List<String> columnLabel) {
+    if (columnType == null && columnLabel != null && columnLabel.size() > 0) {
+      columnType = new ArrayList<Integer>(Collections.nCopies(columnLabel.size(), 0));
+    }
+
     cursor = 0;
     this.columnLabel = columnLabel;
+    this.columnType = columnType;
     data = new ConcurrentHashMap<>();
     columnMapping = new ConcurrentHashMap<>();
 
-    for (int i = 0; i < this.columnLabel.length; i++) {
-      String columnName = this.columnLabel[i];
+    for (int i = 0; i < this.columnLabel.size(); i++) {
+      String columnName = this.columnLabel.get(i);
       data.put(columnName, new CopyOnWriteArrayList<byte[]>());
       columnMapping.put(Integer.valueOf(i), columnName);
     }
@@ -54,13 +77,17 @@ public class MockResultSet extends ResultSetImpl {
 
           @Override
           public int getColumnCount() throws SQLException {
-            int r = MockResultSet.this.columnLabel.length;
-            return r;
+            return MockResultSet.this.columnLabel.size();
           }
 
           @Override
-          public String getColumnLabel(int column) throws SQLException {
-            return MockResultSet.this.columnLabel[column - 1];
+          public String getColumnLabel(int columnIndex) throws SQLException {
+            return MockResultSet.this.columnLabel.get(columnIndex - 1);
+          }
+
+          @Override
+          public int getColumnType(int columnIndex) throws SQLException {
+            return MockResultSet.this.columnType.get(columnIndex - 1);
           }
         };
   }
@@ -104,6 +131,19 @@ public class MockResultSet extends ResultSetImpl {
     }
 
     return ZERO_BYTE;
+  }
+
+  @Override
+  public String getString(int columnIndex) throws SQLException {
+    String columnName = columnMapping.get(columnIndex - 1);
+    List<byte[]> columnData = data.get(columnName);
+    int c = cursor - 1;
+    byte[] bytes = columnData.get(c);
+
+    if (bytes != null && c < columnData.size()) {
+      return new String(bytes);
+    }
+    return null;
   }
 
   /**
@@ -184,5 +224,42 @@ public class MockResultSet extends ResultSetImpl {
 
   private int size() {
     return data.values().stream().map(list -> list.size()).reduce(Math::max).orElse(0);
+  }
+
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder.
+   *
+   * @author Ray Li
+   */
+  public static final class Builder {
+    private List<Integer> columnType;
+    private List<String> columnLabel;
+
+    public Builder setColumnLabel(String... label) {
+      columnLabel = Arrays.asList(label);
+      return this;
+    }
+
+    public Builder setColumnType(Integer... type) {
+      columnType = Arrays.asList(type);
+      return this;
+    }
+
+    /**
+     * build.
+     *
+     * @return MockResultSet
+     */
+    public MockResultSet build() {
+      MockResultSet obj = new MockResultSet();
+
+      obj.setColumnTypeLabel(columnType, columnLabel);
+
+      return obj;
+    }
   }
 }

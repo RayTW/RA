@@ -10,7 +10,7 @@ import ra.db.DatabaseCategory;
  *
  * @author Ray Li
  */
-public class H2Parameters implements DatabaseParameters {
+public class H2Parameters implements DatabaseParameters, Accountable {
   private String dbHost;
   private String dbName;
   private String dbUser;

@@ -44,20 +44,6 @@ public interface DatabaseParameters {
   public int getPort();
 
   /**
-   * Returns database user.
-   *
-   * @return user
-   */
-  public String getUser();
-
-  /**
-   * Returns database password.
-   *
-   * @return password
-   */
-  public String getPassword();
-
-  /**
    * Returns the URL of parameters.
    *
    * @return URL

@@ -305,4 +305,24 @@ public class RecordSetTest {
       assertEquals(3, actual);
     }
   }
+
+  @Test
+  public void testBigQueryConvert() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+
+      result.addValue("id", 1);
+      result.addValue("name", "aaa");
+      result.addValue("id", 2);
+      result.addValue("name", "bbb");
+      result.addValue("id", 3);
+      result.addValue("name", "ccc");
+      result.addValue("id", 4);
+      result.addValue("name", "ddd");
+
+      record.convert(result);
+
+      System.out.println("record==" + record);
+    }
+  }
 }
