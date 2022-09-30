@@ -117,6 +117,18 @@ public interface StatementExecutor {
   public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener);
 
   /**
+   * A SQL statement is precompiled and stored in a Prepared object. This object can then be used to
+   * efficiently execute this statement multiple times.
+   *
+   * @param prepared prepared
+   * @return RecordCursor
+   * @throws ConnectException ConnectException
+   * @throws SQLException SQLException
+   */
+  public RecordCursor executeQueryUsePrepare(Prepared prepared)
+      throws ConnectException, SQLException;
+
+  /**
    * Execute query( transaction), ex : SELECT * FROM table.
    *
    * @param listener listener

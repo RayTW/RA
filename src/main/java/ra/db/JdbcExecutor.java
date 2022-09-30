@@ -1,11 +1,15 @@
 package ra.db;
 
+import java.math.BigDecimal;
 import java.net.ConnectException;
+import java.sql.Blob;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import ra.db.connection.OnCreatedStatementListener;
 import ra.db.record.Record;
@@ -139,7 +143,73 @@ public class JdbcExecutor implements StatementExecutor {
   }
 
   /**
-   * transaction.
+   * A SQL statement is precompiled and stored in a Prepared object. This object can then be used to
+   * efficiently execute this statement multiple times.
+   *
+   * @param prepared prepared
+   * @return RecordCursor
+   * @throws ConnectException ConnectException
+   * @throws SQLException SQLException
+   */
+  @Override
+  public RecordCursor executeQueryUsePrepare(Prepared prepared)
+      throws ConnectException, SQLException {
+    if (!isLive()) {
+      String msg =
+          "Connect to database failed, param :"
+              + connection.getParam()
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + prepared.getSql();
+
+      throw new ConnectException(msg);
+    }
+    Record record = buildRecord();
+
+    connection.getConnection(
+        dbConnection -> {
+          dbConnection.setAutoCommit(true);
+
+          try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
+            for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
+              ParameterValue paramter = element.getValue();
+
+              if (Boolean.class.isAssignableFrom(paramter.getType())) {
+                st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
+              } else if (String.class.isAssignableFrom(paramter.getType())) {
+                st.setString(element.getKey(), String.class.cast(paramter.getValue()));
+              } else if (Integer.class.isAssignableFrom(paramter.getType())) {
+                st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
+              } else if (Long.class.isAssignableFrom(paramter.getType())) {
+                st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
+              } else if (Double.class.isAssignableFrom(paramter.getType())) {
+                st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
+              } else if (Float.class.isAssignableFrom(paramter.getType())) {
+                st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
+              } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
+                st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
+              } else if (byte[].class.isAssignableFrom(paramter.getType())) {
+                st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
+              } else if (Blob.class.isAssignableFrom(paramter.getType())) {
+                st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
+              } else {
+                throw new IllegalArgumentException(
+                    "Unsupported object type for QueryParameter: " + paramter.getType());
+              }
+            }
+            try (ResultSet rs = st.executeQuery()) {
+              record.convert(rs);
+            }
+          }
+          return 0;
+        });
+
+    return record;
+  }
+
+  /**
+   * Transaction.
    *
    * @throws SQLException SQLException
    * @throws ConnectException ConnectException

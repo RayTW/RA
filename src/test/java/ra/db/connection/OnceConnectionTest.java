@@ -21,6 +21,8 @@ import ra.db.DatabaseConnection;
 import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.MockStatementExecutor;
+import ra.db.ParameterValue;
+import ra.db.Prepared;
 import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
@@ -761,6 +763,7 @@ public class OnceConnectionTest {
 
                       // default is true
                       properties.put("DATABASE_TO_UPPER", false);
+                      properties.put("MODE", "MYSQL");
 
                       return properties;
                     })
@@ -805,12 +808,85 @@ public class OnceConnectionTest {
           .stream()
           .forEach(
               row -> {
-                System.out.println("xx=" + row.getInt("col_int"));
                 assertEquals(1, row.getInt("col_int"));
               });
+      assertEquals(1, record.getRecordCount());
 
       executor.execute("DROP TABLE test_table");
       // Require to close when uses once connection.
+      connection.close();
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUsePrepared() throws ConnectException, SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder()
+                .inMemory()
+                .setName("databaseName")
+                .setProperties(
+                    () -> {
+                      Properties properties = new Properties();
+
+                      // default is true
+                      properties.put("DATABASE_TO_UPPER", false);
+                      properties.put("MODE", "MYSQL");
+
+                      return properties;
+                    })
+                .build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `col_int` int(10) UNSIGNED NOT NULL,"
+              + "  `col_double` DOUBLE UNSIGNED DEFAULT NULL,"
+              + "  `col_boolean` BOOLEAN DEFAULT NULL ,"
+              + "  `col_tinyint` tinyint(1) NOT NULL ,"
+              + "  `col_enum` enum('default','enum1','enum2') DEFAULT NULL ,"
+              + "  `col_decimal` decimal(20,3) DEFAULT 0.000 ,"
+              + "  `col_varchar` varchar(50) NOT NULL ,"
+              + "  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),"
+              + "  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() "
+              + "ON UPDATE current_timestamp()"
+              + ");";
+
+      executor.execute(createTableSql);
+
+      for (int i = 1; i <= 5; i++) {
+        String sql =
+            "INSERT INTO test_table SET col_int="
+                + i
+                + ",col_double=1.01"
+                + ",col_boolean=true"
+                + ",col_tinyint="
+                + i
+                + ",col_enum='enum1'"
+                + ",col_decimal=1.1111"
+                + ",col_varchar='col_varchar'"
+                + ",created_at=NOW();";
+
+        executor.execute(sql);
+      }
+
+      RecordCursor record =
+          connection
+              .createStatementExecutor()
+              .executeQueryUsePrepare(
+                  Prepared.newQueryBuilder(
+                          "SELECT * FROM `test_table` WHERE col_tinyint=? AND col_boolean=?;")
+                      .set(1, ParameterValue.string("1"))
+                      .set(2, ParameterValue.bool(true))
+                      .build());
+      
+      assertEquals(1, record.getRecordCount());
+      assertEquals("1", record.field("col_int"));
+
+      executor.execute("DROP TABLE test_table");
       connection.close();
     }
   }
