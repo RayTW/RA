@@ -225,4 +225,12 @@ public class UtilityTest {
       Utility.get().deleteFiles(path);
     }
   }
+
+  @Test
+  public void testBytesToHexString() {
+    String str = "byteString";
+    String byteString = Utility.get().bytesToHex(str.getBytes());
+
+    assertEquals("62797465537472696e67", byteString);
+  }
 }
