@@ -17,12 +17,22 @@ public class MockStatement implements Statement {
   private Optional<Function<String, Integer>> executeUpdateListener;
   private Optional<Function<String, ResultSet>> executeQueryListener;
   private Optional<Function<String, Boolean>> executeListener;
+  private ResultSet generatedKeys;
 
   /** Initialize. */
   public MockStatement() {
     executeUpdateListener = Optional.ofNullable(null);
     executeQueryListener = Optional.ofNullable(null);
     executeListener = Optional.ofNullable(null);
+  }
+
+  /**
+   * The column name of the last inserter ID at query time.
+   *
+   * @param result result
+   */
+  public void setGeneratedKeys(ResultSet result) {
+    generatedKeys = result;
   }
 
   /**
@@ -137,7 +147,7 @@ public class MockStatement implements Statement {
 
   @Override
   public ResultSet getGeneratedKeys() throws SQLException {
-    return null;
+    return generatedKeys;
   }
 
   @Override

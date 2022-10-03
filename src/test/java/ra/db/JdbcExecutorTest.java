@@ -121,7 +121,7 @@ public class JdbcExecutorTest {
           try {
             RecordCursor record = exec.executeQuery("SELECT 1");
 
-            assertEquals("22", record.fieldFeedback("lastid", null));
+            assertEquals("22", record.field("lastid"));
           } catch (SQLException e) {
             e.printStackTrace();
           }
@@ -164,7 +164,7 @@ public class JdbcExecutorTest {
             try {
               RecordCursor record = exec.executeQuery("SELECT 1");
 
-              assertEquals("22", record.fieldFeedback("lastid", null));
+              assertEquals("22", record.field("lastid"));
             } catch (SQLException e) {
               e.printStackTrace();
             }

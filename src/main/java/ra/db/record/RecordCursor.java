@@ -1,6 +1,7 @@
 package ra.db.record;
 
 import java.io.Closeable;
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import ra.db.RowSet;
@@ -17,6 +18,14 @@ public interface RecordCursor extends Closeable {
    * @return field count
    */
   public int getFieldCount();
+
+  /**
+   * If the query database specifies a field name and its value is null, it will return null.
+   *
+   * @param name Field name
+   * @return boolean
+   */
+  public boolean isNull(String name);
 
   /**
    * Get name of table fields.
@@ -42,25 +51,6 @@ public interface RecordCursor extends Closeable {
   public String field(String name);
 
   /**
-   * Use field name returns a value.
-   *
-   * @param name Field name
-   * @param charset Charset, etc : utf8
-   * @return value
-   */
-  public String field(String name, String charset);
-
-  /**
-   * Get value by specified field name. If field value is null will return null.
-   *
-   * @param name Field name
-   * @param lang Charset, etc : utf8
-   * @param feedback Return the feedback when if get value of the field is null.
-   * @return value
-   */
-  public String field(String name, String lang, String feedback);
-
-  /**
    * Get value by specified name.
    *
    * @param name Field name
@@ -73,36 +63,9 @@ public interface RecordCursor extends Closeable {
    * Get value by specified field name. If field value is null will return null.
    *
    * @param name Field name
-   * @return value
+   * @return bytes
    */
-  public String optField(String name);
-
-  /**
-   * Get value by specified field name. If field value is null will return null.
-   *
-   * @param name Field name
-   * @param cursor Record cursor
-   * @return value
-   */
-  public String optField(String name, int cursor);
-
-  /**
-   * Get value by specified field name. If field value is null will return null.
-   *
-   * @param name Field name
-   * @param lang Record cursor
-   * @return value
-   */
-  public String optField(String name, String lang);
-
-  /**
-   * Get value by specified field name. If field value is null will return null.
-   *
-   * @param name Field name
-   * @param feedback Return the feedback when if get value of the field is null.
-   * @return value
-   */
-  public String fieldFeedback(String name, String feedback);
+  public byte[] fieldBytes(String name);
 
   /**
    * Get value by specified field name. If field value is null will return null.
@@ -110,7 +73,55 @@ public interface RecordCursor extends Closeable {
    * @param name Field name
    * @return bytes
    */
-  public byte[] fieldBytes(String name);
+  public long fieldLong(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public int fieldInt(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public short fieldShort(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public float fieldFloat(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public double fieldDouble(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public BigDecimal fieldBigDecimal(String name);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return bytes
+   */
+  public double fieldBigDecimalDouble(String name);
 
   /** Next row. */
   public void next();

@@ -9,11 +9,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import ra.db.DatabaseCategory;
 import ra.db.MockResultSet;
+import ra.db.MockStatement;
 import test.mock.resultset.MockAllColumnTypeResultSet;
 
 /** Test class. */
@@ -78,7 +80,7 @@ public class RecordSetTest {
             assertEquals(Long.MAX_VALUE, row.getLong("Long"));
             assertEquals(Float.MAX_VALUE, row.getFloat("Float"), 0);
             assertEquals(Double.MAX_VALUE, row.getDouble("Double"), 0);
-            assertEquals(0.33333333333, row.getDoubleDecima("DoubleDecima"), 0);
+            assertEquals(0.33333333333, row.getBigDecimalDouble("DoubleDecima"), 0);
             assertEquals(new BigDecimal(String.valueOf(Math.PI)), row.getBigDecimal("BigDecimal"));
           });
     }
@@ -112,7 +114,7 @@ public class RecordSetTest {
 
       record.end();
       assertEquals("4", record.field("id"));
-      assertEquals("", record.field("name"));
+      assertNull(record.field("name"));
 
       record.end();
       record.next();
@@ -167,9 +169,8 @@ public class RecordSetTest {
   @Test
   public void testFieldUsingNonExistKey() {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL)) {
-      String actual = record.field("key");
 
-      assertEquals("", actual);
+      assertNull(record.field("key"));
     }
   }
 
@@ -225,9 +226,8 @@ public class RecordSetTest {
       record.convert(result);
 
       record.first();
-
-      assertNull(record.optField("name"));
-      assertNull(record.optField("name", 0));
+      assertNull(record.field("name"));
+      assertNull(record.field("name", 0));
     }
   }
 
@@ -310,7 +310,6 @@ public class RecordSetTest {
   public void testBigQueryConvert() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
         MockResultSet result = new MockResultSet("id", "name")) {
-
       result.addValue("id", 1);
       result.addValue("name", "aaa");
       result.addValue("id", 2);
@@ -322,7 +321,282 @@ public class RecordSetTest {
 
       record.convert(result);
 
-      System.out.println("record==" + record);
+      assertEquals(4, record.getRecordCount());
+      assertEquals("aaa", record.field("name", 0));
+      assertEquals("bbb", record.field("name", 1));
+      assertEquals("ccc", record.field("name", 2));
+      assertEquals("ddd", record.field("name", 3));
+    }
+  }
+
+  @Test
+  public void testH2ResultFromInt() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.H2);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 1);
+      result.addValue("name", "aaa");
+      result.addValue("id", 2);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(1, record.fieldInt("id"));
+
+      record.next();
+
+      assertEquals(2, record.fieldInt("id"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromInt() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 1);
+      result.addValue("name", "aaa");
+      result.addValue("id", 2);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(1, record.fieldInt("id"));
+
+      record.next();
+
+      assertEquals(2, record.fieldInt("id"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromLong() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 1L);
+      result.addValue("name", "aaa");
+      result.addValue("id", 2L);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(1L, record.fieldLong("id"));
+
+      record.next();
+
+      assertEquals(2L, record.fieldLong("id"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromShort() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 1);
+      result.addValue("name", "aaa");
+      result.addValue("id", 2);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(1, record.fieldShort("id"));
+
+      record.next();
+
+      assertEquals(2, record.fieldShort("id"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromFloat() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 3.14f);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22f);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(3.14f, record.fieldFloat("id"), 2);
+
+      record.next();
+
+      assertEquals(3.22f, record.fieldFloat("id"), 2);
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromDouble() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 3.14d);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22d);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(3.14d, record.fieldFloat("id"), 2);
+
+      record.next();
+
+      assertEquals(3.22d, record.fieldFloat("id"), 2);
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromBigDecimal() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 3.14);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(new BigDecimal("3.14"), record.fieldBigDecimal("id"));
+
+      record.next();
+
+      assertEquals(new BigDecimal("3.22"), record.fieldBigDecimal("id"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultFromBigDecimalDouble() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 3.14);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(3.14, record.fieldBigDecimalDouble("id"), 2);
+
+      record.next();
+
+      assertEquals(3.22, record.fieldBigDecimalDouble("id"), 2);
+    }
+  }
+
+  @Test
+  public void testH2ResultIsNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.H2);
+        MockResultSet result = new MockResultSet("id", "name")) {
+
+      String name = null;
+
+      result.addValue("id", 1);
+      result.addValue("name", name);
+
+      record.convert(result);
+
+      assertEquals(1, record.getRecordCount());
+
+      assertTrue(record.isNull("name"));
+    }
+  }
+
+  @Test
+  public void testMySqlResultIsNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
+        MockResultSet result = new MockResultSet("id", "name")) {
+
+      String name = null;
+
+      result.addValue("id", 1);
+      result.addValue("name", name);
+
+      record.convert(result);
+
+      assertEquals(1, record.getRecordCount());
+
+      assertTrue(record.isNull("name"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultIsNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
+        MockResultSet result = new MockResultSet("id", "name")) {
+
+      String name = null;
+
+      result.addValue("id", 1);
+      result.addValue("name", name);
+
+      record.convert(result);
+
+      assertEquals(1, record.getRecordCount());
+
+      assertTrue(record.isNull("name"));
+    }
+  }
+
+  @Test
+  public void testBigQueryResultLastInserId() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY)) {
+
+      assertEquals(-1, record.getLastInsertId(new MockStatement()));
+    }
+  }
+
+  @Test
+  public void testH2ResultLastInserId() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.H2)) {
+
+      MockStatement st = new MockStatement();
+      MockResultSet result = new MockResultSet("h2lastId");
+
+      result.addValue("h2lastId", "2");
+      st.setGeneratedKeys(result);
+
+      assertEquals(2, record.getLastInsertId(st));
+    }
+  }
+
+  @Test
+  public void testH2ResultLastInserIdIsEmpty() throws SQLException {
+    exceptionRule.expect(SQLWarning.class);
+    exceptionRule.expectMessage("Failed to get last insert ID.");
+
+    try (RecordSet record = new RecordSet(DatabaseCategory.H2)) {
+
+      MockStatement st = new MockStatement();
+      MockResultSet result = new MockResultSet("h2lastId");
+
+      result.addValue("h2lastId", "");
+      st.setGeneratedKeys(result);
+
+      assertEquals(2, record.getLastInsertId(st));
+    }
+  }
+
+  @Test
+  public void testMySqlResultLastInserId() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL)) {
+
+      MockStatement st = new MockStatement();
+
+      st.setExecuteQueryListener(
+          sql -> {
+            MockResultSet result = new MockResultSet("lastid");
+
+            result.addValue("lastid", "876");
+            return result;
+          });
+
+      assertEquals(876, record.getLastInsertId(st));
     }
   }
 }

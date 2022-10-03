@@ -1,6 +1,7 @@
 package ra.db.record;
 
 import com.mysql.cj.util.StringUtils;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -90,6 +91,29 @@ public class RecordSet implements Record {
   }
 
   /**
+   * If the query database specifies a field name and its value is null, it will return null.
+   *
+   * @param name Field name
+   * @return boolean
+   */
+  @Override
+  public boolean isNull(String name) {
+    List<byte[]> v = table.get(name);
+
+    if (v == null) {
+      return true;
+    }
+
+    byte[] b = v.get(cursor);
+
+    if (b == null) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Convert the result of a query.
    *
    * @param result Result of query.
@@ -107,57 +131,7 @@ public class RecordSet implements Record {
    */
   @Override
   public String field(int index) {
-    return field(columnName[index], "utf8");
-  }
-
-  /**
-   * Take the column value of the name and the current index.
-   *
-   * @param name column`s name
-   */
-  @Override
-  public String field(String name) {
-    return field(name, null, "");
-  }
-
-  /**
-   * Take the column value of the name and the current index.
-   *
-   * @param name column`s name
-   * @param lang The Character encoding with return value,EX:utf8
-   */
-  @Override
-  public String field(String name, String lang) {
-    return field(name, lang, "");
-  }
-
-  /**
-   * Take the column value of the name and the current index， Return feedback, if the value is null.
-   *
-   * @param name column`s name
-   * @param lang The Character encoding with return value,EX:utf8
-   * @param feedback The String to return, if the value is null.
-   */
-  @Override
-  public String field(String name, String lang, String feedback) {
-    List<byte[]> v = table.get(name);
-
-    try {
-      if (v == null) {
-        return feedback;
-      } else {
-        if (lang == null) {
-          return new String(v.get(cursor));
-        } else {
-          return new String(v.get(cursor), lang);
-        }
-      }
-    } catch (NullPointerException e) {
-      return "";
-    } catch (Exception e) {
-      e.printStackTrace();
-      return "";
-    }
+    return field(columnName[index]);
   }
 
   /**
@@ -168,24 +142,13 @@ public class RecordSet implements Record {
    */
   @Override
   public String field(String name, int cursor) {
-    List<byte[]> v = table.get(name);
-
-    if (v == null) {
-      return "";
-    }
-
-    byte[] b = v.get(cursor);
+    byte[] b = fieldBytes(name, cursor);
 
     if (b == null) {
-      return "";
+      return null;
     }
 
-    try {
-      return new String(b);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return "";
-    }
+    return new String(b);
   }
 
   /**
@@ -193,74 +156,16 @@ public class RecordSet implements Record {
    * null.
    *
    * @param name column`s name
+   * @return String || null
    */
   @Override
-  public String optField(String name) {
-    return optField(name, null);
-  }
+  public String field(String name) {
+    byte[] v = fieldBytes(name);
 
-  /**
-   * Take the column value of the name and the earmark row index， Return Object null, if the value
-   * is null.
-   *
-   * @param name column`s name
-   * @param cursor row index
-   */
-  @Override
-  public String optField(String name, int cursor) {
-    List<byte[]> v = table.get(name);
-
-    try {
-      byte[] temp = v.get(cursor);
-      if (temp == null) {
-        return null;
-      } else {
-        return new String(temp);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    if (v == null) {
       return null;
     }
-  }
-
-  /**
-   * Take the column value of the name and the current index， Return Object null, if the value is
-   * null.
-   *
-   * @param name column`s name
-   * @param lang The Character encoding with return value,EX:utf8
-   */
-  @Override
-  public String optField(String name, String lang) {
-    List<byte[]> v = table.get(name);
-
-    try {
-      byte[] temp = v.get(cursor);
-
-      if (temp == null) {
-        return null;
-      }
-
-      if (lang == null) {
-        return new String(temp);
-      } else {
-        return new String(temp, lang);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  /**
-   * Take the column value of the name and the current index， Return feedback, if the value is null.
-   *
-   * @param name column`s name
-   * @param feedback The String to return, if the value is null.
-   */
-  @Override
-  public String fieldFeedback(String name, String feedback) {
-    return field(name, null, feedback);
+    return new String(v);
   }
 
   /**
@@ -272,12 +177,66 @@ public class RecordSet implements Record {
    */
   @Override
   public byte[] fieldBytes(String name) {
+    return fieldBytes(name, cursor);
+  }
+
+  private byte[] fieldBytes(String name, int c) {
     List<byte[]> v = table.get(name);
+
     if (v == null) {
       return null;
-    } else {
-      return v.get(cursor);
     }
+
+    return v.get(c);
+  }
+
+  @Override
+  public long fieldLong(String name) {
+    String ret = field(name);
+
+    return Long.parseLong(ret);
+  }
+
+  @Override
+  public int fieldInt(String name) {
+    String ret = field(name);
+
+    return Integer.parseInt(ret);
+  }
+
+  @Override
+  public short fieldShort(String name) {
+    String ret = field(name);
+
+    return Short.parseShort(ret);
+  }
+
+  @Override
+  public float fieldFloat(String name) {
+    String ret = field(name);
+
+    return Float.parseFloat(ret);
+  }
+
+  @Override
+  public double fieldDouble(String name) {
+    String ret = field(name);
+
+    return Double.parseDouble(ret);
+  }
+
+  @Override
+  public BigDecimal fieldBigDecimal(String name) {
+    String ret = field(name);
+
+    return new BigDecimal(ret);
+  }
+
+  @Override
+  public double fieldBigDecimalDouble(String name) {
+    String ret = field(name);
+
+    return new BigDecimal(ret).doubleValue();
   }
 
   /** Add one up the current row index. */
@@ -397,6 +356,7 @@ public class RecordSet implements Record {
     String columnName = null;
     int[] columnsMaxLength = new int[this.columnName.length];
     int valueLength = 0;
+    int nullLength = 4;
     StringBuilder lackBuilder = new StringBuilder();
     java.util.function.BiFunction<Integer, StringBuilder, String> doLack =
         (lackLength, builder) -> {
@@ -416,7 +376,10 @@ public class RecordSet implements Record {
     // Take the greater of column`s data length.
     for (int i = 1; i < columnsMaxLength.length; i++) {
       for (int j = 0; j < recordCount; j++) {
-        valueLength = field(this.columnName[i], j).length();
+        String value = field(this.columnName[i], j);
+
+        valueLength = value == null ? nullLength : value.length();
+
         if (columnsMaxLength[i] < valueLength) {
           columnsMaxLength[i] = valueLength;
         }
@@ -447,9 +410,9 @@ public class RecordSet implements Record {
         if (i == 1) {
           buf.append("|");
         }
-        value = optField(columnName, cursor);
+        value = field(columnName, cursor);
         // 'null' length is 4.
-        length = (value == null) ? 4 : value.length();
+        length = (value == null) ? nullLength : value.length();
 
         buf.append(value);
         buf.append(doLack.apply(columnsMaxLength[i] - length, lackBuilder));
@@ -501,7 +464,11 @@ public class RecordSet implements Record {
     return resultConverter.getLastInsertId(statement);
   }
 
-  private class ResultMySql implements ResultConverter {
+  private boolean isBinaryType(int n) {
+    return n == -2 || n == -3 || n == -4;
+  }
+
+  private abstract class AbstractResultConverter implements ResultConverter {
     /**
      * Convert the result of a query.
      *
@@ -511,22 +478,43 @@ public class RecordSet implements Record {
     @Override
     public void convert(ResultSet result) throws SQLException {
       int columnNum = result.getMetaData().getColumnCount();
-      String[] columnNames = new String[columnNum + 1];
-      
+      String[] name = new String[columnNum + 1];
+      int[] types = new int[columnNum + 1];
+
       for (int i = 1; i <= columnNum; i++) {
-        columnNames[i] = result.getMetaData().getColumnLabel(i);
-        table.put(columnNames[i], newColumnContainer());
+        name[i] = result.getMetaData().getColumnLabel(i);
+        types[i] = result.getMetaData().getColumnType(i);
+        table.put(name[i], newColumnContainer());
       }
 
       while (result.next()) {
         count++;
         for (int i = 1; i <= columnNum; i++) {
-          List<byte[]> tmp = table.get(columnNames[i]);
-          byte[] value = result.getBytes(i);
+          List<byte[]> tmp = table.get(name[i]);
+          byte[] value = convertElement(result, i, types[i]);
           tmp.add((value == null) ? null : value);
         }
       }
-      columnName = columnNames;
+      columnName = name;
+    }
+
+    public abstract byte[] convertElement(ResultSet result, int columnIndex, int type)
+        throws SQLException;
+  }
+
+  private class ResultMySql extends AbstractResultConverter {
+
+    /**
+     * Convert the result of a query.
+     *
+     * @param result Result of query.
+     * @param columnIndex column index
+     * @param type type
+     * @throws SQLException SQLException
+     */
+    @Override
+    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
+      return result.getBytes(columnIndex);
     }
 
     /**
@@ -545,41 +533,29 @@ public class RecordSet implements Record {
     }
   }
 
-  private class ResultH2 implements ResultConverter {
+  private class ResultH2 extends AbstractResultConverter {
+
     /**
      * Convert the result of a query.
      *
      * @param result Result of query.
+     * @param columnIndex column index
+     * @param type type
      * @throws SQLException SQLException
      */
     @Override
-    public void convert(ResultSet result) throws SQLException {
-      int columnNum = result.getMetaData().getColumnCount();
-      String[] columnNames = new String[columnNum + 1];
+    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
+      Object obj = result.getObject(columnIndex);
 
-      for (int i = 1; i <= columnNum; i++) {
-        columnNames[i] = result.getMetaData().getColumnLabel(i);
-        table.put(columnNames[i], newColumnContainer());
-      }
-
-      while (result.next()) {
-        count++;
-        for (int i = 1; i <= columnNum; i++) {
-          List<byte[]> tmp = table.get(columnNames[i]);
-          Object obj = result.getObject(i);
-          byte[] value = null;
-          if (obj != null) {
-            if (obj instanceof byte[]) {
-              value = (byte[]) obj;
-            } else {
-              value = obj.toString().getBytes();
-            }
-          }
-
-          tmp.add((value == null) ? null : value);
+      if (obj != null) {
+        if (obj instanceof byte[]) {
+          return (byte[]) obj;
+        } else {
+          return obj.toString().getBytes();
         }
       }
-      columnName = columnNames;
+
+      return null;
     }
 
     /**
@@ -603,45 +579,28 @@ public class RecordSet implements Record {
     }
   }
 
-  private class ResultBigQuery implements ResultConverter {
+  private class ResultBigQuery extends AbstractResultConverter {
 
     /**
      * Convert the result of a query.
      *
      * @param result Result of query.
+     * @param columnIndex column index
+     * @param type type
      * @throws SQLException SQLException
      */
     @Override
-    public void convert(ResultSet result) throws SQLException {
-      int columnNum = result.getMetaData().getColumnCount();
-      String[] columnNames = new String[columnNum + 1];
-      int[] columnTypes = new int[columnNum + 1];
-
-      for (int i = 1; i <= columnNum; i++) {
-        columnNames[i] = result.getMetaData().getColumnLabel(i);
-        columnTypes[i] = result.getMetaData().getColumnType(i);
-        table.put(columnNames[i], newColumnContainer());
+    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
+      if (isBinaryType(type)) {
+        return result.getBytes(columnIndex);
       }
 
-      while (result.next()) {
-        count++;
-        for (int i = 1; i <= columnNum; i++) {
-          List<byte[]> tmp = table.get(columnNames[i]);
+      String value = result.getString(columnIndex);
 
-          if (isBinaryType(columnTypes[i])) {
-            tmp.add(result.getBytes(i));
-          } else {
-            String value = result.getString(i);
-
-            tmp.add((value == null) ? null : value.getBytes());
-          }
-        }
+      if (value != null) {
+        return value.getBytes();
       }
-      columnName = columnNames;
-    }
-
-    private boolean isBinaryType(int n) {
-      return n == -2 || n == -3 || n == -4;
+      return null;
     }
 
     /**

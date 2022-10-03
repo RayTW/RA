@@ -28,15 +28,6 @@ public interface RowSet {
    * Gets value uses the specific column name.
    *
    * @param columnName column name
-   * @param charsetName Charset
-   * @return the value of that column as a String.
-   */
-  public String getString(String columnName, String charsetName);
-
-  /**
-   * Gets value uses the specific column name.
-   *
-   * @param columnName column name
    * @return the value of that column as a short.
    */
   public short getShort(String columnName);
@@ -79,7 +70,7 @@ public interface RowSet {
    * @param columnName column name
    * @return the value of that column as a {@link BigDecimal#doubleValue()}
    */
-  public double getDoubleDecima(String columnName);
+  public double getBigDecimalDouble(String columnName);
 
   /**
    * Gets value uses the specific column name.

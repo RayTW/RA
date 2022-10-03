@@ -25,6 +25,7 @@ import javax.sql.rowset.RowSetMetaDataImpl;
 public class MockResultSet extends ResultSetImpl {
   private RowSetMetaDataImpl metaData;
   private List<Integer> columnType;
+  private List<String> columnTypeName;
   private List<String> columnLabel;
   private Map<Integer, String> columnMapping;
   private Map<String, List<byte[]>> data;
@@ -46,7 +47,7 @@ public class MockResultSet extends ResultSetImpl {
   public MockResultSet(String... columnLabel) {
     this();
 
-    setColumnTypeLabel(null, Arrays.asList(columnLabel));
+    setColumnTypeLabel(null, null, Arrays.asList(columnLabel));
   }
 
   /**
@@ -54,14 +55,17 @@ public class MockResultSet extends ResultSetImpl {
    *
    * @param columnLabel column label
    */
-  private void setColumnTypeLabel(List<Integer> columnType, List<String> columnLabel) {
+  private void setColumnTypeLabel(
+      List<Integer> columnType, List<String> columnTypeName, List<String> columnLabel) {
     if (columnType == null && columnLabel != null && columnLabel.size() > 0) {
       columnType = new ArrayList<Integer>(Collections.nCopies(columnLabel.size(), 0));
+      columnTypeName = new ArrayList<String>(Collections.nCopies(columnLabel.size(), "NULL"));
     }
 
     cursor = 0;
     this.columnLabel = columnLabel;
     this.columnType = columnType;
+    this.columnTypeName = columnTypeName;
     data = new ConcurrentHashMap<>();
     columnMapping = new ConcurrentHashMap<>();
 
@@ -88,6 +92,11 @@ public class MockResultSet extends ResultSetImpl {
           @Override
           public int getColumnType(int columnIndex) throws SQLException {
             return MockResultSet.this.columnType.get(columnIndex - 1);
+          }
+
+          @Override
+          public String getColumnTypeName(int columnIndex) throws SQLException {
+            return MockResultSet.this.columnTypeName.get(columnIndex - 1);
           }
         };
   }
@@ -142,6 +151,19 @@ public class MockResultSet extends ResultSetImpl {
 
     if (bytes != null && c < columnData.size()) {
       return new String(bytes);
+    }
+    return null;
+  }
+
+  @Override
+  public Object getObject(int columnIndex) throws SQLException {
+    String columnName = columnMapping.get(columnIndex - 1);
+    List<byte[]> columnData = data.get(columnName);
+    int c = cursor - 1;
+    byte[] bytes = columnData.get(c);
+
+    if (bytes != null && c < columnData.size()) {
+      return bytes;
     }
     return null;
   }
@@ -237,6 +259,7 @@ public class MockResultSet extends ResultSetImpl {
    */
   public static final class Builder {
     private List<Integer> columnType;
+    private List<String> columnTypeName;
     private List<String> columnLabel;
 
     public Builder setColumnLabel(String... label) {
@@ -249,6 +272,11 @@ public class MockResultSet extends ResultSetImpl {
       return this;
     }
 
+    public Builder setColumnTypeName(String... name) {
+      columnTypeName = Arrays.asList(name);
+      return this;
+    }
+
     /**
      * build.
      *
@@ -257,7 +285,7 @@ public class MockResultSet extends ResultSetImpl {
     public MockResultSet build() {
       MockResultSet obj = new MockResultSet();
 
-      obj.setColumnTypeLabel(columnType, columnLabel);
+      obj.setColumnTypeLabel(columnType, columnTypeName, columnLabel);
 
       return obj;
     }

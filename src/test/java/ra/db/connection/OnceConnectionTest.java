@@ -961,4 +961,57 @@ public class OnceConnectionTest {
       connection.close();
     }
   }
+
+  @Test
+  public void testConnectToH2DatabaseFromBytes() throws ConnectException, SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder()
+                .inMemory()
+                .setName("databaseName")
+                .setProperties(
+                    () -> {
+                      Properties properties = new Properties();
+
+                      // default is true
+                      properties.put("DATABASE_TO_UPPER", false);
+                      properties.put("MODE", "MYSQL");
+
+                      return properties;
+                    })
+                .build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `col_int` int(10) UNSIGNED NOT NULL,"
+              + "  `col_byte` binary(16) NOT NULL,"
+              + "  `col_varbyte` varbinary(1000) NOT NULL,"
+              + "  `col_binary_varying` binary varying NOT NULL,"
+              + "  `col_blob` blob NOT NULL "
+              + "ON UPDATE current_timestamp()"
+              + ");";
+
+      executor.execute(createTableSql);
+
+      for (int i = 1; i <= 1; i++) {
+        String sql =
+            "INSERT INTO test_table SET col_int="
+                + i
+                + ",col_blob='test',col_byte='中文',col_varbyte='中文',col_binary_varying='中文';";
+        executor.execute(sql);
+      }
+
+      RecordCursor record =
+          connection.createStatementExecutor().executeQuery("SELECT * FROM test_table;");
+
+      System.out.println("record==" + record);
+
+      executor.execute("DROP TABLE test_table");
+      connection.close();
+    }
+  }
 }

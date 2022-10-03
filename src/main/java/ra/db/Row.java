@@ -46,26 +46,10 @@ public class Row implements RowSet {
    */
   @Override
   public String getString(String columnName) {
-    return getString(columnName, null);
-  }
-
-  /**
-   * Take the value of that column`s value as a String by character encoding and the column`s name.
-   *
-   * @param columnName column`s name
-   * @param charsetName etc. "UTF-8"
-   * @return the value of that column as a String.
-   */
-  @Override
-  public String getString(String columnName, String charsetName) {
     try {
       byte[] v = data.get(columnName);
 
-      if (charsetName == null) {
-        return (v == null) ? "" : new String(v);
-      } else {
-        return (v == null) ? "" : new String(v, charsetName);
-      }
+      return (v == null) ? "" : new String(v);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -146,7 +130,7 @@ public class Row implements RowSet {
    * @return the value of that column as a {@link BigDecimal#doubleValue()}
    */
   @Override
-  public double getDoubleDecima(String columnName) {
+  public double getBigDecimalDouble(String columnName) {
     String v = getString(columnName);
 
     return new BigDecimal(v).doubleValue();
