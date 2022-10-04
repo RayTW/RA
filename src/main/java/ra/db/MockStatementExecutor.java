@@ -25,7 +25,6 @@ public class MockStatementExecutor extends JdbcExecutor {
   private Function<String, Integer> tryExecuteListener;
   private Function<String, Integer> executeListener;
   private Function<List<String>, Integer> executeCommitListener;
-  private Consumer<String> multiQueryListener;
   private Consumer<String> openListener;
 
   /** Initialize. */
@@ -83,15 +82,6 @@ public class MockStatementExecutor extends JdbcExecutor {
    *
    * @param listener listener
    */
-  public void setMultiOpenListener(Consumer<String> listener) {
-    multiQueryListener = listener;
-  }
-
-  /**
-   * Register listener.
-   *
-   * @param listener listener
-   */
   public void setOpenListener(Consumer<String> listener) {
     openListener = listener;
   }
@@ -111,41 +101,9 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public void multiQuery(Consumer<MultiQuery> listener) {
-    listener.accept(
-        new MultiQuery(this::buildRecord, null) {
-
-          @Override
-          public RecordCursor executeQuery(String sql) {
-            if (multiQueryListener != null) {
-              multiQueryListener.accept(sql);
-            }
-
-            return buildRecord();
-          }
-        });
-  }
-
-  @Override
   public int execute(String sql) {
     if (executeListener != null) {
       return executeListener.apply(sql);
-    }
-    return 1;
-  }
-
-  @Override
-  public int execute(String sql, Consumer<Exception> listener) {
-    if (executeListener != null) {
-      return executeListener.apply(sql);
-    }
-    return 1;
-  }
-
-  @Override
-  public int executeCommit(List<String> sql, Consumer<Exception> listener) {
-    if (executeCommitListener != null) {
-      return executeCommitListener.apply(sql);
     }
     return 1;
   }
@@ -242,7 +200,7 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public int tryExecute(String sql, Consumer<Exception> listener) {
+  public int tryExecute(String sql) {
     if (tryExecuteListener != null) {
       return tryExecuteListener.apply(sql);
     }
@@ -250,7 +208,7 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public int insert(String sql, Consumer<Exception> errorListener) {
+  public int insert(String sql) {
     if (insertListener != null) {
       return insertListener.apply(sql);
     }

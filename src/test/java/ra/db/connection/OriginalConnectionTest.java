@@ -2,7 +2,9 @@ package ra.db.connection;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -20,6 +22,8 @@ import ra.db.MockResultSet;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
 import ra.db.record.RecordCursor;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 import ra.ref.Reference;
 import ra.util.Utility;
 
@@ -97,7 +101,8 @@ public class OriginalConnectionTest {
   }
 
   @Test
-  public void testExecuteSqlThrowRuntimeException() throws SQLException {
+  public void testExecuteSqlThrowRaSqlException() throws SQLException {
+    exceptionRule.expect(RaSqlException.class);
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
@@ -122,9 +127,7 @@ public class OriginalConnectionTest {
 
     int actual =
         obj.createStatementExecutor()
-            .execute(
-                "INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);",
-                exception -> assertThat(exception, instanceOf(RuntimeException.class)));
+            .execute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
 
     obj.close();
 
@@ -151,13 +154,12 @@ public class OriginalConnectionTest {
             return false;
           }
         }) {
-      db.connectIf(
-          executor ->
-              executor.execute(
-                  sql,
-                  exception -> {
-                    assertThat(exception, instanceOf(ConnectException.class));
-                  }));
+      try {
+        db.connectIf(executor -> executor.execute(sql));
+      } catch (Exception e) {
+        assertThat(e, instanceOf(RaConnectException.class));
+      }
+      assertFalse(db.isLive());
     }
   }
 
@@ -183,7 +185,11 @@ public class OriginalConnectionTest {
             return connection;
           }
         }) {
-      db.connectIf(executor -> executor.execute(sql, exception -> {}));
+      try {
+        db.connectIf(executor -> executor.execute(sql));
+      } catch (Exception e) {
+        assertNull(e);
+      }
     }
   }
 
@@ -243,13 +249,9 @@ public class OriginalConnectionTest {
             return false;
           }
         }) {
-      db.connectIf(
-          executor ->
-              executor.executeCommit(
-                  sqlList,
-                  exception -> {
-                    assertThat(exception, instanceOf(ConnectException.class));
-                  }));
+      db.connectIf(executor -> executor.executeCommit(sqlList));
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaConnectException.class));
     }
   }
 
@@ -286,8 +288,8 @@ public class OriginalConnectionTest {
             }) {
       db.connectIf(
           executor -> {
-            int actual = executor.insert(sql, exception -> {});
-            System.out.println("actual" + actual);
+            int actual = executor.insert(sql);
+
             assertEquals(expected, actual);
           });
     }
@@ -320,13 +322,11 @@ public class OriginalConnectionTest {
                 return connection;
               }
             }) {
-      db.connectIf(
-          executor ->
-              executor.insert(
-                  sql,
-                  exception -> {
-                    assertThat(exception, instanceOf(ConnectException.class));
-                  }));
+      try {
+        db.connectIf(executor -> executor.insert(sql));
+      } catch (Exception e) {
+        assertThat(e, instanceOf(RaConnectException.class));
+      }
     }
   }
 
@@ -382,14 +382,12 @@ public class OriginalConnectionTest {
             return false;
           }
         }) {
-      db.connectIf(
-          executor -> {
-            executor.executeQuery(
-                sql,
-                exception -> {
-                  assertThat(exception, instanceOf(ConnectException.class));
-                });
-          });
+
+      try {
+        db.connectIf(executor -> executor.executeQuery(sql));
+      } catch (Exception e) {
+        assertThat(e, instanceOf(RaConnectException.class));
+      }
     }
   }
 
@@ -411,14 +409,16 @@ public class OriginalConnectionTest {
           }
         }) {
 
-      db.createStatementExecutor()
-          .executeCommit(
-              sqlList, exception -> assertThat(exception, instanceOf(ConnectException.class)));
+      try {
+        db.createStatementExecutor().executeCommit(sqlList);
+      } catch (Exception e) {
+        assertThat(e, instanceOf(RaConnectException.class));
+      }
     }
   }
 
   @Test
-  public void testTryExecute() throws SQLException {
+  public void testTryExecute() throws SQLException, ConnectException {
     String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -439,7 +439,7 @@ public class OriginalConnectionTest {
         }) {
       db.connect();
 
-      int result = db.tryExecute(sql, exception -> {});
+      int result = db.tryExecute(sql);
 
       assertEquals(1, result);
     }
@@ -460,13 +460,9 @@ public class OriginalConnectionTest {
         }) {
       db.connect();
 
-      int result =
-          db.tryExecute(
-              sql, exception -> assertThat(exception, instanceOf(ConnectException.class)));
-
-      assertEquals(0, result);
+      db.tryExecute(sql);
     } catch (Exception e) {
-      //
+      assertThat(e, instanceOf(ConnectException.class));
     }
   }
 

@@ -86,33 +86,22 @@ public interface DatabaseConnection extends AutoCloseable {
    * Try to execute SQL (INSERT,UPDATE,DELETE) statements.
    *
    * @param sql Statements
-   * @param listener Exception
    * @return Execute success count.
    */
-  public default int tryExecute(String sql, Consumer<Exception> listener) {
+  public default int tryExecute(String sql) throws SQLException, ConnectException {
     int ret = 0;
     Connection connection = getConnection();
 
     if (connection == null) {
-      if (listener != null) {
-        listener.accept(new ConnectException("Connect to database failed." + getParam()));
-      }
-      return ret;
+      throw new ConnectException("Connect to database failed." + getParam());
     }
-    try {
-      connection.setAutoCommit(false);
+    connection.setAutoCommit(false);
 
-      try (Statement st = connection.createStatement()) {
-        ret = st.executeUpdate(sql);
-      }
-
-      connection.rollback();
-    } catch (Exception e) {
-      e.printStackTrace();
-      if (listener != null) {
-        listener.accept(e);
-      }
+    try (Statement st = connection.createStatement()) {
+      ret = st.executeUpdate(sql);
     }
+
+    connection.rollback();
 
     return ret;
   }

@@ -3,8 +3,9 @@ package ra.db;
 import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.Consumer;
 import ra.db.record.RecordCursor;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 
 /**
  * SQL statement (CRUD) executor.
@@ -26,16 +27,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return affected rows
    */
-  public int execute(String sql);
-
-  /**
-   * If the execution is successful, the return count.
-   *
-   * @param sql SQL statements
-   * @param listener exception
-   * @return affected rows
-   */
-  public int execute(String sql, Consumer<Exception> listener);
+  public int execute(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * Try to execute SQL statement (CRUD).
@@ -43,16 +35,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return affected rows
    */
-  public int tryExecute(String sql);
-
-  /**
-   * Try to execute SQL statement (CRUD).
-   *
-   * @param sql SQL statement
-   * @param listener exception
-   * @return affected rows
-   */
-  public int tryExecute(String sql, Consumer<Exception> listener);
+  public int tryExecute(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * Execute SQL statements.
@@ -62,7 +45,7 @@ public interface StatementExecutor {
    * @throws SQLException SQLException
    */
   public void executeTransaction(TransactionExecutor executor)
-      throws ConnectException, SQLException;
+      throws RaConnectException, RaSqlException;
 
   /**
    * Execute SQL statements.
@@ -70,16 +53,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return affected rows
    */
-  public int executeCommit(List<String> sql);
-
-  /**
-   * Execute SQL statements.
-   *
-   * @param sql SQL statement
-   * @param listener exception
-   * @return affected rows
-   */
-  public int executeCommit(List<String> sql, Consumer<Exception> listener);
+  public int executeCommit(List<String> sql) throws RaConnectException, RaSqlException;
 
   /**
    * Return the last id after executing SQL statement.
@@ -87,16 +61,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return last id
    */
-  public int insert(String sql);
-
-  /**
-   * Return the last id after executing SQL statement.
-   *
-   * @param sql SQL statement
-   * @param errorListener exception
-   * @return affected rows
-   */
-  public int insert(String sql, Consumer<Exception> errorListener);
+  public int insert(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * Execute query, ex : SELECT * FROM table.
@@ -104,17 +69,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return RecordCursor
    */
-  public RecordCursor executeQuery(String sql);
-
-  /**
-   * Execute query, ex : SELECT * FROM table.
-   *
-   * @param sql SQL statement
-   * @param exceptionListener SQLException statement invalid、ConnectException connect to database
-   *     failed
-   * @return RecordCursor
-   */
-  public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener);
+  public RecordCursor executeQuery(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * A SQL statement is precompiled and stored in a Prepared object. This object can then be used to
@@ -126,20 +81,5 @@ public interface StatementExecutor {
    * @throws SQLException SQLException
    */
   public RecordCursor executeQueryUsePrepare(Prepared prepared)
-      throws ConnectException, SQLException;
-
-  /**
-   * Execute query( transaction), ex : SELECT * FROM table.
-   *
-   * @param listener listener
-   */
-  public void multiQuery(Consumer<MultiQuery> listener);
-
-  /**
-   * Execute query( transaction), ex : SELECT * FROM table.
-   *
-   * @param listener listener
-   * @param exceptionListener exceptionListener
-   */
-  public void multiQuery(Consumer<MultiQuery> listener, Consumer<Exception> exceptionListener);
+      throws RaConnectException, RaSqlException;
 }

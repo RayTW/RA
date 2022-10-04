@@ -90,7 +90,7 @@ public class OriginalConnection implements KeepAvailable {
   public void keep() {
     if (startThread) {
       try {
-        executor.executeQuery("SELECT 1", e -> reconnect());
+        executor.executeQuery("SELECT 1");
       } catch (Exception e) {
         reconnect();
       }

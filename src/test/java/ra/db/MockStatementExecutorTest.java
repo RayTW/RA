@@ -54,7 +54,7 @@ public class MockStatementExecutorTest {
 
     executor.setInsertListener(sql -> expected);
 
-    int actual = executor.insert("INSERT INTO table_name VALUES (value1, value2);", null);
+    int actual = executor.insert("INSERT INTO table_name VALUES (value1, value2);");
 
     assertEquals(expected, actual);
   }
@@ -78,7 +78,7 @@ public class MockStatementExecutorTest {
 
     executor.setTryExecuteListener(sql -> expected);
 
-    int actual = executor.tryExecute("INSERT INTO table_name VALUES (value1, value2);", null);
+    int actual = executor.tryExecute("INSERT INTO table_name VALUES (value1, value2);");
 
     assertEquals(expected, actual);
   }
@@ -102,7 +102,7 @@ public class MockStatementExecutorTest {
 
     executor.setExecuteListener(sql -> expected);
 
-    int actual = executor.execute("INSERT INTO table_name VALUES (value1, value2);", null);
+    int actual = executor.execute("INSERT INTO table_name VALUES (value1, value2);");
 
     assertEquals(expected, actual);
   }

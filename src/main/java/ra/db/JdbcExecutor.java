@@ -10,11 +10,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
-import ra.db.connection.OnCreatedStatementListener;
 import ra.db.record.Record;
 import ra.db.record.RecordCursor;
 import ra.db.record.RecordSet;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 
 /**
  * SQL statement (CRUD) executor.
@@ -45,24 +45,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @return affected rows
    */
   @Override
-  public int execute(String sql) {
-    int ret = 0;
-    if (!isLive()) {
-      return ret;
-    }
-
-    return execute(sql, e -> e.printStackTrace());
-  }
-
-  /**
-   * If the execution is successful, the return count.
-   *
-   * @param sql SQL statements
-   * @param listener exception
-   * @return affected rows
-   */
-  @Override
-  public int execute(String sql, Consumer<Exception> listener) {
+  public int execute(String sql) throws RaConnectException, RaSqlException {
     int ret = 0;
     if (!isLive()) {
       String msg =
@@ -73,18 +56,13 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + sql;
 
-      if (listener != null) {
-        listener.accept(new ConnectException(msg));
-      }
-      return ret;
+      throw new RaConnectException(msg);
     }
 
     try {
       ret = executeSql(sql);
     } catch (Exception e) {
-      if (listener != null) {
-        listener.accept(e);
-      }
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
     return ret;
   }
@@ -109,21 +87,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @return affected rows
    */
   @Override
-  public int tryExecute(String sql) {
-    return tryExecute(sql, null);
-  }
-
-  /**
-   * Try to execute SQL statement (CRUD).
-   *
-   * @param sql SQL statement
-   * @param listener exception
-   * @return affected rows
-   */
-  @Override
-  public int tryExecute(String sql, Consumer<Exception> listener) {
-    int ret = 0;
-
+  public int tryExecute(String sql) throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -133,13 +97,16 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + sql;
 
-      if (listener != null) {
-        listener.accept(new ConnectException(msg));
-      }
-      return ret;
+      throw new RaConnectException(msg);
     }
 
-    return connection.tryExecute(sql, listener);
+    try {
+      return connection.tryExecute(sql);
+    } catch (ConnectException e) {
+      throw new RaConnectException(e);
+    } catch (SQLException e) {
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+    }
   }
 
   /**
@@ -153,7 +120,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public RecordCursor executeQueryUsePrepare(Prepared prepared)
-      throws ConnectException, SQLException {
+      throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -163,47 +130,52 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + prepared.getSql();
 
-      throw new ConnectException(msg);
+      throw new RaConnectException(msg);
     }
     Record record = buildRecord();
 
-    connection.getConnection(
-        dbConnection -> {
-          dbConnection.setAutoCommit(true);
+    try {
+      connection.getConnection(
+          dbConnection -> {
+            dbConnection.setAutoCommit(true);
 
-          try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
-            for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
-              ParameterValue paramter = element.getValue();
+            try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
+              for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
+                ParameterValue paramter = element.getValue();
 
-              if (Boolean.class.isAssignableFrom(paramter.getType())) {
-                st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
-              } else if (String.class.isAssignableFrom(paramter.getType())) {
-                st.setString(element.getKey(), String.class.cast(paramter.getValue()));
-              } else if (Integer.class.isAssignableFrom(paramter.getType())) {
-                st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
-              } else if (Long.class.isAssignableFrom(paramter.getType())) {
-                st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
-              } else if (Double.class.isAssignableFrom(paramter.getType())) {
-                st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
-              } else if (Float.class.isAssignableFrom(paramter.getType())) {
-                st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
-              } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
-                st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
-              } else if (byte[].class.isAssignableFrom(paramter.getType())) {
-                st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
-              } else if (Blob.class.isAssignableFrom(paramter.getType())) {
-                st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
-              } else {
-                throw new IllegalArgumentException(
-                    "Unsupported object type for QueryParameter: " + paramter.getType());
+                if (Boolean.class.isAssignableFrom(paramter.getType())) {
+                  st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
+                } else if (String.class.isAssignableFrom(paramter.getType())) {
+                  st.setString(element.getKey(), String.class.cast(paramter.getValue()));
+                } else if (Integer.class.isAssignableFrom(paramter.getType())) {
+                  st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
+                } else if (Long.class.isAssignableFrom(paramter.getType())) {
+                  st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
+                } else if (Double.class.isAssignableFrom(paramter.getType())) {
+                  st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
+                } else if (Float.class.isAssignableFrom(paramter.getType())) {
+                  st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
+                } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
+                  st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
+                } else if (byte[].class.isAssignableFrom(paramter.getType())) {
+                  st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
+                } else if (Blob.class.isAssignableFrom(paramter.getType())) {
+                  st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
+                } else {
+                  throw new IllegalArgumentException(
+                      "Unsupported object type for QueryParameter: " + paramter.getType());
+                }
+              }
+              try (ResultSet rs = st.executeQuery()) {
+                record.convert(rs);
               }
             }
-            try (ResultSet rs = st.executeQuery()) {
-              record.convert(rs);
-            }
-          }
-          return 0;
-        });
+            return 0;
+          });
+    } catch (Exception e) {
+      throw new RaSqlException(
+          "SQL Syntax Error, sql=" + prepared.getSql() + ",values = " + prepared.getValues(), e);
+    }
 
     return record;
   }
@@ -216,61 +188,51 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public void executeTransaction(TransactionExecutor executor)
-      throws ConnectException, SQLException {
+      throws RaConnectException, RaSqlException {
     if (connection == null) {
-      throw new ConnectException("Connect to database failed.");
+      throw new RaConnectException("Connect to database failed.");
     }
 
-    this.connection.getConnection(
-        dbConnection -> {
-          boolean ret = false;
+    try {
+      this.connection.getConnection(
+          dbConnection -> {
+            boolean ret = false;
 
-          try {
-            dbConnection.setAutoCommit(false);
-            try (Statement st = dbConnection.createStatement()) {
-              Transaction tran = new Transaction(st);
-              ret = executor.apply(tran);
-            }
-          } finally {
-            if (ret) {
-              dbConnection.commit();
-            } else {
-              try {
-                dbConnection.rollback();
-              } catch (SQLException e) {
-                e.printStackTrace();
+            try {
+              dbConnection.setAutoCommit(false);
+              try (Statement st = dbConnection.createStatement()) {
+                Transaction tran = new Transaction(st);
+                ret = executor.apply(tran);
+              }
+            } finally {
+              if (ret) {
+                dbConnection.commit();
+              } else {
+                try {
+                  dbConnection.rollback();
+                } catch (SQLException e) {
+                  e.printStackTrace();
+                }
               }
             }
-          }
-          return 0;
-        });
-  }
-
-  /**
-   * Execute SQL statements.
-   *
-   * @param sql SQL statement
-   * @return affected rows
-   */
-  @Override
-  public int executeCommit(List<String> sql) {
-    int ret = 0;
-    if (!isLive()) {
-      return ret;
+            return 0;
+          });
+    } catch (ConnectException e) {
+      throw new RaConnectException(e);
+    } catch (SQLException e) {
+      throw new RaSqlException(e);
     }
-
-    return executeCommit(sql, e -> e.printStackTrace());
   }
 
   /**
    * Execute SQL statements.
    *
    * @param sql SQL statement
-   * @param listener exception
    * @return affected rows
    */
   @Override
-  public int executeCommit(List<String> sql, Consumer<Exception> listener) {
+  public int executeCommit(List<String> sql) throws RaConnectException, RaSqlException {
+
     int ret = 0;
 
     if (!isLive()) {
@@ -282,18 +244,13 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + sql;
 
-      if (listener != null) {
-        listener.accept(new ConnectException(msg));
-      }
-      return ret;
+      throw new RaConnectException(msg);
     }
 
     try {
       ret = executeCommit(false, sql);
     } catch (Exception e) {
-      if (listener != null) {
-        listener.accept(e);
-      }
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
     return ret;
   }
@@ -345,20 +302,6 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int insert(String sql) {
-    return insert(sql, null);
-  }
-
-  /**
-   * Return the last id after executing SQL statement.
-   *
-   * @param sql SQL statement
-   * @param errorListener exception
-   * @return affected rows
-   */
-  @Override
-  public int insert(String sql, Consumer<Exception> errorListener) {
-    int ret = 0;
-
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -368,19 +311,13 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + sql;
 
-      if (errorListener != null) {
-        errorListener.accept(new ConnectException(msg));
-      }
-      return 0;
+      throw new RaConnectException(msg);
     }
+    int ret = 0;
     try {
       ret = lastInsertId(sql);
     } catch (Exception e) {
-      e.printStackTrace();
-
-      if (errorListener != null) {
-        errorListener.accept(e);
-      }
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
 
     return ret;
@@ -408,20 +345,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @return RecordCursor
    */
   @Override
-  public RecordCursor executeQuery(String sql) {
-    return executeQuery(sql, null);
-  }
-
-  /**
-   * Execute query, ex : SELECT * FROM table.
-   *
-   * @param sql SQL statement
-   * @param exceptionListener SQLException statement invalid、ConnectException connect to database
-   *     failed
-   * @return RecordCursor
-   */
-  @Override
-  public RecordCursor executeQuery(String sql, Consumer<Exception> exceptionListener) {
+  public RecordCursor executeQuery(String sql) throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -431,11 +355,7 @@ public class JdbcExecutor implements StatementExecutor {
               + ",sql="
               + sql;
 
-      if (exceptionListener != null) {
-        exceptionListener.accept(new ConnectException(msg));
-      }
-
-      return buildRecord();
+      throw new RaConnectException(msg);
     }
     Record record = buildRecord();
     try {
@@ -450,74 +370,10 @@ public class JdbcExecutor implements StatementExecutor {
             return 0;
           });
     } catch (Exception e) {
-      e.printStackTrace();
-
-      if (exceptionListener != null) {
-        exceptionListener.accept(e);
-      }
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
 
     return record;
-  }
-
-  /**
-   * Execute query( transaction), ex : SELECT * FROM table.
-   *
-   * @param listener listener
-   */
-  @Override
-  public void multiQuery(Consumer<MultiQuery> listener) {
-    if (!isLive()) {
-      return;
-    }
-
-    try {
-      query(
-          (st) -> {
-            try (MultiQuery multiQuery = new MultiQuery(this::buildRecord, st)) {
-              listener.accept(multiQuery);
-            }
-          });
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   * Execute query( transaction), ex : SELECT * FROM table.
-   *
-   * @param listener listener
-   * @param exceptionListener exceptionListener
-   */
-  @Override
-  public void multiQuery(Consumer<MultiQuery> listener, Consumer<Exception> exceptionListener) {
-    if (!isLive()) {
-      return;
-    }
-
-    try {
-      query(
-          (st) -> {
-            try (MultiQuery multiQuery = new MultiQuery(this::buildRecord, st)) {
-              listener.accept(multiQuery);
-            }
-          });
-    } catch (Exception e) {
-      if (exceptionListener != null) {
-        exceptionListener.accept(e);
-      }
-    }
-  }
-
-  private void query(OnCreatedStatementListener listener) throws SQLException, ConnectException {
-    this.connection.getConnection(
-        dbConnection -> {
-          dbConnection.setAutoCommit(true);
-          try (Statement st = dbConnection.createStatement(); ) {
-            listener.onCreatedStatement(st);
-          }
-          return 0;
-        });
   }
 
   /**
