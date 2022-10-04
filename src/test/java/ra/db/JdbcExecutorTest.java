@@ -19,7 +19,7 @@ public class JdbcExecutorTest {
     connection.setIsLive(false);
 
     try {
-      executor.execute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+      executor.executeUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
     } catch (Exception e) {
       assertThat(e, instanceOf(RaConnectException.class));
     }
@@ -33,7 +33,7 @@ public class JdbcExecutorTest {
     connection.setIsLive(false);
 
     try {
-      executor.tryExecute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+      executor.tryExecuteUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
     } catch (Exception e) {
       assertThat(e, instanceOf(RaConnectException.class));
     }
@@ -47,7 +47,7 @@ public class JdbcExecutorTest {
     connection.setIsLive(true);
 
     try {
-      executor.tryExecute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+      executor.tryExecuteUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
     } catch (Exception e) {
       assertThat(e, instanceOf(RaConnectException.class));
     }

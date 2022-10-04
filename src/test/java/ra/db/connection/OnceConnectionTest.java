@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -189,12 +190,12 @@ public class OnceConnectionTest {
           }
         }) {
 
-      db.connectIf(executor -> executor.execute(sql));
+      db.connectIf(executor -> executor.executeUpdate(sql));
     }
   }
 
   @Test
-  public void testExecuteSqlThrowRaSqlException() throws RaSqlException {
+  public void testExecuteSqlThrowRaSqlException() {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
@@ -205,7 +206,7 @@ public class OnceConnectionTest {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
-                  throw new RuntimeException();
+                  throw new RaSqlException();
                 });
 
             return connection;
@@ -219,7 +220,7 @@ public class OnceConnectionTest {
 
     try {
       obj.createStatementExecutor()
-          .execute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+          .executeUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
 
     } catch (Exception e) {
       assertThat(e, instanceOf(RaSqlException.class));
@@ -248,7 +249,7 @@ public class OnceConnectionTest {
           }
         }) {
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertThat(e, instanceOf(RaConnectException.class));
       }
@@ -280,7 +281,7 @@ public class OnceConnectionTest {
         }) {
 
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertNull(e);
       }
@@ -620,7 +621,7 @@ public class OnceConnectionTest {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
-      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      executor.executeUpdate(Utility.get().readFile("src/test/resources/mydb.sql"));
       String sql =
           "INSERT INTO DEMO_SCHEMA SET col_int=1"
               + ",col_double=1.01"
@@ -630,13 +631,13 @@ public class OnceConnectionTest {
               + ",col_decimal=1.1111"
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
-      executor.execute(sql);
-      executor.execute(sql);
+      executor.executeUpdate(sql);
+      executor.executeUpdate(sql);
       int actual = executor.insert(sql);
 
       assertEquals(3, actual);
 
-      executor.execute("DROP TABLE DEMO_SCHEMA");
+      executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     }
   }
 
@@ -650,7 +651,7 @@ public class OnceConnectionTest {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
-      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      executor.executeUpdate(Utility.get().readFile("src/test/resources/mydb.sql"));
       String sql =
           "INSERT INTO DEMO_SCHEMA SET col_int=1"
               + ",col_double=1.01"
@@ -660,13 +661,13 @@ public class OnceConnectionTest {
               + ",col_decimal=1.1111"
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
-      executor.execute(sql);
-      executor.execute(sql);
+      executor.executeUpdate(sql);
+      executor.executeUpdate(sql);
       int actual = executor.insert(sql);
 
       assertEquals(3, actual);
 
-      executor.execute("DROP TABLE DEMO_SCHEMA");
+      executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
       Utility.get().deleteFiles(file.getParent());
     }
@@ -687,7 +688,7 @@ public class OnceConnectionTest {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
-      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      executor.executeUpdate(Utility.get().readFile("src/test/resources/mydb.sql"));
       String sql =
           "INSERT INTO DEMO_SCHEMA SET col_int=1"
               + ",col_double=1.01"
@@ -697,12 +698,12 @@ public class OnceConnectionTest {
               + ",col_decimal=1.1111"
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
-      executor.execute(sql);
-      executor.execute(sql);
+      executor.executeUpdate(sql);
+      executor.executeUpdate(sql);
       int actual = executor.insert(sql);
 
       assertEquals(3, actual);
-      executor.execute("DROP TABLE DEMO_SCHEMA");
+      executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
       sever.stop();
     }
@@ -723,7 +724,7 @@ public class OnceConnectionTest {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
-      executor.execute(Utility.get().readFile("src/test/resources/mydb.sql"));
+      executor.executeUpdate(Utility.get().readFile("src/test/resources/mydb.sql"));
       String sql =
           "INSERT INTO DEMO_SCHEMA SET col_int=1"
               + ",col_double=1.01"
@@ -733,13 +734,13 @@ public class OnceConnectionTest {
               + ",col_decimal=1.1111"
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
-      executor.execute(sql);
-      executor.execute(sql);
+      executor.executeUpdate(sql);
+      executor.executeUpdate(sql);
       int actual = executor.insert(sql);
 
       assertEquals(3, actual);
 
-      executor.execute("DROP TABLE DEMO_SCHEMA");
+      executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
       sever.stop();
       Utility.get().deleteFiles("./sample");
@@ -754,7 +755,7 @@ public class OnceConnectionTest {
 
       StatementExecutor executor = connection.createStatementExecutor();
 
-      executor.execute(CREATE_TABLE_SQL);
+      executor.executeUpdate(CREATE_TABLE_SQL);
 
       String sql =
           "INSERT INTO test_table SET col_int=1"
@@ -766,7 +767,7 @@ public class OnceConnectionTest {
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
 
-      executor.execute(sql);
+      executor.executeUpdate(sql);
 
       RecordCursor record =
           connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
@@ -779,7 +780,7 @@ public class OnceConnectionTest {
               });
       assertEquals(1, record.getRecordCount());
 
-      executor.execute("DROP TABLE test_table");
+      executor.executeUpdate("DROP TABLE test_table");
       // Require to close when uses once connection.
       connection.close();
     }
@@ -792,7 +793,7 @@ public class OnceConnectionTest {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
-      executor.execute(CREATE_TABLE_SQL);
+      executor.executeUpdate(CREATE_TABLE_SQL);
 
       String sql =
           "INSERT INTO test_table SET col_int=1"
@@ -804,7 +805,7 @@ public class OnceConnectionTest {
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
 
-      executor.execute(sql);
+      executor.executeUpdate(sql);
 
       RecordCursor record =
           connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
@@ -817,7 +818,7 @@ public class OnceConnectionTest {
               });
       assertEquals(1, record.getRecordCount());
 
-      executor.execute("DROP TABLE test_table");
+      executor.executeUpdate("DROP TABLE test_table");
       // Require to close when uses once connection.
       connection.close();
     }
@@ -901,7 +902,7 @@ public class OnceConnectionTest {
 
       StatementExecutor executor = connection.createStatementExecutor();
 
-      executor.execute(CREATE_TABLE_SQL);
+      executor.executeUpdate(CREATE_TABLE_SQL);
 
       for (int i = 1; i <= 5; i++) {
         String sql =
@@ -916,14 +917,14 @@ public class OnceConnectionTest {
                 + ",col_varchar='col_varchar'"
                 + ",created_at=NOW();";
 
-        executor.execute(sql);
+        executor.executeUpdate(sql);
       }
 
       RecordCursor record =
           connection
               .createStatementExecutor()
-              .executeQueryUsePrepare(
-                  Prepared.newQueryBuilder(
+              .prepareExecuteQuery(
+                  Prepared.newBuilder(
                           "SELECT * FROM `test_table` WHERE col_tinyint=? AND col_boolean=?;")
                       .set(1, ParameterValue.string("1"))
                       .set(2, ParameterValue.bool(true))
@@ -932,7 +933,59 @@ public class OnceConnectionTest {
       assertEquals(1, record.getRecordCount());
       assertEquals("1", record.field("col_int"));
 
-      executor.execute("DROP TABLE test_table");
+      executor.executeUpdate("DROP TABLE test_table");
+      connection.close();
+    }
+  }
+
+  @Test
+  public void testH2DatabaseInsertUsePrepared() throws ConnectException, SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      executor.executeUpdate(CREATE_TABLE_SQL);
+
+      String sql =
+          "INSERT INTO test_table SET col_int=?"
+              + ",col_double=?"
+              + ",col_boolean=?"
+              + ",col_tinyint=?"
+              + ",col_enum=?"
+              + ",col_decimal=?"
+              + ",col_varchar=?"
+              + ",created_at=NOW();";
+
+      int ret =
+          executor.prepareExecuteUpdate(
+              Prepared.newBuilder(sql)
+                  .set(1, ParameterValue.int64(8))
+                  .set(2, ParameterValue.float64(0.33))
+                  .set(3, ParameterValue.bool(true))
+                  .set(4, ParameterValue.int64(11))
+                  .set(5, ParameterValue.string("enum1"))
+                  .set(6, ParameterValue.bigNumeric(new BigDecimal("3.144")))
+                  .set(7, ParameterValue.string("hello test"))
+                  .build());
+
+      assertEquals(1, ret);
+
+      RecordCursor record =
+          connection
+              .createStatementExecutor()
+              .prepareExecuteQuery(
+                  Prepared.newBuilder(
+                          "SELECT * FROM `test_table` WHERE col_tinyint=? AND col_boolean=?;")
+                      .set(1, ParameterValue.int64(11))
+                      .set(2, ParameterValue.bool(true))
+                      .build());
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals(8, record.fieldInt("col_int"));
+
+      executor.executeUpdate("DROP TABLE test_table");
       connection.close();
     }
   }
@@ -956,14 +1009,14 @@ public class OnceConnectionTest {
               + "ON UPDATE current_timestamp()"
               + ");";
 
-      executor.execute(createTableSql);
+      executor.executeUpdate(createTableSql);
 
       for (int i = 1; i <= 1; i++) {
         String sql =
             "INSERT INTO test_table SET col_int="
                 + i
                 + ",col_blob='test',col_byte='中文',col_varbyte='中文',col_binary_varying='中文';";
-        executor.execute(sql);
+        executor.executeUpdate(sql);
       }
 
       RecordCursor record =
@@ -971,7 +1024,7 @@ public class OnceConnectionTest {
 
       System.out.println("record==" + record);
 
-      executor.execute("DROP TABLE test_table");
+      executor.executeUpdate("DROP TABLE test_table");
       connection.close();
     }
   }

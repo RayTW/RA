@@ -70,12 +70,12 @@ public class ConcurrentConnectionTest {
           }
         }) {
 
-      db.connectIf(executor -> executor.execute(sql));
+      db.connectIf(executor -> executor.executeUpdate(sql));
     }
   }
 
   @Test
-  public void testExecuteSqlThrowRaSqlException() throws SQLException {
+  public void testExecuteSqlThrowRaSqlException() {
     exceptionRule.expect(RaSqlException.class);
 
     MysqlParameters param =
@@ -88,7 +88,7 @@ public class ConcurrentConnectionTest {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
-                  throw new RuntimeException();
+                  throw new RaSqlException();
                 });
 
             return connection;
@@ -102,7 +102,7 @@ public class ConcurrentConnectionTest {
 
     int actual =
         obj.createStatementExecutor()
-            .execute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+            .executeUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
 
     obj.close();
 
@@ -131,7 +131,7 @@ public class ConcurrentConnectionTest {
         }) {
 
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertThat(e, instanceOf(RaConnectException.class));
       }
@@ -162,7 +162,7 @@ public class ConcurrentConnectionTest {
           }
         }) {
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertNull(e);
       }

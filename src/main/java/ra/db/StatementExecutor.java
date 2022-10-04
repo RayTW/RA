@@ -20,20 +20,22 @@ public interface StatementExecutor {
   public boolean isLive();
 
   /**
-   * If the execution is successful, the return count.
+   * Executes the given SQL statement, which may be an INSERT, UPDATE, or DELETE statement or an SQL
+   * statement that returns nothing, such as an SQL DDL statement.
    *
    * @param sql SQL statement
    * @return affected rows
    */
-  public int execute(String sql) throws RaConnectException, RaSqlException;
+  public int executeUpdate(String sql) throws RaConnectException, RaSqlException;
 
   /**
-   * Try to execute SQL statement (CRUD).
+   * Attempts to execute the given SQL statement, which may be an INSERT, UPDATE, or DELETE
+   * statement or an SQL statement that returns nothing, such as an SQL DDL statement.
    *
    * @param sql SQL statement
    * @return affected rows
    */
-  public int tryExecute(String sql) throws RaConnectException, RaSqlException;
+  public int tryExecuteUpdate(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * Execute SQL statements.
@@ -62,12 +64,23 @@ public interface StatementExecutor {
   public int insert(String sql) throws RaConnectException, RaSqlException;
 
   /**
-   * Execute query, ex : SELECT * FROM table.
+   * Executes the given SQL statement, which returns a single RecordCursor object.
    *
    * @param sql SQL statement
    * @return RecordCursor
    */
   public RecordCursor executeQuery(String sql) throws RaConnectException, RaSqlException;
+
+  /**
+   * Executes the given SQL statement, which may be an INSERT, UPDATE, or DELETE statement or an SQL
+   * statement that returns nothing, such as an SQL DDL statement.
+   *
+   * @param prepared prepared
+   * @return RecordCursor
+   * @throws RaConnectException RaConnectException
+   * @throws RaSqlException RaSqlException
+   */
+  public int prepareExecuteUpdate(Prepared prepared) throws RaConnectException, RaSqlException;
 
   /**
    * A SQL statement is precompiled and stored in a Prepared object. This object can then be used to
@@ -78,6 +91,6 @@ public interface StatementExecutor {
    * @throws RaConnectException RaConnectException
    * @throws RaSqlException RaSqlException
    */
-  public RecordCursor executeQueryUsePrepare(Prepared prepared)
+  public RecordCursor prepareExecuteQuery(Prepared prepared)
       throws RaConnectException, RaSqlException;
 }

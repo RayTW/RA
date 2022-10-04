@@ -15,7 +15,7 @@ public class PreparedTest {
   @Test
   public void testBuilder() {
     Prepared obj =
-        Prepared.newQueryBuilder("SELECT column FROM tableName;")
+        Prepared.newBuilder("SELECT column FROM tableName;")
             .set(1, ParameterValue.string("test"))
             .set(2, ParameterValue.bytes(new byte[2]))
             .set(3, ParameterValue.bool(Boolean.TRUE))
@@ -31,7 +31,7 @@ public class PreparedTest {
   @Test
   public void testSqlNullPointerException() {
     try {
-      Prepared.newQueryBuilder(null).build();
+      Prepared.newBuilder(null).build();
     } catch (NullPointerException ex) {
       assertNotNull(ex);
     }

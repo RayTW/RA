@@ -12,8 +12,8 @@ public class Prepared {
   private String sql;
   private Map<Integer, ParameterValue> values;
 
-  public static QueryBuilder newQueryBuilder(String sql) {
-    return new QueryBuilder(sql);
+  public static Builder newBuilder(String sql) {
+    return new Builder(sql);
   }
 
   public Map<Integer, ParameterValue> getValues() {
@@ -25,11 +25,11 @@ public class Prepared {
   }
 
   /** Builder. */
-  public static final class QueryBuilder {
+  public static class Builder {
     private String sql;
     private Map<Integer, ParameterValue> values;
 
-    public QueryBuilder(String sql) {
+    public Builder(String sql) {
       this.sql = sql;
     }
 
@@ -41,7 +41,7 @@ public class Prepared {
       return values;
     }
 
-    public QueryBuilder set(int index, ParameterValue value) {
+    public Builder set(int index, ParameterValue value) {
       getValues().put(index, value);
       return this;
     }

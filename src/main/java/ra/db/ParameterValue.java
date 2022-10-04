@@ -20,6 +20,11 @@ public class ParameterValue {
     return value;
   }
 
+  @Override
+  public String toString() {
+    return type + ", value=" + value;
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }

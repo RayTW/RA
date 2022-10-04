@@ -38,13 +38,14 @@ public class JdbcExecutor implements StatementExecutor {
   }
 
   /**
-   * If the execution is successful, the return count.
+   * Executes the given SQL statement, which may be an INSERT, UPDATE, or DELETE statement or an SQL
+   * statement that returns nothing, such as an SQL DDL statement.
    *
    * @param sql SQL statement
    * @return affected rows
    */
   @Override
-  public int execute(String sql) throws RaConnectException, RaSqlException {
+  public int executeUpdate(String sql) throws RaConnectException, RaSqlException {
     int ret = 0;
     if (!isLive()) {
       String msg =
@@ -58,16 +59,7 @@ public class JdbcExecutor implements StatementExecutor {
       throw new RaConnectException(msg);
     }
 
-    try {
-      ret = executeSql(sql);
-    } catch (Exception e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
-    return ret;
-  }
-
-  private int executeSql(String sql) throws RaConnectException, RaSqlException {
-    int ret =
+    ret =
         this.connection.getConnection(
             dbConnection -> {
               try {
@@ -76,7 +68,7 @@ public class JdbcExecutor implements StatementExecutor {
                   return st.executeUpdate(sql);
                 }
               } catch (SQLException e) {
-                throw new RaSqlException(e);
+                throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
               }
             });
 
@@ -84,13 +76,14 @@ public class JdbcExecutor implements StatementExecutor {
   }
 
   /**
-   * Try to execute SQL statement (CRUD).
+   * Attempts to execute the given SQL statement, which may be an INSERT, UPDATE, or DELETE
+   * statement or an SQL statement that returns nothing, such as an SQL DDL statement.
    *
    * @param sql SQL statement
    * @return affected rows
    */
   @Override
-  public int tryExecute(String sql) throws RaConnectException, RaSqlException {
+  public int tryExecuteUpdate(String sql) throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -107,6 +100,54 @@ public class JdbcExecutor implements StatementExecutor {
   }
 
   /**
+   * Executes the SQL statement in this PreparedStatement object, which must be an SQL Data
+   * Manipulation Language (DML) statement, such as INSERT, UPDATE or DELETE; or an SQL statement
+   * that returns nothing, such as a DDL statement.
+   *
+   * @param prepared prepared
+   * @return RecordCursor
+   * @throws RaConnectException RaConnectException
+   * @throws RaSqlException RaSqlException
+   */
+  @Override
+  public int prepareExecuteUpdate(Prepared prepared) throws RaConnectException, RaSqlException {
+    if (!isLive()) {
+      String msg =
+          "Connect to database failed, param :"
+              + connection.getParam()
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + prepared.getSql();
+
+      throw new RaConnectException(msg);
+    }
+
+    int ret =
+        this.connection.getConnection(
+            dbConnection -> {
+              try {
+                dbConnection.setAutoCommit(true);
+                try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
+
+                  setParametersPreparedStatement(prepared, st);
+
+                  return st.executeUpdate();
+                }
+              } catch (SQLException e) {
+                throw new RaSqlException(
+                    "SQL Syntax Error, sql="
+                        + prepared.getSql()
+                        + ",values="
+                        + prepared.getValues(),
+                    e);
+              }
+            });
+
+    return ret;
+  }
+
+  /**
    * A SQL statement is precompiled and stored in a Prepared object. This object can then be used to
    * efficiently execute this statement multiple times.
    *
@@ -116,7 +157,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @throws RaSqlException RaSqlException
    */
   @Override
-  public RecordCursor executeQueryUsePrepare(Prepared prepared)
+  public RecordCursor prepareExecuteQuery(Prepared prepared)
       throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
@@ -131,56 +172,65 @@ public class JdbcExecutor implements StatementExecutor {
     }
     Record record = buildRecord();
 
-    try {
-      connection.getConnection(
-          dbConnection -> {
-            try {
-              dbConnection.setAutoCommit(true);
+    connection.getConnection(
+        dbConnection -> {
+          try {
+            dbConnection.setAutoCommit(true);
 
-              try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
-                for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
-                  ParameterValue paramter = element.getValue();
+            try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
 
-                  if (Boolean.class.isAssignableFrom(paramter.getType())) {
-                    st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
-                  } else if (String.class.isAssignableFrom(paramter.getType())) {
-                    st.setString(element.getKey(), String.class.cast(paramter.getValue()));
-                  } else if (Integer.class.isAssignableFrom(paramter.getType())) {
-                    st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
-                  } else if (Long.class.isAssignableFrom(paramter.getType())) {
-                    st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
-                  } else if (Double.class.isAssignableFrom(paramter.getType())) {
-                    st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
-                  } else if (Float.class.isAssignableFrom(paramter.getType())) {
-                    st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
-                  } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
-                    st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
-                  } else if (byte[].class.isAssignableFrom(paramter.getType())) {
-                    st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
-                  } else if (Blob.class.isAssignableFrom(paramter.getType())) {
-                    st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
-                  } else {
-                    throw new IllegalArgumentException(
-                        "Unsupported object type for QueryParameter: " + paramter.getType());
-                  }
-                }
-                try (ResultSet rs = st.executeQuery()) {
-                  record.convert(rs);
-                }
+              setParametersPreparedStatement(prepared, st);
+
+              try (ResultSet rs = st.executeQuery()) {
+                record.convert(rs);
               }
-            } catch (SQLException e) {
-              throw new RaSqlException(
-                  "SQL Syntax Error, sql=" + prepared.getSql() + ",values=" + prepared.getValues(),
-                  e);
             }
-            return 0;
-          });
-    } catch (Exception e) {
-      throw new RaSqlException(
-          "SQL Syntax Error, sql=" + prepared.getSql() + ",values = " + prepared.getValues(), e);
-    }
+          } catch (SQLException e) {
+            throw new RaSqlException(
+                "SQL Syntax Error, sql=" + prepared.getSql() + ",values=" + prepared.getValues(),
+                e);
+          }
+          return 0;
+        });
 
     return record;
+  }
+
+  /**
+   * Put parameter values ​​into PreparedStatement.
+   *
+   * @param prepared prepared
+   * @param statement statement
+   * @throws SQLException SQLException
+   */
+  private void setParametersPreparedStatement(Prepared prepared, PreparedStatement statement)
+      throws SQLException {
+    for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
+      ParameterValue paramter = element.getValue();
+
+      if (Boolean.class.isAssignableFrom(paramter.getType())) {
+        statement.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
+      } else if (String.class.isAssignableFrom(paramter.getType())) {
+        statement.setString(element.getKey(), String.class.cast(paramter.getValue()));
+      } else if (Integer.class.isAssignableFrom(paramter.getType())) {
+        statement.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
+      } else if (Long.class.isAssignableFrom(paramter.getType())) {
+        statement.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
+      } else if (Double.class.isAssignableFrom(paramter.getType())) {
+        statement.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
+      } else if (Float.class.isAssignableFrom(paramter.getType())) {
+        statement.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
+      } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
+        statement.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
+      } else if (byte[].class.isAssignableFrom(paramter.getType())) {
+        statement.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
+      } else if (Blob.class.isAssignableFrom(paramter.getType())) {
+        statement.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
+      } else {
+        throw new IllegalArgumentException(
+            "Unsupported object type for QueryParameter: " + paramter.getType());
+      }
+    }
   }
 
   /**

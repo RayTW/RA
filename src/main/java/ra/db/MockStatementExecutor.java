@@ -101,7 +101,7 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public int execute(String sql) {
+  public int executeUpdate(String sql) {
     if (executeListener != null) {
       return executeListener.apply(sql);
     }
@@ -200,7 +200,7 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public int tryExecute(String sql) {
+  public int tryExecuteUpdate(String sql) {
     if (tryExecuteListener != null) {
       return tryExecuteListener.apply(sql);
     }

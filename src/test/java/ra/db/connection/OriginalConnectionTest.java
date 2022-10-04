@@ -94,7 +94,7 @@ public class OriginalConnectionTest {
             return connection;
           }
         }) {
-      db.connectIf(executor -> executor.execute(sql));
+      db.connectIf(executor -> executor.executeUpdate(sql));
     }
   }
 
@@ -111,7 +111,7 @@ public class OriginalConnectionTest {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
-                  throw new RuntimeException();
+                  throw new RaSqlException();
                 });
 
             return connection;
@@ -125,7 +125,7 @@ public class OriginalConnectionTest {
 
     int actual =
         obj.createStatementExecutor()
-            .execute("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+            .executeUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
 
     obj.close();
 
@@ -153,7 +153,7 @@ public class OriginalConnectionTest {
           }
         }) {
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertThat(e, instanceOf(RaConnectException.class));
       }
@@ -184,7 +184,7 @@ public class OriginalConnectionTest {
           }
         }) {
       try {
-        db.connectIf(executor -> executor.execute(sql));
+        db.connectIf(executor -> executor.executeUpdate(sql));
       } catch (Exception e) {
         assertNull(e);
       }
