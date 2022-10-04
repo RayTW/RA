@@ -40,6 +40,34 @@ import ra.util.Utility;
 public class OnceConnectionTest {
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
+  private static final H2Parameters.Builder H2_MYSQL_BUILDER =
+      new H2Parameters.Builder()
+          .setProperties(
+              () -> {
+                Properties properties = new Properties();
+
+                // default is true
+                properties.put("DATABASE_TO_UPPER", false);
+                properties.put("MODE", "MYSQL");
+
+                return properties;
+              });
+
+  private static final String CREATE_TABLE_SQL =
+      "CREATE TABLE `test_table` ("
+          + "  `id` bigint auto_increment,"
+          + "  `col_int` int(10) UNSIGNED NOT NULL,"
+          + "  `col_double` DOUBLE UNSIGNED DEFAULT NULL,"
+          + "  `col_boolean` BOOLEAN DEFAULT NULL ,"
+          + "  `col_tinyint` tinyint(1) NOT NULL ,"
+          + "  `col_enum` enum('default','enum1','enum2') DEFAULT NULL ,"
+          + "  `col_decimal` decimal(20,3) DEFAULT 0.000 ,"
+          + "  `col_varchar` varchar(50) NOT NULL ,"
+          + "  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),"
+          + "  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() "
+          + "ON UPDATE current_timestamp()"
+          + ");";
+
   @Test
   public void testConnectUsingInitConnection() {
     MysqlParameters param =
@@ -588,20 +616,7 @@ public class OnceConnectionTest {
   @Test
   public void testConnectToH2DatabaseUseInMemory() {
     try (OnceConnection connection =
-        new OnceConnection(
-            new H2Parameters.Builder()
-                .inMemory()
-                .setName("test")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
-
-                      properties.put("DATABASE_TO_UPPER", false);
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
-                .build())) {
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("test").build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
@@ -630,19 +645,8 @@ public class OnceConnectionTest {
     File file = new File("./data/sample");
 
     try (OnceConnection connection =
-        new OnceConnection(
-            new H2Parameters.Builder()
-                .localFile(file.toString())
-                .setName("test")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
+        new OnceConnection(H2_MYSQL_BUILDER.localFile(file.toString()).setName("test").build())) {
 
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
-                .build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
@@ -672,19 +676,11 @@ public class OnceConnectionTest {
   public void testConnectToH2DatabaseUseTcpInMemory() throws SQLException {
     Server sever = Server.createTcpServer("-ifNotExists").start();
     DatabaseParameters param =
-        new H2Parameters.Builder()
+        H2_MYSQL_BUILDER
             .tcpInMemory()
             .setName("test")
             .setHost("localhost")
             .setPort(sever.getPort())
-            .setProperties(
-                () -> {
-                  Properties properties = new Properties();
-
-                  properties.put("MODE", "MYSQL");
-
-                  return properties;
-                })
             .build();
 
     try (OnceConnection connection = new OnceConnection(param)) {
@@ -716,19 +712,11 @@ public class OnceConnectionTest {
   public void testConnectToH2DatabaseUseTcpLocalFile() throws SQLException {
     Server sever = Server.createTcpServer("-ifNotExists").start();
     DatabaseParameters param =
-        new H2Parameters.Builder()
+        H2_MYSQL_BUILDER
             .tcp("./sample/")
             .setName("test")
             .setHost("localhost")
             .setPort(sever.getPort())
-            .setProperties(
-                () -> {
-                  Properties properties = new Properties();
-
-                  properties.put("MODE", "MYSQL");
-
-                  return properties;
-                })
             .build();
 
     try (OnceConnection connection = new OnceConnection(param)) {
@@ -761,41 +749,50 @@ public class OnceConnectionTest {
   @Test
   public void testConnectToH2DatabaseUseInMemoryGetRow() {
     try (OnceConnection connection =
-        new OnceConnection(
-            new H2Parameters.Builder()
-                .inMemory()
-                .setName("databaseName")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
-
-                      // default is true
-                      properties.put("DATABASE_TO_UPPER", false);
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
-                .build())) {
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
 
-      String createTableSql =
-          "CREATE TABLE `test_table` ("
-              + "  `id` bigint auto_increment,"
-              + "  `col_int` int(10) UNSIGNED NOT NULL,"
-              + "  `col_double` DOUBLE UNSIGNED DEFAULT NULL,"
-              + "  `col_boolean` BOOLEAN DEFAULT NULL ,"
-              + "  `col_tinyint` tinyint(1) NOT NULL ,"
-              + "  `col_enum` enum('default','enum1','enum2') DEFAULT NULL ,"
-              + "  `col_decimal` decimal(20,3) DEFAULT 0.000 ,"
-              + "  `col_varchar` varchar(50) NOT NULL ,"
-              + "  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),"
-              + "  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() "
-              + "ON UPDATE current_timestamp()"
-              + ");";
+      executor.execute(CREATE_TABLE_SQL);
 
-      executor.execute(createTableSql);
+      String sql =
+          "INSERT INTO test_table SET col_int=1"
+              + ",col_double=1.01"
+              + ",col_boolean=true"
+              + ",col_tinyint=5"
+              + ",col_enum='enum1'"
+              + ",col_decimal=1.1111"
+              + ",col_varchar='col_varchar'"
+              + ",created_at=NOW();";
+
+      executor.execute(sql);
+
+      RecordCursor record =
+          connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
+
+      record
+          .stream()
+          .forEach(
+              row -> {
+                assertEquals(1, row.getInt("col_int"));
+              });
+      assertEquals(1, record.getRecordCount());
+
+      executor.execute("DROP TABLE test_table");
+      // Require to close when uses once connection.
+      connection.close();
+    }
+  }
+
+  @Test
+  public void testConnectToH2DatabaseUseInMemoryPre() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+      executor.execute(CREATE_TABLE_SQL);
 
       String sql =
           "INSERT INTO test_table SET col_int=1"
@@ -899,41 +896,12 @@ public class OnceConnectionTest {
   @Test
   public void testConnectToH2DatabaseUsePrepared() throws ConnectException, SQLException {
     try (OnceConnection connection =
-        new OnceConnection(
-            new H2Parameters.Builder()
-                .inMemory()
-                .setName("databaseName")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
-
-                      // default is true
-                      properties.put("DATABASE_TO_UPPER", false);
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
-                .build())) {
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
 
-      String createTableSql =
-          "CREATE TABLE `test_table` ("
-              + "  `id` bigint auto_increment,"
-              + "  `col_int` int(10) UNSIGNED NOT NULL,"
-              + "  `col_double` DOUBLE UNSIGNED DEFAULT NULL,"
-              + "  `col_boolean` BOOLEAN DEFAULT NULL ,"
-              + "  `col_tinyint` tinyint(1) NOT NULL ,"
-              + "  `col_enum` enum('default','enum1','enum2') DEFAULT NULL ,"
-              + "  `col_decimal` decimal(20,3) DEFAULT 0.000 ,"
-              + "  `col_varchar` varchar(50) NOT NULL ,"
-              + "  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),"
-              + "  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() "
-              + "ON UPDATE current_timestamp()"
-              + ");";
-
-      executor.execute(createTableSql);
+      executor.execute(CREATE_TABLE_SQL);
 
       for (int i = 1; i <= 5; i++) {
         String sql =
@@ -972,21 +940,7 @@ public class OnceConnectionTest {
   @Test
   public void testConnectToH2DatabaseFromBytes() throws ConnectException, SQLException {
     try (OnceConnection connection =
-        new OnceConnection(
-            new H2Parameters.Builder()
-                .inMemory()
-                .setName("databaseName")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
-
-                      // default is true
-                      properties.put("DATABASE_TO_UPPER", false);
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
-                .build())) {
+        new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
