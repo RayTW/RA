@@ -1,7 +1,5 @@
 package ra.db;
 
-import java.net.ConnectException;
-import java.sql.SQLException;
 import java.util.List;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
@@ -41,8 +39,8 @@ public interface StatementExecutor {
    * Execute SQL statements.
    *
    * @param executor executor
-   * @throws ConnectException ConnectException
-   * @throws SQLException SQLException
+   * @throws RaConnectException RaConnectException
+   * @throws RaSqlException RaSqlException
    */
   public void executeTransaction(TransactionExecutor executor)
       throws RaConnectException, RaSqlException;
@@ -77,8 +75,8 @@ public interface StatementExecutor {
    *
    * @param prepared prepared
    * @return RecordCursor
-   * @throws ConnectException ConnectException
-   * @throws SQLException SQLException
+   * @throws RaConnectException RaConnectException
+   * @throws RaSqlException RaSqlException
    */
   public RecordCursor executeQueryUsePrepare(Prepared prepared)
       throws RaConnectException, RaSqlException;

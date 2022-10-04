@@ -1,12 +1,13 @@
 package ra.db.connection;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import ra.db.DatabaseHeartbeat;
 import ra.db.KeepAvailable;
 import ra.db.StatementExecutor;
 import ra.db.parameter.DatabaseParameters;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 
 /**
  * Provide execute SQL statement using a keep database connection, and the connection is thread
@@ -48,7 +49,7 @@ public class ConcurrentConnection implements KeepAvailable {
   }
 
   @Override
-  public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
+  public int getConnection(ConnectionFunction consumer) throws RaSqlException, RaConnectException {
     synchronized (lock) {
       return consumer.applay(getConnection());
     }
@@ -106,10 +107,14 @@ public class ConcurrentConnection implements KeepAvailable {
   }
 
   @Override
-  public void close() throws SQLException {
+  public void close() throws RaSqlException {
     isLive.close();
     volatileIsLive = false;
     startThread = false;
-    getConnection().close();
+    try {
+      getConnection().close();
+    } catch (SQLException e) {
+      throw new RaSqlException(e);
+    }
   }
 }

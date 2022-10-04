@@ -1,10 +1,11 @@
 package ra.db.connection;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import ra.db.DatabaseConnection;
 import ra.db.parameter.DatabaseParameters;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 
 /**
  * Provide execute SQL statement using a database connection, and the connection is not thread safe.
@@ -38,7 +39,7 @@ public class OnceConnection implements DatabaseConnection {
   }
 
   @Override
-  public int getConnection(ConnectionFunction consumer) throws SQLException, ConnectException {
+  public int getConnection(ConnectionFunction consumer) throws RaSqlException, RaConnectException {
     return consumer.applay(getConnection());
   }
 
@@ -83,7 +84,7 @@ public class OnceConnection implements DatabaseConnection {
     try {
       getConnection().close();
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RaSqlException(e);
     }
   }
 }

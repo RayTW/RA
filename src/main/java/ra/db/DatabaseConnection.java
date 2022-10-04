@@ -1,7 +1,6 @@
 package ra.db;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -9,6 +8,8 @@ import java.sql.Statement;
 import java.util.function.Consumer;
 import ra.db.parameter.Accountable;
 import ra.db.parameter.DatabaseParameters;
+import ra.exception.RaConnectException;
+import ra.exception.RaSqlException;
 
 /**
  * Database Connection.
@@ -50,36 +51,40 @@ public interface DatabaseConnection extends AutoCloseable {
    *
    * @param param The parameters of database connect setting.
    * @return {@link Connection}
-   * @throws SQLException SQLException
-   * @throws ConnectException ConnectException
+   * @throws RaSqlException RaSqlException
+   * @throws RaConnectException RaConnectException
    */
   public default Connection tryGetConnection(DatabaseParameters param)
-      throws SQLException, ConnectException {
+      throws RaSqlException, RaConnectException {
     Connection connection = getConnection();
 
-    if (connection != null) {
-      connection.close();
-      connection = null;
-    }
-    String dbconn = param.getDatabaseUrl();
-    Connection connectionTemp = null;
+    try {
+      if (connection != null) {
+        connection.close();
+        connection = null;
+      }
+      String dbconn = param.getDatabaseUrl();
+      Connection connectionTemp = null;
 
-    if (param instanceof Accountable) {
-      Accountable account = (Accountable) param;
+      if (param instanceof Accountable) {
+        Accountable account = (Accountable) param;
 
-      if (account.getUser() != null && account.getPassword() != null) {
-        connectionTemp =
-            DriverManager.getConnection(dbconn, account.getUser(), account.getPassword());
+        if (account.getUser() != null && account.getPassword() != null) {
+          connectionTemp =
+              DriverManager.getConnection(dbconn, account.getUser(), account.getPassword());
+        } else {
+          connectionTemp = DriverManager.getConnection(dbconn);
+        }
       } else {
         connectionTemp = DriverManager.getConnection(dbconn);
       }
-    } else {
-      connectionTemp = DriverManager.getConnection(dbconn);
+
+      dbconn = null;
+
+      return connectionTemp;
+    } catch (SQLException e) {
+      throw new RaSqlException("Attempt to acquire connection failed. " + param, e);
     }
-
-    dbconn = null;
-
-    return connectionTemp;
   }
 
   /**
@@ -88,20 +93,24 @@ public interface DatabaseConnection extends AutoCloseable {
    * @param sql Statements
    * @return Execute success count.
    */
-  public default int tryExecute(String sql) throws SQLException, ConnectException {
+  public default int tryExecute(String sql) throws RaSqlException, RaConnectException {
     int ret = 0;
-    Connection connection = getConnection();
+    try {
+      Connection connection = getConnection();
 
-    if (connection == null) {
-      throw new ConnectException("Connect to database failed." + getParam());
+      if (connection == null) {
+        throw new RaConnectException("Connect to database failed." + getParam());
+      }
+      connection.setAutoCommit(false);
+
+      try (Statement st = connection.createStatement()) {
+        ret = st.executeUpdate(sql);
+      }
+
+      connection.rollback();
+    } catch (SQLException e) {
+      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
-    connection.setAutoCommit(false);
-
-    try (Statement st = connection.createStatement()) {
-      ret = st.executeUpdate(sql);
-    }
-
-    connection.rollback();
 
     return ret;
   }
@@ -146,11 +155,11 @@ public interface DatabaseConnection extends AutoCloseable {
    *
    * @param consumer consumer
    * @return Database original connection.
-   * @throws SQLException SQLException
-   * @throws ConnectException if can't to connect database.
+   * @throws RaSqlException RaSqlException
+   * @throws RaConnectException if can't to connect database.
    */
   public abstract int getConnection(ConnectionFunction consumer)
-      throws SQLException, ConnectException;
+      throws RaSqlException, RaConnectException;
 
   /**
    * Returns database state whether available.
@@ -166,9 +175,9 @@ public interface DatabaseConnection extends AutoCloseable {
      *
      * @param connection connection
      * @return result
-     * @throws SQLException SQLException
-     * @throws ConnectException if can't to connect database.
+     * @throws RaSqlException RaSqlException
+     * @throws RaConnectException if can't to connect database.
      */
-    public abstract int applay(Connection connection) throws SQLException, ConnectException;
+    public abstract int applay(Connection connection) throws RaSqlException, RaConnectException;
   }
 }

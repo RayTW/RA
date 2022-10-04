@@ -1,7 +1,7 @@
 package ra.db;
 
-import java.net.ConnectException;
 import java.sql.SQLException;
+import ra.exception.RaConnectException;
 
 /**
  * Represents a function that accepts one argument and produces a result.
@@ -21,5 +21,5 @@ public interface DatabaseOperable<T, R> {
    * @param input input
    * @return result
    */
-  public R apply(T input) throws ConnectException, SQLException;
+  public R apply(T input) throws RaConnectException, SQLException;
 }

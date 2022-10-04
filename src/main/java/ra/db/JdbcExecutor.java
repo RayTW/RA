@@ -1,7 +1,6 @@
 package ra.db;
 
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -67,13 +66,17 @@ public class JdbcExecutor implements StatementExecutor {
     return ret;
   }
 
-  private int executeSql(String sql) throws ConnectException, SQLException {
+  private int executeSql(String sql) throws RaConnectException, RaSqlException {
     int ret =
         this.connection.getConnection(
             dbConnection -> {
-              dbConnection.setAutoCommit(true);
-              try (Statement st = dbConnection.createStatement()) {
-                return st.executeUpdate(sql);
+              try {
+                dbConnection.setAutoCommit(true);
+                try (Statement st = dbConnection.createStatement()) {
+                  return st.executeUpdate(sql);
+                }
+              } catch (SQLException e) {
+                throw new RaSqlException(e);
               }
             });
 
@@ -100,13 +103,7 @@ public class JdbcExecutor implements StatementExecutor {
       throw new RaConnectException(msg);
     }
 
-    try {
-      return connection.tryExecute(sql);
-    } catch (ConnectException e) {
-      throw new RaConnectException(e);
-    } catch (SQLException e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
+    return connection.tryExecute(sql);
   }
 
   /**
@@ -115,8 +112,8 @@ public class JdbcExecutor implements StatementExecutor {
    *
    * @param prepared prepared
    * @return RecordCursor
-   * @throws ConnectException ConnectException
-   * @throws SQLException SQLException
+   * @throws RaConnectException RaConnectException
+   * @throws RaSqlException RaSqlException
    */
   @Override
   public RecordCursor executeQueryUsePrepare(Prepared prepared)
@@ -137,38 +134,44 @@ public class JdbcExecutor implements StatementExecutor {
     try {
       connection.getConnection(
           dbConnection -> {
-            dbConnection.setAutoCommit(true);
+            try {
+              dbConnection.setAutoCommit(true);
 
-            try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
-              for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
-                ParameterValue paramter = element.getValue();
+              try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
+                for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
+                  ParameterValue paramter = element.getValue();
 
-                if (Boolean.class.isAssignableFrom(paramter.getType())) {
-                  st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
-                } else if (String.class.isAssignableFrom(paramter.getType())) {
-                  st.setString(element.getKey(), String.class.cast(paramter.getValue()));
-                } else if (Integer.class.isAssignableFrom(paramter.getType())) {
-                  st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
-                } else if (Long.class.isAssignableFrom(paramter.getType())) {
-                  st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
-                } else if (Double.class.isAssignableFrom(paramter.getType())) {
-                  st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
-                } else if (Float.class.isAssignableFrom(paramter.getType())) {
-                  st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
-                } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
-                  st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
-                } else if (byte[].class.isAssignableFrom(paramter.getType())) {
-                  st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
-                } else if (Blob.class.isAssignableFrom(paramter.getType())) {
-                  st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
-                } else {
-                  throw new IllegalArgumentException(
-                      "Unsupported object type for QueryParameter: " + paramter.getType());
+                  if (Boolean.class.isAssignableFrom(paramter.getType())) {
+                    st.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
+                  } else if (String.class.isAssignableFrom(paramter.getType())) {
+                    st.setString(element.getKey(), String.class.cast(paramter.getValue()));
+                  } else if (Integer.class.isAssignableFrom(paramter.getType())) {
+                    st.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
+                  } else if (Long.class.isAssignableFrom(paramter.getType())) {
+                    st.setLong(element.getKey(), Long.class.cast(paramter.getValue()));
+                  } else if (Double.class.isAssignableFrom(paramter.getType())) {
+                    st.setDouble(element.getKey(), Double.class.cast(paramter.getValue()));
+                  } else if (Float.class.isAssignableFrom(paramter.getType())) {
+                    st.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
+                  } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
+                    st.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
+                  } else if (byte[].class.isAssignableFrom(paramter.getType())) {
+                    st.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
+                  } else if (Blob.class.isAssignableFrom(paramter.getType())) {
+                    st.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
+                  } else {
+                    throw new IllegalArgumentException(
+                        "Unsupported object type for QueryParameter: " + paramter.getType());
+                  }
+                }
+                try (ResultSet rs = st.executeQuery()) {
+                  record.convert(rs);
                 }
               }
-              try (ResultSet rs = st.executeQuery()) {
-                record.convert(rs);
-              }
+            } catch (SQLException e) {
+              throw new RaSqlException(
+                  "SQL Syntax Error, sql=" + prepared.getSql() + ",values=" + prepared.getValues(),
+                  e);
             }
             return 0;
           });
@@ -183,8 +186,8 @@ public class JdbcExecutor implements StatementExecutor {
   /**
    * Transaction.
    *
-   * @throws SQLException SQLException
-   * @throws ConnectException ConnectException
+   * @throws RaSqlException RaSqlException
+   * @throws RaConnectException RaConnectException
    */
   @Override
   public void executeTransaction(TransactionExecutor executor)
@@ -193,35 +196,34 @@ public class JdbcExecutor implements StatementExecutor {
       throw new RaConnectException("Connect to database failed.");
     }
 
-    try {
-      this.connection.getConnection(
-          dbConnection -> {
-            boolean ret = false;
-
-            try {
-              dbConnection.setAutoCommit(false);
-              try (Statement st = dbConnection.createStatement()) {
-                Transaction tran = new Transaction(st);
-                ret = executor.apply(tran);
-              }
-            } finally {
-              if (ret) {
+    this.connection.getConnection(
+        dbConnection -> {
+          boolean ret = false;
+          try {
+            dbConnection.setAutoCommit(false);
+            try (Statement st = dbConnection.createStatement()) {
+              Transaction tran = new Transaction(st);
+              ret = executor.apply(tran);
+            }
+          } catch (SQLException e) {
+            throw new RaSqlException(e);
+          } finally {
+            if (ret) {
+              try {
                 dbConnection.commit();
-              } else {
-                try {
-                  dbConnection.rollback();
-                } catch (SQLException e) {
-                  e.printStackTrace();
-                }
+              } catch (SQLException e) {
+                throw new RaSqlException(e);
+              }
+            } else {
+              try {
+                dbConnection.rollback();
+              } catch (SQLException e) {
+                e.printStackTrace();
               }
             }
-            return 0;
-          });
-    } catch (ConnectException e) {
-      throw new RaConnectException(e);
-    } catch (SQLException e) {
-      throw new RaSqlException(e);
-    }
+          }
+          return 0;
+        });
   }
 
   /**
@@ -256,13 +258,13 @@ public class JdbcExecutor implements StatementExecutor {
   }
 
   private int executeCommit(boolean autoCommit, List<String> sqls)
-      throws SQLException, ConnectException {
+      throws SQLException, RaConnectException {
     return this.connection.getConnection(
         dbConnection -> {
           int ret = 0;
 
           if (connection == null) {
-            throw new ConnectException("Connect to database failed.");
+            throw new RaConnectException("Connect to database failed.");
           }
           try {
             dbConnection.setAutoCommit(autoCommit);
@@ -287,7 +289,7 @@ public class JdbcExecutor implements StatementExecutor {
               }
               ret = 0;
             }
-            throw e;
+            throw new RaSqlException("SQL Syntax Error, sql=" + sqls, e);
           }
 
           return ret;
@@ -323,16 +325,20 @@ public class JdbcExecutor implements StatementExecutor {
     return ret;
   }
 
-  private int lastInsertId(String sql) throws SQLException, ConnectException {
+  private int lastInsertId(String sql) throws SQLException, RaConnectException {
     return this.connection.getConnection(
         dbConnection -> {
-          dbConnection.setAutoCommit(true);
-          try (Statement st = dbConnection.createStatement()) {
-            synchronized (st) {
-              if (st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
-                return buildRecord().getLastInsertId(st);
+          try {
+            dbConnection.setAutoCommit(true);
+            try (Statement st = dbConnection.createStatement()) {
+              synchronized (st) {
+                if (st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
+                  return buildRecord().getLastInsertId(st);
+                }
               }
             }
+          } catch (SQLException e) {
+            throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
           }
           return 0;
         });
@@ -361,12 +367,17 @@ public class JdbcExecutor implements StatementExecutor {
     try {
       connection.getConnection(
           dbConnection -> {
-            dbConnection.setAutoCommit(true);
+            try {
+              dbConnection.setAutoCommit(true);
 
-            try (Statement st = dbConnection.createStatement();
-                ResultSet rs = st.executeQuery(sql)) {
-              record.convert(rs);
+              try (Statement st = dbConnection.createStatement();
+                  ResultSet rs = st.executeQuery(sql)) {
+                record.convert(rs);
+              }
+            } catch (SQLException e) {
+              throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
             }
+
             return 0;
           });
     } catch (Exception e) {
@@ -402,15 +413,19 @@ public class JdbcExecutor implements StatementExecutor {
      *
      * @param sqls sqls
      * @return result
-     * @throws SQLException SQLException
+     * @throws RaSqlException RaSqlException
      */
-    public List<Integer> executeUpdate(List<String> sqls) throws SQLException {
+    public List<Integer> executeUpdate(List<String> sqls) throws RaSqlException {
       ArrayList<Integer> rets = new ArrayList<>();
       for (int i = 0; i < sqls.size(); i++) {
         String sql = sqls.get(i);
 
-        int ret = statement.executeUpdate(sql);
-        rets.add(ret);
+        try {
+          int ret = statement.executeUpdate(sql);
+          rets.add(ret);
+        } catch (SQLException e) {
+          throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+        }
       }
       return rets;
     }
@@ -420,10 +435,14 @@ public class JdbcExecutor implements StatementExecutor {
      *
      * @param sql sql
      * @return execute count
-     * @throws SQLException SQLException
+     * @throws RaSqlException RaSqlException
      */
-    public int executeUpdate(String sql) throws SQLException {
-      return statement.executeUpdate(sql);
+    public int executeUpdate(String sql) throws RaSqlException {
+      try {
+        return statement.executeUpdate(sql);
+      } catch (SQLException e) {
+        throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+      }
     }
 
     /**
@@ -431,11 +450,15 @@ public class JdbcExecutor implements StatementExecutor {
      *
      * @param sql sql
      * @return last id
-     * @throws SQLException SQLException
+     * @throws RaSqlException RaSqlException
      */
-    public int insertAndLastId(String sql) throws SQLException {
-      if (statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
-        return buildRecord().getLastInsertId(statement);
+    public int insertAndLastId(String sql) throws RaSqlException {
+      try {
+        if (statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
+          return buildRecord().getLastInsertId(statement);
+        }
+      } catch (SQLException e) {
+        throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
       }
       return -1;
     }
@@ -445,14 +468,17 @@ public class JdbcExecutor implements StatementExecutor {
      *
      * @param sql sql
      * @return RecordCursor
-     * @throws SQLException SQLException
+     * @throws RaSqlException RaSqlException
      */
-    public RecordCursor executeQuery(String sql) throws SQLException {
+    public RecordCursor executeQuery(String sql) throws RaSqlException {
       Record record = buildRecord();
-      ResultSet rs = statement.executeQuery(sql);
+      try {
+        ResultSet rs = statement.executeQuery(sql);
 
-      record.convert(rs);
-
+        record.convert(rs);
+      } catch (SQLException e) {
+        throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+      }
       return record;
     }
   }

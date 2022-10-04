@@ -1,6 +1,5 @@
 package ra.db;
 
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -9,6 +8,7 @@ import java.util.concurrent.locks.StampedLock;
 import ra.db.connection.ConcurrentConnection;
 import ra.db.connection.OriginalConnection;
 import ra.db.parameter.DatabaseParameters;
+import ra.exception.RaConnectException;
 
 /**
  * Provider multi connections to a single database, which connections are kept connected. Take
@@ -97,7 +97,8 @@ public class DatabaseConnections {
 
       if (!db.connectIf(
           executor -> connectionPool.add(new DatabaseConnectionHolder(db, executor)))) {
-        throw new ConnectException("Database name[" + name + "],index[" + i + "] connect failure!");
+        throw new RaConnectException(
+            "Database name[" + name + "],index[" + i + "] connect failure!");
       }
     }
   }

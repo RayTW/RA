@@ -37,7 +37,7 @@ public class ConcurrentConnectionTest {
     ConcurrentConnection obj =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return connection;
           }
         };
@@ -58,7 +58,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -120,7 +120,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -150,7 +150,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -185,7 +185,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -216,7 +216,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -235,7 +235,7 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testInsertSqlConnected() throws SQLException {
+  public void testInsertSqlConnected() {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -246,7 +246,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
             connection.setExecuteUpdateListener(
@@ -275,7 +275,7 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testInsertSqlDisconnected() throws SQLException {
+  public void testInsertSqlDisconnected() {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -286,7 +286,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
             connection.setExecuteUpdateListener(
@@ -315,7 +315,7 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testExecuteQueryConnected() throws SQLException {
+  public void testExecuteQueryConnected() {
     String sql = "SELECT * FROM table;";
     Reference<String> actual = new Reference<>();
     MysqlParameters param =
@@ -324,7 +324,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteQueryListener(
                 sql -> {
@@ -359,7 +359,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -412,7 +412,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -440,7 +440,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
         }) {
@@ -460,7 +460,7 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
             connection.setExecuteQueryListener(

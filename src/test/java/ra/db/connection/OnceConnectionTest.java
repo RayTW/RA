@@ -49,7 +49,7 @@ public class OnceConnectionTest {
     OnceConnection obj =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return connection;
           }
         };
@@ -149,7 +149,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -166,7 +166,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testExecuteSqlThrowRaSqlException() throws SQLException {
+  public void testExecuteSqlThrowRaSqlException() throws RaSqlException {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
@@ -210,7 +210,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -239,7 +239,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -275,7 +275,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -306,7 +306,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -324,7 +324,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testInsertSqlConnected() throws SQLException {
+  public void testInsertSqlConnected() {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -332,26 +332,26 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (MockResultSet resultSet = new MockResultSet("lastid");
-        OnceConnection db =
-            new OnceConnection(param) {
-              @Override
-              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-                MockConnection connection = new MockConnection();
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
 
-                connection.setExecuteUpdateListener(
-                    actual -> {
-                      assertEquals(sql, actual);
-                      return 1;
-                    });
+            connection.setExecuteUpdateListener(
+                actual -> {
+                  assertEquals(sql, actual);
+                  return 1;
+                });
+            @SuppressWarnings("resource")
+            MockResultSet resultSet = new MockResultSet("lastid");
 
-                resultSet.addValue("lastid", expected);
+            resultSet.addValue("lastid", expected);
+            connection.setExecuteQueryListener(sql -> resultSet);
 
-                connection.setExecuteQueryListener(sql -> resultSet);
-
-                return connection;
-              }
-            }; ) {
+            return connection;
+          }
+        }) {
 
       db.connectIf(
           executor -> {
@@ -363,7 +363,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testInsertSqlDisconnected() throws SQLException {
+  public void testInsertSqlDisconnected() {
     int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -371,26 +371,27 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (MockResultSet resultSet = new MockResultSet("lastid");
-        OnceConnection db =
-            new OnceConnection(param) {
-              @Override
-              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-                MockConnection connection = new MockConnection();
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
 
-                resultSet.addValue("lastid", expected);
+            @SuppressWarnings("resource")
+            MockResultSet resultSet = new MockResultSet("lastid");
+            resultSet.addValue("lastid", expected);
 
-                connection.setExecuteUpdateListener(
-                    actual -> {
-                      assertEquals(sql, actual);
-                      return 1;
-                    });
+            connection.setExecuteUpdateListener(
+                actual -> {
+                  assertEquals(sql, actual);
+                  return 1;
+                });
 
-                connection.setExecuteQueryListener(sql -> resultSet);
+            connection.setExecuteQueryListener(sql -> resultSet);
 
-                return connection;
-              }
-            }) {
+            return connection;
+          }
+        }) {
       try {
         db.connectIf(executor -> executor.insert(sql));
       } catch (Exception e) {
@@ -400,28 +401,31 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testExecuteQueryConnected() throws SQLException {
+  public void testExecuteQueryConnected() {
     String sql = "SELECT * FROM table;";
     Reference<String> actual = new Reference<>();
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    try (MockResultSet resultSet = new MockResultSet("lastid");
-        OnceConnection db =
-            new OnceConnection(param) {
-              @Override
-              public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
-                MockConnection connection = new MockConnection();
-                connection.setExecuteQueryListener(
-                    sql -> {
-                      actual.set(sql);
-                      resultSet.addValue("lastid", 55);
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
+            connection.setExecuteQueryListener(
+                sql -> {
+                  actual.set(sql);
 
-                      return resultSet;
-                    });
-                return connection;
-              }
-            }) {
+                  @SuppressWarnings("resource")
+                  MockResultSet resultSet = new MockResultSet("lastid");
+
+                  resultSet.addValue("lastid", 55);
+
+                  return resultSet;
+                });
+            return connection;
+          }
+        }) {
       db.connectIf(
           executor -> {
             RecordCursor record = executor.executeQuery(sql);
@@ -441,7 +445,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -485,7 +489,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testTryExecute() throws SQLException, ConnectException {
+  public void testTryExecute() {
     String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
@@ -493,7 +497,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
             connection.setExecuteUpdateListener(
                 actual -> {
@@ -521,7 +525,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
         }) {
@@ -543,7 +547,7 @@ public class OnceConnectionTest {
     try (OnceConnection db =
         new OnceConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             throw new RuntimeException();
           }
         }) {
@@ -558,25 +562,31 @@ public class OnceConnectionTest {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
 
-    new OnceConnection(param) {
-      @Override
-      public Connection getConnection() {
-        return new MockConnection() {
+    OnceConnection connection =
+        new OnceConnection(param) {
           @Override
-          public void close() throws SQLException {
-            super.close();
-            ref.set(true);
-            throw new SQLException("Unit Test");
+          public Connection getConnection() {
+            return new MockConnection() {
+              @Override
+              public void close() throws SQLException {
+                super.close();
+                ref.set(true);
+                throw new SQLException("Unit Test");
+              }
+            };
           }
         };
-      }
-    }.close();
 
+    try {
+      connection.close();
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
     assertTrue(ref.get());
   }
 
   @Test
-  public void testConnectToH2DatabaseUseInMemory() throws SQLException {
+  public void testConnectToH2DatabaseUseInMemory() {
     try (OnceConnection connection =
         new OnceConnection(
             new H2Parameters.Builder()
@@ -616,7 +626,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testConnectToH2DatabaseUseLocalFile() throws SQLException {
+  public void testConnectToH2DatabaseUseLocalFile() {
     File file = new File("./data/sample");
 
     try (OnceConnection connection =
@@ -829,7 +839,7 @@ public class OnceConnectionTest {
           }
 
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             return new MockConnection();
           }
 
@@ -850,7 +860,7 @@ public class OnceConnectionTest {
   }
 
   @Test
-  public void testInsertSqlConnectedBigQuery() throws SQLException {
+  public void testInsertSqlConnectedBigQuery() throws RaSqlException {
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -864,7 +874,7 @@ public class OnceConnectionTest {
           }
 
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws SQLException {
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
             connection.setExecuteUpdateListener(
