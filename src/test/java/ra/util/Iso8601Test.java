@@ -71,4 +71,11 @@ public class Iso8601Test {
 
     Assert.assertEquals(expected, actual);
   }
+
+  @Test
+  public void testFromCalendar() throws ParseException {
+    Calendar calendar = Iso8601.toCalendar("2018-11-15T09:36:27+08:00");
+
+    Assert.assertEquals("2018-11-15T09:36:27+08:00", Iso8601.fromCalendar(calendar));
+  }
 }

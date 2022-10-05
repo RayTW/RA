@@ -452,7 +452,7 @@ public class JdbcExecutor implements StatementExecutor {
   /**
    * Transaction.
    *
-   * @author ray_lee
+   * @author Ray Li
    */
   public class Transaction {
     private Statement statement;

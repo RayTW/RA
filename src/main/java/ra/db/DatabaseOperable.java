@@ -11,7 +11,7 @@ import ra.exception.RaConnectException;
  *  R - the type of the result of the function
  * </pre>
  *
- * @author ray_lee
+ * @author Ray Li
  */
 public interface DatabaseOperable<T, R> {
 

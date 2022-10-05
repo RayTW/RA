@@ -5,6 +5,6 @@ import ra.db.JdbcExecutor.Transaction;
 /**
  * Transaction Executor.
  *
- * @author ray_lee
+ * @author Ray Li
  */
 public interface TransactionExecutor extends DatabaseOperable<Transaction, Boolean> {}

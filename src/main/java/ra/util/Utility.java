@@ -390,8 +390,8 @@ public class Utility {
    *
    * <pre>
    * example: {
-   *   String zipPath = "C:/Users/ray_lee/Desktop/toJavaModel.zip";
-   *   String filePath = "C:/Users/ray_lee/Desktop/";
+   *   String zipPath = "C:/Users/RayLi/Desktop/toJavaModel.zip";
+   *   String filePath = "C:/Users/RayLi/Desktop/";
    *
    *   try {
    *     unzip(zipPath, filePath);

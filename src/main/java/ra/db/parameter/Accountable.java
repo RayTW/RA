@@ -3,7 +3,7 @@ package ra.db.parameter;
 /**
  * Accountable.
  *
- * @author ray_lee
+ * @author Ray Li
  */
 public interface Accountable {
   /**
