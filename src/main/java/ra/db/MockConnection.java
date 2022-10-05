@@ -18,6 +18,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 
@@ -27,11 +28,24 @@ import java.util.function.Function;
  * @author Ray Li
  */
 public class MockConnection implements Connection {
+  private Map<String, Object> flags = new ConcurrentHashMap<>();
   private MockStatement mockStatement;
 
   /** Initialize. */
   public MockConnection() {
     mockStatement = new MockStatement();
+  }
+
+  public boolean isCommit() {
+    return flags.containsKey("commit");
+  }
+
+  public boolean isRollback() {
+    return flags.containsKey("rollback");
+  }
+
+  public <T extends SQLException> void setThrowExceptionAnyExecute(T exception) {
+    mockStatement.setThrowExceptionAnyExecute(exception);
   }
 
   /**
@@ -81,7 +95,9 @@ public class MockConnection implements Connection {
   public void close() throws SQLException {}
 
   @Override
-  public void commit() throws SQLException {}
+  public void commit() throws SQLException {
+    flags.put("commit", "");
+  }
 
   @Override
   public Array createArrayOf(String arg0, Object[] arg1) throws SQLException {
@@ -130,6 +146,11 @@ public class MockConnection implements Connection {
 
   @Override
   public boolean getAutoCommit() throws SQLException {
+    Object obj = flags.get("setAutoCommit");
+
+    if (obj != null) {
+      return (boolean) obj;
+    }
     return false;
   }
 
@@ -254,13 +275,19 @@ public class MockConnection implements Connection {
   public void releaseSavepoint(Savepoint arg0) throws SQLException {}
 
   @Override
-  public void rollback() throws SQLException {}
+  public void rollback() throws SQLException {
+    flags.put("rollback", "");
+  }
 
   @Override
-  public void rollback(Savepoint arg0) throws SQLException {}
+  public void rollback(Savepoint arg0) throws SQLException {
+    flags.put("rollback", "");
+  }
 
   @Override
-  public void setAutoCommit(boolean arg0) throws SQLException {}
+  public void setAutoCommit(boolean arg0) throws SQLException {
+    flags.put("setAutoCommit", arg0);
+  }
 
   @Override
   public void setCatalog(String arg0) throws SQLException {}

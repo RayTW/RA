@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -492,5 +493,37 @@ public class OriginalConnectionTest {
 
       db.keep();
     }
+  }
+
+  @Test
+  public void testReconnect() {
+    AtomicInteger connectCount = new AtomicInteger(0);
+    MysqlParameters param =
+        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
+
+    try (OriginalConnection db =
+        new OriginalConnection(param) {
+          @Override
+          public boolean connect() {
+            connectCount.incrementAndGet();
+            return super.connect();
+          }
+
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
+
+            connection.setExecuteQueryListener(
+                sql -> {
+                  throw new RaSqlException(sql);
+                });
+
+            return connection;
+          }
+        }) {
+      db.connect();
+      db.keep();
+    }
+    assertEquals(2, connectCount.get());
   }
 }

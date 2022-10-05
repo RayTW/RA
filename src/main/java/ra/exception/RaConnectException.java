@@ -28,7 +28,9 @@ public class RaConnectException extends RuntimeException {
    */
   public RaConnectException(String message, Throwable cause) {
     super(
-        message == null || message.length() == 0 ? cause.toString() : message + cause.toString(),
+        message == null || message.length() == 0
+            ? cause.toString()
+            : cause.toString() + " " + message,
         cause);
   }
 }

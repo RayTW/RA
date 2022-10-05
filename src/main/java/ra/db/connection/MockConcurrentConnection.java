@@ -3,7 +3,6 @@ package ra.db.connection;
 import java.sql.Connection;
 import ra.db.MockConnection;
 import ra.db.parameter.DatabaseParameters;
-import ra.db.parameter.MysqlParameters;
 
 /**
  * Mock class.
@@ -19,7 +18,7 @@ public class MockConcurrentConnection extends ConcurrentConnection {
    *
    * @param param database settings.
    */
-  public MockConcurrentConnection(MysqlParameters param) {
+  public MockConcurrentConnection(DatabaseParameters param) {
     super(param);
   }
 

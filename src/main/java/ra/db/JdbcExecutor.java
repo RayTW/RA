@@ -286,9 +286,6 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int executeCommit(List<String> sql) throws RaConnectException, RaSqlException {
-
-    int ret = 0;
-
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -301,16 +298,11 @@ public class JdbcExecutor implements StatementExecutor {
       throw new RaConnectException(msg);
     }
 
-    try {
-      ret = executeCommit(false, sql);
-    } catch (Exception e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
-    return ret;
+    return executeCommit(false, sql);
   }
 
   private int executeCommit(boolean autoCommit, List<String> sqls)
-      throws SQLException, RaConnectException {
+      throws RaSqlException, RaConnectException {
     return this.connection.getConnection(
         dbConnection -> {
           int ret = 0;

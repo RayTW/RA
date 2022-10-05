@@ -3,7 +3,6 @@ package ra.db.connection;
 import java.sql.Connection;
 import ra.db.MockConnection;
 import ra.db.parameter.DatabaseParameters;
-import ra.db.parameter.MysqlParameters;
 
 /**
  * Mock original connection.
@@ -19,7 +18,7 @@ public class MockOriginalConnection extends OriginalConnection {
    *
    * @param param database connection settings.
    */
-  public MockOriginalConnection(MysqlParameters param) {
+  public MockOriginalConnection(DatabaseParameters param) {
     super(param);
   }
 

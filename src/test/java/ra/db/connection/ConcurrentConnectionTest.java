@@ -11,6 +11,7 @@ import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -476,5 +477,37 @@ public class ConcurrentConnectionTest {
 
       db.keep();
     }
+  }
+
+  @Test
+  public void testReconnect() {
+    AtomicInteger connectCount = new AtomicInteger(0);
+    MysqlParameters param =
+        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
+
+    try (ConcurrentConnection db =
+        new ConcurrentConnection(param) {
+          @Override
+          public boolean connect() {
+            connectCount.incrementAndGet();
+            return super.connect();
+          }
+
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
+
+            connection.setExecuteQueryListener(
+                sql -> {
+                  throw new RaSqlException(sql);
+                });
+
+            return connection;
+          }
+        }) {
+      db.connect();
+      db.keep();
+    }
+    assertEquals(2, connectCount.get());
   }
 }
