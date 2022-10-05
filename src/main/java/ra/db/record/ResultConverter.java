@@ -25,5 +25,5 @@ public interface ResultConverter {
    * @return id auto-increment id
    * @throws SQLException SQLException
    */
-  public int getLastInsertId(Statement statement) throws SQLException;
+  public LastInsertId getLastInsertId(Statement statement) throws SQLException;
 }

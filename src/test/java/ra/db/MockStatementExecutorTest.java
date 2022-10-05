@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import org.junit.Test;
+import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 
 /** Test class. */
@@ -38,25 +39,11 @@ public class MockStatementExecutorTest {
   @Test
   public void testInsert() {
     MockStatementExecutor executor = new MockStatementExecutor();
-    int expected = 1;
+    executor.setInsertListener(sql -> "1");
 
-    executor.setInsertListener(sql -> expected);
+    LastInsertId actual = executor.insert("INSERT INTO table_name VALUES (value1, value2);");
 
-    int actual = executor.insert("INSERT INTO table_name VALUES (value1, value2);");
-
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void testInsertListenExecption() {
-    MockStatementExecutor executor = new MockStatementExecutor();
-    int expected = 1;
-
-    executor.setInsertListener(sql -> expected);
-
-    int actual = executor.insert("INSERT INTO table_name VALUES (value1, value2);");
-
-    assertEquals(expected, actual);
+    assertEquals("1", actual.toString());
   }
 
   @Test

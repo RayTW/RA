@@ -1,6 +1,7 @@
 package ra.db;
 
 import java.util.List;
+import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
@@ -61,7 +62,7 @@ public interface StatementExecutor {
    * @param sql SQL statement
    * @return last id
    */
-  public int insert(String sql) throws RaConnectException, RaSqlException;
+  public LastInsertId insert(String sql) throws RaConnectException, RaSqlException;
 
   /**
    * Executes the given SQL statement, which returns a single RecordCursor object.

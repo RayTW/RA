@@ -9,11 +9,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import ra.db.record.LastInsertId;
 import ra.db.record.Record;
 import ra.db.record.RecordCursor;
 import ra.db.record.RecordSet;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
+import ra.ref.Reference;
 
 /**
  * SQL statement (CRUD) executor.
@@ -353,7 +355,7 @@ public class JdbcExecutor implements StatementExecutor {
    * @return last id
    */
   @Override
-  public int insert(String sql) {
+  public LastInsertId insert(String sql) {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -365,25 +367,24 @@ public class JdbcExecutor implements StatementExecutor {
 
       throw new RaConnectException(msg);
     }
-    int ret = 0;
     try {
-      ret = lastInsertId(sql);
+      return lastInsertId(sql);
     } catch (Exception e) {
       throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
     }
-
-    return ret;
   }
 
-  private int lastInsertId(String sql) throws SQLException, RaConnectException {
-    return this.connection.getConnection(
+  private LastInsertId lastInsertId(String sql) throws SQLException, RaConnectException {
+    Reference<LastInsertId> ref = new Reference<>();
+
+    this.connection.getConnection(
         dbConnection -> {
           try {
             dbConnection.setAutoCommit(true);
             try (Statement st = dbConnection.createStatement()) {
               synchronized (st) {
                 if (st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
-                  return buildRecord().getLastInsertId(st);
+                  ref.set(buildRecord().getLastInsertId(st));
                 }
               }
             }
@@ -392,6 +393,8 @@ public class JdbcExecutor implements StatementExecutor {
           }
           return 0;
         });
+
+    return ref.isNull() ? new LastInsertId(null) : ref.get();
   }
 
   /**
@@ -502,7 +505,7 @@ public class JdbcExecutor implements StatementExecutor {
      * @return last id
      * @throws RaSqlException RaSqlException
      */
-    public int insertAndLastId(String sql) throws RaSqlException {
+    public LastInsertId insertAndLastId(String sql) throws RaSqlException {
       try {
         if (statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
           return buildRecord().getLastInsertId(statement);
@@ -510,7 +513,7 @@ public class JdbcExecutor implements StatementExecutor {
       } catch (SQLException e) {
         throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
       }
-      return -1;
+      return new LastInsertId(null);
     }
 
     /**

@@ -19,6 +19,7 @@ import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
@@ -276,7 +277,6 @@ public class OriginalConnectionTest {
 
             connection.setExecuteQueryListener(
                 sql -> {
-                  @SuppressWarnings("resource")
                   MockResultSet result = new MockResultSet("lastid");
 
                   result.addValue("lastid", expected);
@@ -288,9 +288,9 @@ public class OriginalConnectionTest {
         }) {
       db.connectIf(
           executor -> {
-            int actual = executor.insert(sql);
+            LastInsertId actual = executor.insert(sql);
 
-            assertEquals(expected, actual);
+            assertEquals(expected, actual.toInt());
           });
     }
   }

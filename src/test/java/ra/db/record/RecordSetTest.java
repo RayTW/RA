@@ -1,10 +1,12 @@
 package ra.db.record;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
@@ -548,6 +550,8 @@ public class RecordSetTest {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY)) {
 
       assertEquals(-1, record.getLastInsertId(new MockStatement()));
+    } catch (Exception e) {
+      assertThat(e, instanceOf(UnsupportedOperationException.class));
     }
   }
 
@@ -561,7 +565,7 @@ public class RecordSetTest {
       result.addValue("h2lastId", "2");
       st.setGeneratedKeys(result);
 
-      assertEquals(2, record.getLastInsertId(st));
+      assertEquals(2, record.getLastInsertId(st).toInt());
     }
   }
 
@@ -578,7 +582,7 @@ public class RecordSetTest {
       result.addValue("h2lastId", "");
       st.setGeneratedKeys(result);
 
-      assertEquals(2, record.getLastInsertId(st));
+      assertEquals(2, record.getLastInsertId(st).toInt());
     }
   }
 
@@ -596,7 +600,7 @@ public class RecordSetTest {
             return result;
           });
 
-      assertEquals(876, record.getLastInsertId(st));
+      assertEquals(876, record.getLastInsertId(st).toInt());
     }
   }
 }

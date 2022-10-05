@@ -18,6 +18,7 @@ import ra.db.MockConnection;
 import ra.db.MockResultSet;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
@@ -236,7 +237,6 @@ public class ConcurrentConnectionTest {
 
   @Test
   public void testInsertSqlConnected() {
-    int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -257,7 +257,7 @@ public class ConcurrentConnectionTest {
             @SuppressWarnings("resource")
             MockResultSet result = new MockResultSet("lastid");
 
-            result.addValue("lastid", expected);
+            result.addValue("lastid", 999);
 
             connection.setExecuteQueryListener(sql -> result);
 
@@ -267,9 +267,9 @@ public class ConcurrentConnectionTest {
 
       db.connectIf(
           executor -> {
-            int actual = executor.insert(sql);
+            LastInsertId actual = executor.insert(sql);
 
-            assertEquals(expected, actual);
+            assertEquals(999, actual.toInt());
           });
     }
   }

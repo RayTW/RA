@@ -30,6 +30,7 @@ import ra.db.parameter.BigQueryParameters;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
@@ -354,7 +355,6 @@ public class OnceConnectionTest {
 
   @Test
   public void testInsertSqlConnected() {
-    int expected = 999;
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
             + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
@@ -375,7 +375,7 @@ public class OnceConnectionTest {
             @SuppressWarnings("resource")
             MockResultSet resultSet = new MockResultSet("lastid");
 
-            resultSet.addValue("lastid", expected);
+            resultSet.addValue("lastid", 999);
             connection.setExecuteQueryListener(sql -> resultSet);
 
             return connection;
@@ -384,9 +384,9 @@ public class OnceConnectionTest {
 
       db.connectIf(
           executor -> {
-            int actual = executor.insert(sql);
+            LastInsertId actual = executor.insert(sql);
 
-            assertEquals(expected, actual);
+            assertEquals(999, actual.toInt());
           });
     }
   }
@@ -445,7 +445,6 @@ public class OnceConnectionTest {
                 sql -> {
                   actual.set(sql);
 
-                  @SuppressWarnings("resource")
                   MockResultSet resultSet = new MockResultSet("lastid");
 
                   resultSet.addValue("lastid", 55);
@@ -633,9 +632,9 @@ public class OnceConnectionTest {
               + ",created_at=NOW();";
       executor.executeUpdate(sql);
       executor.executeUpdate(sql);
-      int actual = executor.insert(sql);
+      LastInsertId actual = executor.insert(sql);
 
-      assertEquals(3, actual);
+      assertEquals(3, actual.toInt());
 
       executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     }
@@ -663,9 +662,9 @@ public class OnceConnectionTest {
               + ",created_at=NOW();";
       executor.executeUpdate(sql);
       executor.executeUpdate(sql);
-      int actual = executor.insert(sql);
+      LastInsertId actual = executor.insert(sql);
 
-      assertEquals(3, actual);
+      assertEquals(3L, actual.toLong());
 
       executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
@@ -700,9 +699,9 @@ public class OnceConnectionTest {
               + ",created_at=NOW();";
       executor.executeUpdate(sql);
       executor.executeUpdate(sql);
-      int actual = executor.insert(sql);
+      LastInsertId actual = executor.insert(sql);
 
-      assertEquals(3, actual);
+      assertEquals("3", actual.toString());
       executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
       sever.stop();
@@ -736,9 +735,9 @@ public class OnceConnectionTest {
               + ",created_at=NOW();";
       executor.executeUpdate(sql);
       executor.executeUpdate(sql);
-      int actual = executor.insert(sql);
+      LastInsertId actual = executor.insert(sql);
 
-      assertEquals(3, actual);
+      assertEquals(3, actual.toInt());
 
       executor.executeUpdate("DROP TABLE DEMO_SCHEMA");
     } finally {
@@ -887,9 +886,12 @@ public class OnceConnectionTest {
 
       db.connectIf(
           executor -> {
-            int actual = executor.insert(sql);
+            try {
+              executor.insert(sql);
 
-            assertEquals(-1, actual);
+            } catch (Exception e) {
+              assertThat(e, instanceOf(RaSqlException.class));
+            }
           });
     }
   }

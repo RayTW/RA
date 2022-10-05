@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import ra.db.connection.MockOnceConnection;
 import ra.db.parameter.MysqlParameters;
+import ra.db.record.LastInsertId;
 import ra.db.record.Record;
 import ra.db.record.RecordCursor;
 
@@ -21,7 +22,7 @@ public class MockStatementExecutor extends JdbcExecutor {
 
   private String[] fakeQueryColumnsName;
   private List<String[]> fakeQueryData = new CopyOnWriteArrayList<String[]>();
-  private Function<String, Integer> insertListener;
+  private Function<String, String> insertListener;
   private Function<String, Integer> tryExecuteListener;
   private Function<String, Integer> executeListener;
   private Function<List<String>, Integer> executeCommitListener;
@@ -46,7 +47,7 @@ public class MockStatementExecutor extends JdbcExecutor {
    *
    * @param listener listener
    */
-  public void setInsertListener(Function<String, Integer> listener) {
+  public void setInsertListener(Function<String, String> listener) {
     insertListener = listener;
   }
 
@@ -208,10 +209,12 @@ public class MockStatementExecutor extends JdbcExecutor {
   }
 
   @Override
-  public int insert(String sql) {
+  public LastInsertId insert(String sql) {
+    String ret = "1";
+
     if (insertListener != null) {
-      return insertListener.apply(sql);
+      ret = insertListener.apply(sql);
     }
-    return 1;
+    return new LastInsertId(ret);
   }
 }

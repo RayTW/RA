@@ -460,7 +460,7 @@ public class RecordSet implements Record {
    * @throws SQLException SQLException
    */
   @Override
-  public int getLastInsertId(Statement statement) throws SQLException {
+  public LastInsertId getLastInsertId(Statement statement) throws SQLException {
     return resultConverter.getLastInsertId(statement);
   }
 
@@ -525,10 +525,10 @@ public class RecordSet implements Record {
      * @throws SQLException SQLException
      */
     @Override
-    public int getLastInsertId(Statement statement) throws SQLException {
+    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
       try (ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID() AS lastid"); ) {
         ResultMySql.this.convert(rs);
-        return Integer.parseInt(field("lastid"));
+        return new LastInsertId(field("lastid"));
       }
     }
   }
@@ -566,7 +566,7 @@ public class RecordSet implements Record {
      * @throws SQLException SQLException
      */
     @Override
-    public int getLastInsertId(Statement statement) throws SQLException {
+    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
       try (ResultSet rs = statement.getGeneratedKeys(); ) {
         ResultH2.this.convert(rs);
         String lastId = field(1);
@@ -574,7 +574,7 @@ public class RecordSet implements Record {
         if (StringUtils.isNullOrEmpty(lastId)) {
           throw new SQLWarning("Failed to get last insert ID.");
         }
-        return Integer.parseInt(lastId);
+        return new LastInsertId(lastId);
       }
     }
   }
@@ -611,8 +611,9 @@ public class RecordSet implements Record {
      * @throws SQLException SQLException
      */
     @Override
-    public int getLastInsertId(Statement statement) throws SQLException {
-      return -1;
+    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
+      throw new UnsupportedOperationException(
+          "BigQuery does not support getting the last ID from a query.");
     }
   }
 }
