@@ -23,7 +23,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ra.util.parser.VisitClassStrategy;
 
 /**
  * Common tool class.
@@ -238,40 +237,6 @@ public class Utility {
       System.out.println(String.format(get, type, name, srcName));
       System.out.println(String.format(set, name, type, paramName, srcName, paramName));
     }
-  }
-
-  /**
-   * Visit member of class.
-   *
-   * @param clazz target
-   * @param strategy strategy
-   * @return Returns true will visit parent class.
-   */
-  public boolean recursiveClassFields(Class<?> clazz, VisitClassStrategy strategy) {
-    Field[] fields = clazz.getDeclaredFields();
-    Field field = null;
-
-    try {
-      for (int i = 0; i < fields.length; i++) {
-        if (fields[i].isSynthetic()) {
-          continue;
-        }
-        field = fields[i];
-        field.setAccessible(true);
-        strategy.shouldVisitField(field);
-      }
-    } catch (IllegalArgumentException e) {
-      e.printStackTrace();
-      return false;
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-      return false;
-    }
-
-    if (strategy.shouldSkipClass(clazz.getSuperclass())) {
-      return true;
-    }
-    return recursiveClassFields(clazz.getSuperclass(), strategy);
   }
 
   /**
