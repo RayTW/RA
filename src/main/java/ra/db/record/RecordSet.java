@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -465,7 +466,7 @@ public class RecordSet implements Record {
   }
 
   private boolean isBinaryType(int n) {
-    return n == -2 || n == -3 || n == -4;
+    return n == Types.BINARY || n == Types.VARBINARY || n == Types.LONGVARBINARY;
   }
 
   private abstract class AbstractResultConverter implements ResultConverter {
@@ -545,14 +546,17 @@ public class RecordSet implements Record {
      */
     @Override
     public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
+      if (isBinaryType(type) || type == Types.BLOB) {
+        return result.getBytes(columnIndex);
+      }
+
       Object obj = result.getObject(columnIndex);
 
       if (obj != null) {
         if (obj instanceof byte[]) {
           return (byte[]) obj;
-        } else {
-          return obj.toString().getBytes();
         }
+        return obj.toString().getBytes();
       }
 
       return null;

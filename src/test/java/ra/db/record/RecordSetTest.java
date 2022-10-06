@@ -12,6 +12,8 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Types;
+import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -560,7 +562,8 @@ public class RecordSetTest {
     try (RecordSet record = new RecordSet(DatabaseCategory.H2)) {
 
       MockStatement st = new MockStatement();
-      MockResultSet result = new MockResultSet("h2lastId");
+      MockResultSet result =
+          new MockResultSet(Arrays.asList(Types.VARCHAR), Arrays.asList("h2lastId"));
 
       result.addValue("h2lastId", "2");
       st.setGeneratedKeys(result);
@@ -582,7 +585,7 @@ public class RecordSetTest {
       result.addValue("h2lastId", "");
       st.setGeneratedKeys(result);
 
-      assertEquals(2, record.getLastInsertId(st).toInt());
+      record.getLastInsertId(st).toInt();
     }
   }
 

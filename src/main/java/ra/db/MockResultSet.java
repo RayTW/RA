@@ -53,6 +53,18 @@ public class MockResultSet extends ResultSetImpl {
   /**
    * Initialize.
    *
+   * @param columnType column type
+   * @param columnLabel column label
+   */
+  public MockResultSet(List<Integer> columnType, List<String> columnLabel) {
+    this();
+
+    setColumnTypeLabel(columnType, null, columnLabel);
+  }
+
+  /**
+   * Initialize.
+   *
    * @param columnLabel column label
    */
   private void setColumnTypeLabel(

@@ -1,20 +1,40 @@
 package ra.db;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.Properties;
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
 import org.junit.Test;
 import ra.db.connection.MockOriginalConnection;
+import ra.db.connection.OnceConnection;
+import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
+import ra.util.Utility;
 
 /** Test class. */
 public class JdbcExecutorTest {
   private static final MysqlParameters.Builder MYSQL_PARAM =
       new MysqlParameters.Builder().setHost("127.0.0.1").setPort(1234);
+  private static final H2Parameters.Builder H2_PARAM =
+      new H2Parameters.Builder()
+          .setProperties(
+              () -> {
+                Properties properties = new Properties();
+
+                // default is true
+                properties.put("DATABASE_TO_UPPER", false);
+                properties.put("MODE", "MYSQL");
+
+                return properties;
+              });
 
   @Test
   public void testExecuteWhenIsLiveFalse() {
@@ -166,6 +186,319 @@ public class JdbcExecutorTest {
               .build());
     } catch (Exception e) {
       assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeInt() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` int(10) UNSIGNED"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.int64(8))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.int64(8))
+                  .build());
+
+      System.out.println(record);
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals(8, record.fieldInt("columnsTest"));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeLong() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` int(10) UNSIGNED"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.int64(8L))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.int64(8L))
+                  .build());
+
+      System.out.println(record);
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals(8L, record.fieldLong("columnsTest"));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeFloat() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` double"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.float64(3.334f))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.float64(3.334f))
+                  .build());
+
+      System.out.println(record);
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals(3.334f, record.fieldFloat("columnsTest"), 3);
+    }
+  }
+
+  @Test
+  public void testExecuteFromeDouble() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` double"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.float64(3.334))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.float64(3.334))
+                  .build());
+
+      System.out.println(record);
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals(3.334, record.fieldDouble("columnsTest"), 3);
+    }
+  }
+
+  @Test
+  public void testExecuteFromeString() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` varchar(50)"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.string("unitTestVarChar"))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.string("unitTestVarChar"))
+                  .build());
+
+      System.out.println(record);
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals("unitTestVarChar", record.field("columnsTest"));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeByte() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` BINARY"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.bytes(new byte[] {0xa}))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.bytes(new byte[] {0xa}))
+                  .build());
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals("0a", Utility.get().bytesToHex(record.fieldBytes("columnsTest")));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeBoolean() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` BOOLEAN"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.bool(false))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.bool(false))
+                  .build());
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals("false", record.field("columnsTest"));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeBlob() throws SerialException, SQLException {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` BLOB(10K)"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.blob(new SerialBlob("test".getBytes())))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.blob(new SerialBlob("test".getBytes())))
+                  .build());
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals("test", new String(record.fieldBytes("columnsTest")));
+    }
+  }
+
+  @Test
+  public void testExecuteFromeDecimal() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` decimal(20,3) DEFAULT 0.000"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.bigNumeric(new BigDecimal(12.334)))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
+                  .set(1, ParameterValue.bigNumeric(new BigDecimal("12.334")))
+                  .build());
+
+      assertEquals(1, record.getRecordCount());
+      assertEquals("12.334", record.fieldBigDecimal("columnsTest").toString());
+    }
+  }
+
+  @Test
+  public void testExecuteUnsupportType() {
+    try (OnceConnection connection =
+        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+      connection.connect();
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `columnsTest` decimal(20,3) DEFAULT 0.000"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder("INSERT INTO test_table SET columnsTest=?;")
+              .set(1, ParameterValue.of(new Object(), Object.class))
+              .build());
+    } catch (Exception e) {
+      assertThat(e, instanceOf(IllegalArgumentException.class));
     }
   }
 }
