@@ -64,24 +64,16 @@ public interface DatabaseConnection extends AutoCloseable {
         connection = null;
       }
       String dbconn = param.getDatabaseUrl();
-      Connection connectionTemp = null;
 
       if (param instanceof Accountable) {
         Accountable account = (Accountable) param;
 
         if (account.getUser() != null && account.getPassword() != null) {
-          connectionTemp =
-              DriverManager.getConnection(dbconn, account.getUser(), account.getPassword());
-        } else {
-          connectionTemp = DriverManager.getConnection(dbconn);
+          return DriverManager.getConnection(dbconn, account.getUser(), account.getPassword());
         }
-      } else {
-        connectionTemp = DriverManager.getConnection(dbconn);
       }
 
-      dbconn = null;
-
-      return connectionTemp;
+      return DriverManager.getConnection(dbconn);
     } catch (SQLException e) {
       throw new RaSqlException("Attempt to acquire connection failed. " + param, e);
     }
