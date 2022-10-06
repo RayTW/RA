@@ -25,7 +25,6 @@ public class MockStatementExecutor extends JdbcExecutor {
   private Function<String, String> insertListener;
   private Function<String, Integer> tryExecuteListener;
   private Function<String, Integer> executeListener;
-  private Function<List<String>, Integer> executeCommitListener;
   private Consumer<String> openListener;
 
   /** Initialize. */
@@ -74,15 +73,6 @@ public class MockStatementExecutor extends JdbcExecutor {
    *
    * @param listener listener
    */
-  public void setExecuteCommitListenerListener(Function<List<String>, Integer> listener) {
-    executeCommitListener = listener;
-  }
-
-  /**
-   * Register listener.
-   *
-   * @param listener listener
-   */
   public void setOpenListener(Consumer<String> listener) {
     openListener = listener;
   }
@@ -105,14 +95,6 @@ public class MockStatementExecutor extends JdbcExecutor {
   public int executeUpdate(String sql) {
     if (executeListener != null) {
       return executeListener.apply(sql);
-    }
-    return 1;
-  }
-
-  @Override
-  public int executeCommit(List<String> sql) {
-    if (executeCommitListener != null) {
-      return executeCommitListener.apply(sql);
     }
     return 1;
   }

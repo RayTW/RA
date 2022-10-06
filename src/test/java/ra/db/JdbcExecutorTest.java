@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import org.junit.Test;
 import ra.db.connection.MockOriginalConnection;
 import ra.db.parameter.MysqlParameters;
@@ -54,23 +53,6 @@ public class JdbcExecutorTest {
 
     try {
       executor.tryExecuteUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
-    } catch (Exception e) {
-      assertThat(e, instanceOf(RaConnectException.class));
-    }
-  }
-
-  @Test
-  public void testExecuteCommitWhenIsLiveFalse() {
-    MockOriginalConnection connection = new MockOriginalConnection(null);
-    StatementExecutor executor = new JdbcExecutor(connection);
-
-    connection.setIsLive(false);
-    ArrayList<String> sqls = new ArrayList<>();
-
-    sqls.add("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
-
-    try {
-      executor.executeCommit(sqls);
     } catch (Exception e) {
       assertThat(e, instanceOf(RaConnectException.class));
     }

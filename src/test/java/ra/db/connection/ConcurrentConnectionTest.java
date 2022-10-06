@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -172,71 +171,6 @@ public class ConcurrentConnectionTest {
   }
 
   @Test
-  public void testExecuteCommitSqlConnected() throws SQLException {
-    ArrayList<String> sqlList = new ArrayList<>();
-    String sql =
-        "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
-            + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
-
-    sqlList.add(sql.toString());
-    sqlList.add(sql.toString());
-
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (ConcurrentConnection db =
-        new ConcurrentConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
-            MockConnection connection = new MockConnection();
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
-
-            return connection;
-          }
-        }) {
-      db.connectIf(executor -> executor.executeCommit(sqlList));
-    }
-  }
-
-  @Test
-  public void testExecuteCommitSqlDisconnected() throws SQLException {
-    ArrayList<String> sqlList = new ArrayList<>();
-    String sql =
-        "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
-            + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
-
-    sqlList.add(sql.toString());
-    sqlList.add(sql.toString());
-
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (ConcurrentConnection db =
-        new ConcurrentConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
-            return new MockConnection();
-          }
-
-          @Override
-          public boolean isLive() {
-            return false;
-          }
-        }) {
-
-      try {
-        db.connectIf(executor -> executor.executeCommit(sqlList));
-      } catch (Exception e) {
-        assertThat(e, instanceOf(RaConnectException.class));
-      }
-    }
-  }
-
-  @Test
   public void testInsertSqlConnected() {
     String sql =
         "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
@@ -372,32 +306,6 @@ public class ConcurrentConnectionTest {
 
       try {
         db.connectIf(executor -> executor.executeQuery(sql));
-      } catch (Exception e) {
-        assertThat(e, instanceOf(RaConnectException.class));
-      }
-    }
-  }
-
-  @Test
-  public void testExecuteCommitConnectionIsNull() throws SQLException {
-    String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
-    ArrayList<String> sqlList = new ArrayList<>();
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    sqlList.add(sql.toString());
-    sqlList.add(sql.toString());
-
-    try (ConcurrentConnection db =
-        new ConcurrentConnection(param) {
-          @Override
-          public Connection getConnection() {
-            return new MockConnection();
-          }
-        }) {
-
-      try {
-        db.createStatementExecutor().executeCommit(sqlList);
       } catch (Exception e) {
         assertThat(e, instanceOf(RaConnectException.class));
       }

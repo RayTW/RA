@@ -1,6 +1,5 @@
 package ra.db;
 
-import java.util.List;
 import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
@@ -47,14 +46,6 @@ public interface StatementExecutor {
    */
   public void executeTransaction(TransactionExecutor executor)
       throws RaConnectException, RaSqlException;
-
-  /**
-   * Execute SQL statements.
-   *
-   * @param sql SQL statement
-   * @return affected rows
-   */
-  public int executeCommit(List<String> sql) throws RaConnectException, RaSqlException;
 
   /**
    * Return the last id after executing SQL statement.
