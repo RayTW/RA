@@ -457,7 +457,7 @@ public class OriginalConnectionTest {
     try (OriginalConnection db =
         new OriginalConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+          public Connection getConnection() {
             return null;
           }
         }) {

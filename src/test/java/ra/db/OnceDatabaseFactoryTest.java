@@ -1,12 +1,15 @@
 package ra.db;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
+import ra.exception.RaSqlException;
 import ra.ref.Reference;
 
 /** Test class. */
@@ -57,5 +60,18 @@ public class OnceDatabaseFactoryTest {
             });
 
     assertFalse(ref.get().isLive());
+  }
+
+  @Test
+  public void testGetAndCloseThrowException() {
+    try {
+      new OnceDatabaseFactory(new H2Parameters.Builder().inMemory().setName("test")::build)
+          .getAndClose(
+              executor -> {
+                throw new RaSqlException("unit test testGetAndCloseThrowException");
+              });
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
   }
 }

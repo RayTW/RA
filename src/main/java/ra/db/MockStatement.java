@@ -31,7 +31,7 @@ public class MockStatement implements Statement {
     throwException = exception;
   }
 
-  private void throwException() throws SQLException {
+  protected void throwException() throws SQLException {
     if (throwException == null) {
       return;
     }

@@ -441,15 +441,15 @@ public class ConcurrentConnectionTest {
     try (ConcurrentConnection db =
         new ConcurrentConnection(param) {
           @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
-            return new MockConnection();
+          public Connection getConnection() {
+            return null;
           }
         }) {
       db.connect();
 
       db.tryExecute(sql);
     } catch (Exception e) {
-      assertThat(e, instanceOf(ConnectException.class));
+      assertThat(e, instanceOf(RaConnectException.class));
     }
   }
 

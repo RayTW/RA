@@ -30,10 +30,12 @@ import java.util.function.Function;
 public class MockConnection implements Connection {
   private Map<String, Object> flags = new ConcurrentHashMap<>();
   private MockStatement mockStatement;
+  private MockPreparedStatement mockPreparedStatement;
 
   /** Initialize. */
   public MockConnection() {
     mockStatement = new MockStatement();
+    mockPreparedStatement = new MockPreparedStatement();
   }
 
   public boolean isCommit() {
@@ -44,8 +46,13 @@ public class MockConnection implements Connection {
     return flags.containsKey("rollback");
   }
 
+  public void setPrepardSql(String sql) {
+    mockPreparedStatement.setSql(sql);
+  }
+
   public <T extends SQLException> void setThrowExceptionAnyExecute(T exception) {
     mockStatement.setThrowExceptionAnyExecute(exception);
+    mockPreparedStatement.setThrowExceptionAnyExecute(exception);
   }
 
   /**
@@ -55,6 +62,7 @@ public class MockConnection implements Connection {
    */
   public void setExecuteUpdateListener(Function<String, Integer> listener) {
     mockStatement.setExecuteUpdateListener(listener);
+    mockPreparedStatement.setExecuteUpdateListener(listener);
   }
 
   /**
@@ -64,6 +72,7 @@ public class MockConnection implements Connection {
    */
   public void setExecuteQueryListener(Function<String, ResultSet> listener) {
     mockStatement.setExecuteQueryListener(listener);
+    mockPreparedStatement.setExecuteQueryListener(listener);
   }
 
   /**
@@ -73,6 +82,7 @@ public class MockConnection implements Connection {
    */
   public void setExecuteListener(Function<String, Boolean> listener) {
     mockStatement.setExecuteListener(listener);
+    mockPreparedStatement.setExecuteListener(listener);
   }
 
   @Override
@@ -242,33 +252,33 @@ public class MockConnection implements Connection {
 
   @Override
   public PreparedStatement prepareStatement(String arg0) throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override
   public PreparedStatement prepareStatement(String arg0, int arg1) throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override
   public PreparedStatement prepareStatement(String arg0, int[] arg1) throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override
   public PreparedStatement prepareStatement(String arg0, String[] arg1) throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override
   public PreparedStatement prepareStatement(String arg0, int arg1, int arg2) throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override
   public PreparedStatement prepareStatement(String arg0, int arg1, int arg2, int arg3)
       throws SQLException {
-    return null;
+    return mockPreparedStatement;
   }
 
   @Override

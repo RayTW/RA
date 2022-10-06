@@ -244,7 +244,7 @@ public class JdbcExecutor implements StatementExecutor {
   @Override
   public void executeTransaction(TransactionExecutor executor)
       throws RaConnectException, RaSqlException {
-    if (connection == null) {
+    if (!isLive()) {
       throw new RaConnectException("Connect to database failed.");
     }
 
@@ -281,11 +281,11 @@ public class JdbcExecutor implements StatementExecutor {
   /**
    * Execute SQL statements.
    *
-   * @param sql SQL statement
+   * @param sqls SQL statement
    * @return affected rows
    */
   @Override
-  public int executeCommit(List<String> sql) throws RaConnectException, RaSqlException {
+  public int executeCommit(List<String> sqls) throws RaConnectException, RaSqlException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"
@@ -293,23 +293,16 @@ public class JdbcExecutor implements StatementExecutor {
               + ",connect="
               + connection.getConnection()
               + ",sql="
-              + sql;
+              + sqls;
 
       throw new RaConnectException(msg);
     }
+    boolean autoCommit = false;
 
-    return executeCommit(false, sql);
-  }
-
-  private int executeCommit(boolean autoCommit, List<String> sqls)
-      throws RaSqlException, RaConnectException {
     return this.connection.getConnection(
         dbConnection -> {
           int ret = 0;
 
-          if (connection == null) {
-            throw new RaConnectException("Connect to database failed.");
-          }
           try {
             dbConnection.setAutoCommit(autoCommit);
             try (Statement st = dbConnection.createStatement()) {

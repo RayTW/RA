@@ -13,12 +13,31 @@ import ra.db.connection.MockOnceConnection;
 import ra.db.parameter.MysqlParameters;
 import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
+import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
 
 /** Test class. */
 public class TransactionTest {
   private static final MysqlParameters.Builder MYSQL_PARAM =
       new MysqlParameters.Builder().setHost("127.0.0.1").setPort(1234);
+
+  @Test
+  public void testTransactionDisconnectThrowException() {
+    MockOnceConnection connection = new MockOnceConnection(MYSQL_PARAM.build());
+    JdbcExecutor mocExector = new JdbcExecutor(connection);
+
+    connection.setIsLive(false);
+
+    try {
+      mocExector.executeTransaction(
+          transaction -> {
+            transaction.executeQuery("SELECT ... FROM table;");
+            return true;
+          });
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaConnectException.class));
+    }
+  }
 
   @Test
   public void testTransactionQuery() {

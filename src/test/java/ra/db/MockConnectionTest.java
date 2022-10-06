@@ -47,12 +47,12 @@ public class MockConnectionTest {
     assertNull(connection.prepareCall("", 0, 0, 0));
     assertNull(connection.prepareCall("", 0, 0));
     assertNull(connection.prepareCall(""));
-    assertNull(connection.prepareStatement("", 0, 0, 0));
-    assertNull(connection.prepareStatement("", 0, 0));
-    assertNull(connection.prepareStatement("", 0));
-    assertNull(connection.prepareStatement("", new String[] {}));
-    assertNull(connection.prepareStatement("", new int[] {}));
-    assertNull(connection.prepareStatement(""));
+    assertNotNull(connection.prepareStatement("", 0, 0, 0));
+    assertNotNull(connection.prepareStatement("", 0, 0));
+    assertNotNull(connection.prepareStatement("", 0));
+    assertNotNull(connection.prepareStatement("", new String[] {}));
+    assertNotNull(connection.prepareStatement("", new int[] {}));
+    assertNotNull(connection.prepareStatement(""));
     assertNull(connection.nativeSQL(""));
     assertFalse(connection.isValid(0));
     assertFalse(connection.isReadOnly());
