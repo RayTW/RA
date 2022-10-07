@@ -492,4 +492,19 @@ public class JdbcExecutorTest {
       assertThat(e, instanceOf(IllegalArgumentException.class));
     }
   }
+
+  @Test
+  public void testExecuteUpdateThrowException() {
+    MockOriginalConnection connection = new MockOriginalConnection(null);
+    connection
+        .getMockConnection()
+        .setThrowExceptionAnyExecute(new SQLException("testExecuteUpdateThrowException"));
+    StatementExecutor executor = new JdbcExecutor(connection);
+
+    try {
+      executor.executeUpdate("UPDATE...;");
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
 }
