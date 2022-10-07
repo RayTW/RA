@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -309,55 +308,6 @@ public class ConcurrentConnectionTest {
       } catch (Exception e) {
         assertThat(e, instanceOf(RaConnectException.class));
       }
-    }
-  }
-
-  @Test
-  public void testTryExecute() throws SQLException, ConnectException {
-    String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (ConcurrentConnection db =
-        new ConcurrentConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
-            MockConnection connection = new MockConnection();
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
-
-            return connection;
-          }
-        }) {
-      db.connect();
-
-      int result = db.tryExecute(sql);
-
-      assertEquals(1, result);
-    }
-  }
-
-  @Test
-  public void testTryExecuteDisconnected() throws SQLException {
-    String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (ConcurrentConnection db =
-        new ConcurrentConnection(param) {
-          @Override
-          public Connection getConnection() {
-            return null;
-          }
-        }) {
-      db.connect();
-
-      db.tryExecute(sql);
-    } catch (Exception e) {
-      assertThat(e, instanceOf(RaConnectException.class));
     }
   }
 

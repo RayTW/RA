@@ -324,55 +324,6 @@ public class OriginalConnectionTest {
   }
 
   @Test
-  public void testTryExecute() {
-    String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (OriginalConnection db =
-        new OriginalConnection(param) {
-          @Override
-          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
-            MockConnection connection = new MockConnection();
-            connection.setExecuteUpdateListener(
-                actual -> {
-                  assertEquals(sql, actual);
-                  return 1;
-                });
-
-            return connection;
-          }
-        }) {
-      db.connect();
-
-      int result = db.tryExecute(sql);
-
-      assertEquals(1, result);
-    }
-  }
-
-  @Test
-  public void testTryExecuteDisconnected() {
-    String sql = "UPDATE tableName SET 'field1' = value WHERE 1;";
-    MysqlParameters param =
-        new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();
-
-    try (OriginalConnection db =
-        new OriginalConnection(param) {
-          @Override
-          public Connection getConnection() {
-            return null;
-          }
-        }) {
-      db.connect();
-
-      db.tryExecute(sql);
-    } catch (Exception e) {
-      assertThat(e, instanceOf(RaConnectException.class));
-    }
-  }
-
-  @Test
   public void testOnCheckConnect() throws RaSqlException {
     MysqlParameters param =
         new MysqlParameters.Builder().setHost("127.0.0.1").setName("test").build();

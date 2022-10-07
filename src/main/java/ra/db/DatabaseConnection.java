@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.function.Consumer;
 import ra.db.parameter.Accountable;
 import ra.db.parameter.DatabaseParameters;
@@ -77,34 +76,6 @@ public interface DatabaseConnection extends AutoCloseable {
     } catch (SQLException e) {
       throw new RaSqlException("Attempt to acquire connection failed. " + param, e);
     }
-  }
-
-  /**
-   * Try to execute SQL (INSERT,UPDATE,DELETE) statements.
-   *
-   * @param sql Statements
-   * @return Execute success count.
-   */
-  public default int tryExecute(String sql) throws RaSqlException, RaConnectException {
-    int ret = 0;
-    try {
-      Connection connection = getConnection();
-
-      if (connection == null) {
-        throw new RaConnectException("Connect to database failed." + getParam());
-      }
-      connection.setAutoCommit(false);
-
-      try (Statement st = connection.createStatement()) {
-        ret = st.executeUpdate(sql);
-      }
-
-      connection.rollback();
-    } catch (SQLException e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
-
-    return ret;
   }
 
   /**
