@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNull;
 
 import java.security.InvalidParameterException;
 import java.sql.SQLException;
-import java.util.Properties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -31,15 +30,8 @@ public class H2ParametersTest {
   public void testLocalFileModeUrl() {
     H2Parameters param =
         new H2Parameters.Builder()
-            .setProperties(
-                () -> {
-                  Properties pro = new Properties();
-
-                  pro.put("USER", "ray");
-                  pro.put("PASSWORD", "abc");
-
-                  return pro;
-                })
+            .setProperties("USER", "ray")
+            .setProperties("PASSWORD", "abc")
             .localFile("file:./data/sample")
             .setName("myDb")
             .build();
@@ -64,7 +56,7 @@ public class H2ParametersTest {
 
   @Test
   public void testSetPropertiesUseNull() {
-    H2Parameters param = new H2Parameters.Builder().setProperties(null).build();
+    H2Parameters param = new H2Parameters.Builder().build();
 
     assertNull(param.getProperties());
   }

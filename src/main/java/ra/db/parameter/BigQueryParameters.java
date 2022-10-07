@@ -45,18 +45,9 @@ public class BigQueryParameters implements DatabaseParameters {
     return dbPort;
   }
 
-  /**
-   * Returns DbSettings.
-   *
-   * @return DbSettings
-   */
-  public Properties getProperties() {
-    return dbProperties;
-  }
-
   @Override
   public String getDatabaseUrl() {
-    Properties properties = getProperties();
+    Properties properties = dbProperties;
     String queryString = "";
 
     if (properties != null) {
@@ -92,7 +83,7 @@ public class BigQueryParameters implements DatabaseParameters {
     private Integer oauthType;
     private String projectId;
     private Integer dbPort;
-    private Properties dbProperties = new Properties();
+    private Properties dbProperties;
 
     /**
      * Set host of databases.
@@ -154,7 +145,7 @@ public class BigQueryParameters implements DatabaseParameters {
      * @return Builder
      */
     public Builder setOauthServiceAcctEmail(String email) {
-      dbProperties.setProperty("OAuthServiceAcctEmail", email);
+      getProperties().setProperty("OAuthServiceAcctEmail", email);
       return this;
     }
 
@@ -167,7 +158,7 @@ public class BigQueryParameters implements DatabaseParameters {
      * @return Builder
      */
     public Builder setOauthPvtKeyFile(String path) {
-      dbProperties.setProperty("OAuthPvtKeyPath", path);
+      getProperties().setProperty("OAuthPvtKeyPath", path);
       return this;
     }
 
@@ -190,8 +181,20 @@ public class BigQueryParameters implements DatabaseParameters {
      * @return Builder
      */
     public Builder setProperties(String key, String value) {
-      dbProperties.setProperty(key, value);
+      getProperties().setProperty(key, value);
       return this;
+    }
+
+    /**
+     * Returns DbSettings.
+     *
+     * @return DbSettings
+     */
+    private Properties getProperties() {
+      if (dbProperties == null) {
+        dbProperties = new Properties();
+      }
+      return dbProperties;
     }
 
     /**

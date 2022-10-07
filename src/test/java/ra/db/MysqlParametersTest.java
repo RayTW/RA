@@ -1,5 +1,8 @@
 package ra.db;
 
+import static org.junit.Assert.assertThat;
+
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import ra.db.parameter.MysqlParameters;
@@ -37,6 +40,6 @@ public class MysqlParametersTest {
 
     MysqlParameters obj = builder.build();
 
-    Assert.assertEquals("true", obj.getProperties().getProperty("profileSQL"));
+    assertThat(obj.getDatabaseUrl(), CoreMatchers.containsString("profileSQL=true"));
   }
 }

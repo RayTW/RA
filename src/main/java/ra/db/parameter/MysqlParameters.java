@@ -1,7 +1,6 @@
 package ra.db.parameter;
 
 import java.util.Properties;
-import java.util.function.Supplier;
 import ra.db.DatabaseCategory;
 
 /**
@@ -74,18 +73,9 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
     return dbPort;
   }
 
-  /**
-   * Returns DbSettings.
-   *
-   * @return DbSettings
-   */
-  public Properties getProperties() {
-    return dbProperties;
-  }
-
   @Override
   public String getDatabaseUrl() {
-    Properties properties = getProperties();
+    Properties properties = dbProperties;
     String queryString = "";
 
     if (properties != null) {
@@ -117,7 +107,6 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
     private String dbUser;
     private String dbPassword;
     private Integer dbPort;
-    private Boolean profileSql;
     private Properties dbProperties;
 
     /**
@@ -178,11 +167,15 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
     /**
      * Set connection setting and DbSettings.
      *
-     * @param supplier all properties
+     * @param key key
+     * @param value value
      * @return Builder
      */
-    public Builder setProperties(Supplier<Properties> supplier) {
-      dbProperties = supplier == null ? null : supplier.get();
+    public Builder setProperties(String key, String value) {
+      if (dbProperties == null) {
+        dbProperties = new Properties();
+      }
+      dbProperties.put(key, value);
       return this;
     }
 
@@ -193,8 +186,15 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
      * @return Builder
      */
     public Builder setProfileSql(boolean enable) {
-      profileSql = enable;
+      getProperties().put("profileSQL", String.valueOf(enable));
       return this;
+    }
+
+    private Properties getProperties() {
+      if (dbProperties == null) {
+        dbProperties = new Properties();
+      }
+      return dbProperties;
     }
 
     /**
@@ -212,13 +212,6 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
 
       if (dbPort != null) {
         param.dbPort = dbPort.intValue();
-      }
-
-      if (profileSql != null) {
-        if (dbProperties == null) {
-          dbProperties = new Properties();
-        }
-        dbProperties.put("profileSQL", profileSql.toString());
       }
 
       if (dbProperties != null && dbProperties.size() > 0) {

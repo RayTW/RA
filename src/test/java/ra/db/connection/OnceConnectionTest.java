@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Properties;
 import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,16 +42,8 @@ public class OnceConnectionTest {
 
   private static final H2Parameters.Builder H2_MYSQL_BUILDER =
       new H2Parameters.Builder()
-          .setProperties(
-              () -> {
-                Properties properties = new Properties();
-
-                // default is true
-                properties.put("DATABASE_TO_UPPER", false);
-                properties.put("MODE", "MYSQL");
-
-                return properties;
-              });
+          .setProperties("DATABASE_TO_UPPER", "false")
+          .setProperties("MODE", "MYSQL");
 
   private static final String CREATE_TABLE_SQL =
       "CREATE TABLE `test_table` ("

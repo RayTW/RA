@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,15 +56,8 @@ public class OriginalConnectionTest {
             .setName("dbName")
             .setUser("dbUser")
             .setPassword("dbPassword")
-            .setProperties(
-                () -> {
-                  Properties properties = new Properties();
-
-                  properties.put("tttt", "aabbcc");
-                  properties.put("tttt2", "dd11");
-
-                  return properties;
-                })
+            .setProperties("tttt", "aabbcc")
+            .setProperties("tttt2", "dd11")
             .build();
 
     DatabaseConnection db = new OriginalConnection(param);

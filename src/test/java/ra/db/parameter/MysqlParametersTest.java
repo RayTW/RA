@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import ra.db.DatabaseCategory;
 
@@ -20,7 +21,6 @@ public class MysqlParametersTest {
             .setName("dbName")
             .setPassword("xxx")
             .setPort(0)
-            .setProperties(() -> null)
             .setUser("user")
             .setProfileSql(true)
             .build();
@@ -39,7 +39,7 @@ public class MysqlParametersTest {
     assertEquals(obj.getPassword(), "xxx");
     assertEquals(obj.getPort(), 0);
     assertEquals(obj.getUser(), "user");
-    assertEquals(obj.getProperties().get("profileSQL"), "true");
+    assertThat(obj.getDatabaseUrl(), CoreMatchers.containsString("profileSQL=true"));
     assertEquals(obj.getDriver(), DatabaseCategory.MYSQL.getDriver());
 
     assertNotNull(obj);
@@ -68,7 +68,6 @@ public class MysqlParametersTest {
             .setName("dbName")
             .setPassword("xxx")
             .setPort(0)
-            .setProperties(null)
             .build();
 
     assertNotNull(obj.toString());

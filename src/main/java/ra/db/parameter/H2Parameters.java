@@ -2,7 +2,6 @@ package ra.db.parameter;
 
 import java.security.InvalidParameterException;
 import java.util.Properties;
-import java.util.function.Supplier;
 import ra.db.DatabaseCategory;
 
 /**
@@ -179,11 +178,15 @@ public class H2Parameters implements DatabaseParameters, Accountable {
      * https://www.h2database.com/javadoc/org/h2/engine/DbSettings.html
      * </pre>
      *
-     * @param supplier all properties
+     * @param key key
+     * @param value value
      * @return Builder
      */
-    public Builder setProperties(Supplier<Properties> supplier) {
-      dbProperties = supplier == null ? null : supplier.get();
+    public Builder setProperties(String key, String value) {
+      if (dbProperties == null) {
+        dbProperties = new Properties();
+      }
+      dbProperties.put(key, value);
       return this;
     }
 

@@ -1,7 +1,9 @@
 package ra.db.parameter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -86,9 +88,8 @@ public class BigQueryParametersTest {
             .setOauthPvtKeyFile("C:\\SecureFiles\\ServiceKeyFile.p12")
             .build();
 
-    String actual = param.getProperties().getProperty("OAuthPvtKeyPath");
-
-    assertEquals("C:\\SecureFiles\\ServiceKeyFile.p12", actual);
+    assertThat(
+        param.getDatabaseUrl(), CoreMatchers.containsString("C:\\SecureFiles\\ServiceKeyFile.p12"));
   }
 
   @Test
@@ -101,9 +102,9 @@ public class BigQueryParametersTest {
             .setOauthServiceAcctEmail("bqtest1@data-driver- testing.iam.gserviceaccount.com")
             .build();
 
-    String actual = param.getProperties().getProperty("OAuthServiceAcctEmail");
-
-    assertEquals("bqtest1@data-driver- testing.iam.gserviceaccount.com", actual);
+    assertThat(
+        param.getDatabaseUrl(),
+        CoreMatchers.containsString("bqtest1@data-driver- testing.iam.gserviceaccount.com"));
   }
 
   @Test

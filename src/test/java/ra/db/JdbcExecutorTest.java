@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Properties;
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 import org.junit.Test;
@@ -25,16 +24,8 @@ public class JdbcExecutorTest {
       new MysqlParameters.Builder().setHost("127.0.0.1").setPort(1234);
   private static final H2Parameters.Builder H2_PARAM =
       new H2Parameters.Builder()
-          .setProperties(
-              () -> {
-                Properties properties = new Properties();
-
-                // default is true
-                properties.put("DATABASE_TO_UPPER", false);
-                properties.put("MODE", "MYSQL");
-
-                return properties;
-              });
+          .setProperties("DATABASE_TO_UPPER", "false")
+          .setProperties("MODE", "MYSQL");
 
   @Test
   public void testExecuteWhenIsLiveFalse() {
