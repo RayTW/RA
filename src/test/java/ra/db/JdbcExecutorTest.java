@@ -58,6 +58,21 @@ public class JdbcExecutorTest {
   }
 
   @Test
+  public void testTryExecuteThrowException() {
+    MockOriginalConnection connection = new MockOriginalConnection(null);
+    connection
+        .getMockConnection()
+        .setThrowExceptionAnyExecute(new SQLException("testTryExecuteThrowException"));
+    StatementExecutor executor = new JdbcExecutor(connection);
+
+    try {
+      executor.tryExecuteUpdate("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
   public void testTryExecuteWhenIsLiveTrue() {
     MockOriginalConnection connection = new MockOriginalConnection(null);
     StatementExecutor executor = new JdbcExecutor(connection);

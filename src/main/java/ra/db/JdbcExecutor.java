@@ -96,7 +96,23 @@ public class JdbcExecutor implements StatementExecutor {
       throw new RaConnectException(msg);
     }
 
-    return connection.tryExecute(sql);
+    return connection.getConnection(
+        dbConnection -> {
+          int ret = 0;
+          try {
+            dbConnection.setAutoCommit(false);
+
+            try (Statement st = dbConnection.createStatement()) {
+              ret = st.executeUpdate(sql);
+            }
+
+            dbConnection.rollback();
+          } catch (SQLException e) {
+            throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+          }
+
+          return ret;
+        });
   }
 
   /**
