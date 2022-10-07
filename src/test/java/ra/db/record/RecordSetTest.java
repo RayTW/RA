@@ -296,7 +296,6 @@ public class RecordSetTest {
       result.addValue("name", "ddd");
 
       record.convert(result);
-      record.parallelStream().forEach(r -> System.out.println(r.getInt("id")));
 
       int actual =
           record

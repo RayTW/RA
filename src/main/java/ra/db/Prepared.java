@@ -24,6 +24,21 @@ public class Prepared {
     return sql;
   }
 
+  /**
+   * Clone a new builder with the current Prepared state.
+   *
+   * @return Builder
+   */
+  public Builder toBuilder() {
+    Builder builder = new Builder(sql);
+
+    if (values != null) {
+      values.entrySet().forEach(e -> builder.set(e.getKey(), e.getValue()));
+    }
+
+    return builder;
+  }
+
   /** Builder. */
   public static class Builder {
     private String sql;

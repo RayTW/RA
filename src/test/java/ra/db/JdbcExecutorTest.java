@@ -117,31 +117,6 @@ public class JdbcExecutorTest {
     }
   }
 
-  // TODO 改用H2來測
-  @Test
-  public void testPrepareQueryFromString() {
-    MockOriginalConnection connection = new MockOriginalConnection(MYSQL_PARAM.build());
-    StatementExecutor executor = new JdbcExecutor(connection);
-
-    connection
-        .getMockConnection()
-        .setExecuteQueryListener(
-            sql -> {
-              MockResultSet result = new MockResultSet("col_string");
-
-              result.addValue("col_string", "col_value");
-              return result;
-            });
-
-    RecordCursor record =
-        executor.prepareExecuteQuery(
-            Prepared.newBuilder("SELECT col_string FROM table WHERE name =?;")
-                .set(1, ParameterValue.string("args0"))
-                .build());
-
-    System.out.println(record);
-  }
-
   @Test
   public void testPrepareUpdateThrowException() {
     MockOriginalConnection connection = new MockOriginalConnection(MYSQL_PARAM.build());
@@ -206,7 +181,7 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.int64(8))
                   .build());
 
-      System.out.println(record);
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals(8, record.fieldInt("columnsTest"));
@@ -239,7 +214,7 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.int64(8L))
                   .build());
 
-      System.out.println(record);
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals(8L, record.fieldLong("columnsTest"));
@@ -272,7 +247,7 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.float64(3.334f))
                   .build());
 
-      System.out.println(record);
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals(3.334f, record.fieldFloat("columnsTest"), 3);
@@ -305,7 +280,7 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.float64(3.334))
                   .build());
 
-      System.out.println(record);
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals(3.334, record.fieldDouble("columnsTest"), 3);
@@ -338,7 +313,7 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.string("unitTestVarChar"))
                   .build());
 
-      System.out.println(record);
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals("unitTestVarChar", record.field("columnsTest"));
@@ -371,6 +346,8 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.bytes(new byte[] {0xa}))
                   .build());
 
+      executor.executeUpdate("DROP TABLE test_table");
+
       assertEquals(1, record.getRecordCount());
       assertEquals("0a", Utility.get().bytesToHex(record.fieldBytes("columnsTest")));
     }
@@ -401,6 +378,8 @@ public class JdbcExecutorTest {
               Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
                   .set(1, ParameterValue.bool(false))
                   .build());
+
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals("false", record.field("columnsTest"));
@@ -433,6 +412,8 @@ public class JdbcExecutorTest {
                   .set(1, ParameterValue.blob(new SerialBlob("test".getBytes())))
                   .build());
 
+      executor.executeUpdate("DROP TABLE test_table");
+
       assertEquals(1, record.getRecordCount());
       assertEquals("test", new String(record.fieldBytes("columnsTest")));
     }
@@ -463,6 +444,8 @@ public class JdbcExecutorTest {
               Prepared.newBuilder("SELECT id,columnsTest FROM test_table WHERE columnsTest =?;")
                   .set(1, ParameterValue.bigNumeric(new BigDecimal("12.334")))
                   .build());
+
+      executor.executeUpdate("DROP TABLE test_table");
 
       assertEquals(1, record.getRecordCount());
       assertEquals("12.334", record.fieldBigDecimal("columnsTest").toString());
@@ -503,6 +486,22 @@ public class JdbcExecutorTest {
 
     try {
       executor.executeUpdate("UPDATE...;");
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
+  public void testExecuteQueryThrowException() {
+    MockOriginalConnection connection =
+        new MockOriginalConnection(H2_PARAM.inMemory().setName("databaseName").build());
+    connection
+        .getMockConnection()
+        .setThrowExceptionAnyExecute(new SQLException("testExecuteQueryThrowException"));
+    StatementExecutor executor = new JdbcExecutor(connection);
+
+    try {
+      executor.executeQuery("SELECT...;");
     } catch (Exception e) {
       assertThat(e, instanceOf(RaSqlException.class));
     }

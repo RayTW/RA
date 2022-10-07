@@ -926,6 +926,14 @@ public class OnceConnectionTest {
 
       System.out.println("record==" + record);
 
+      assertEquals(
+          "e4b8ade6968700000000000000000000",
+          Utility.get().bytesToHex(record.fieldBytes("col_byte")));
+      assertEquals("e4b8ade69687", Utility.get().bytesToHex(record.fieldBytes("col_varbyte")));
+      assertEquals(
+          "e4b8ade69687", Utility.get().bytesToHex(record.fieldBytes("col_binary_varying")));
+      assertEquals("74657374", Utility.get().bytesToHex(record.fieldBytes("col_blob")));
+
       executor.executeUpdate("DROP TABLE test_table");
       connection.close();
     }

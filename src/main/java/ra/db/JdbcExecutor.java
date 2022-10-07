@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 import ra.db.record.LastInsertId;
 import ra.db.record.Record;
@@ -253,10 +251,21 @@ public class JdbcExecutor implements StatementExecutor {
           boolean ret = false;
           try {
             dbConnection.setAutoCommit(false);
-            try (Statement st = dbConnection.createStatement()) {
-              Transaction tran = new Transaction(st);
-              ret = executor.apply(tran);
-            }
+
+            Transaction tran =
+                new Transaction(
+                    new StatementFactory() {
+
+                      @SuppressWarnings("unchecked")
+                      @Override
+                      public <T extends Statement> T create(String sql)
+                          throws RaConnectException, SQLException {
+                        return sql == null
+                            ? (T) dbConnection.createStatement()
+                            : (T) dbConnection.prepareStatement(sql);
+                      }
+                    });
+            ret = executor.apply(tran);
           } catch (SQLException e) {
             throw new RaSqlException(e);
           } finally {
@@ -385,32 +394,10 @@ public class JdbcExecutor implements StatementExecutor {
    * @author Ray Li
    */
   public class Transaction {
-    private Statement statement;
+    private StatementFactory statementFactory;
 
-    public Transaction(Statement statement) {
-      this.statement = statement;
-    }
-
-    /**
-     * Execute multiple SQL using a batch.
-     *
-     * @param sqls sqls
-     * @return result
-     * @throws RaSqlException RaSqlException
-     */
-    public List<Integer> executeUpdate(List<String> sqls) throws RaSqlException {
-      ArrayList<Integer> rets = new ArrayList<>();
-      for (int i = 0; i < sqls.size(); i++) {
-        String sql = sqls.get(i);
-
-        try {
-          int ret = statement.executeUpdate(sql);
-          rets.add(ret);
-        } catch (SQLException e) {
-          throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-        }
-      }
-      return rets;
+    public Transaction(StatementFactory factory) throws SQLException {
+      this.statementFactory = factory;
     }
 
     /**
@@ -421,7 +408,8 @@ public class JdbcExecutor implements StatementExecutor {
      * @throws RaSqlException RaSqlException
      */
     public int executeUpdate(String sql) throws RaSqlException {
-      try {
+      try (Statement statement = statementFactory.create(null)) {
+
         return statement.executeUpdate(sql);
       } catch (SQLException e) {
         throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
@@ -436,8 +424,9 @@ public class JdbcExecutor implements StatementExecutor {
      * @return last id
      * @throws RaSqlException RaSqlException
      */
-    public LastInsertId insertAndLastId(String sql) throws RaSqlException {
-      try {
+    public LastInsertId insert(String sql) throws RaSqlException {
+      try (Statement statement = statementFactory.create(null)) {
+
         if (statement.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS) > 0) {
           return buildRecord().getLastInsertId(statement);
         }
@@ -456,13 +445,63 @@ public class JdbcExecutor implements StatementExecutor {
      */
     public RecordCursor executeQuery(String sql) throws RaSqlException {
       Record record = buildRecord();
-      try {
+
+      try (Statement statement = statementFactory.create(null)) {
         ResultSet rs = statement.executeQuery(sql);
 
         record.convert(rs);
       } catch (SQLException e) {
         throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
       }
+      return record;
+    }
+
+    /**
+     * Executes the given SQL statement, which may be an INSERT, UPDATE, or DELETE statement or an
+     * SQL statement that returns nothing, such as an SQL DDL statement.
+     *
+     * @param prepared prepared
+     * @return RecordCursor
+     * @throws RaConnectException RaConnectException
+     * @throws RaSqlException RaSqlException
+     */
+    public int prepareExecuteUpdate(Prepared prepared) throws RaConnectException, RaSqlException {
+      try (PreparedStatement statement = statementFactory.create(prepared.getSql())) {
+
+        setParametersPreparedStatement(prepared, statement);
+
+        return statement.executeUpdate();
+      } catch (SQLException e) {
+        throw new RaSqlException(
+            "SQL Syntax Error, sql=" + prepared.getSql() + ",values=" + prepared.getValues(), e);
+      }
+    }
+
+    /**
+     * A SQL statement is precompiled and stored in a Prepared object. This object can then be used
+     * to efficiently execute this statement multiple times.
+     *
+     * @param prepared prepared
+     * @return RecordCursor
+     * @throws RaConnectException RaConnectException
+     * @throws RaSqlException RaSqlException
+     */
+    public RecordCursor prepareExecuteQuery(Prepared prepared)
+        throws RaConnectException, RaSqlException {
+      Record record = buildRecord();
+
+      try (PreparedStatement statement = statementFactory.create(prepared.getSql())) {
+
+        setParametersPreparedStatement(prepared, statement);
+
+        try (ResultSet rs = statement.executeQuery()) {
+          record.convert(rs);
+        }
+      } catch (SQLException e) {
+        throw new RaSqlException(
+            "SQL Syntax Error, sql=" + prepared.getSql() + ",values=" + prepared.getValues(), e);
+      }
+
       return record;
     }
   }

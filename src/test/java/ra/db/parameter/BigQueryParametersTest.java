@@ -151,7 +151,6 @@ public class BigQueryParametersTest {
     BigQueryParameters param =
         new BigQueryParameters.Builder().setProjectId("projectId").setOauthType(0).build();
 
-    System.out.println(param);
     assertEquals(
         "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=projectId;OAuthType=0;",
         param.toString());
