@@ -100,6 +100,33 @@ public class MysqlParameters implements DatabaseParameters, Accountable {
     return getUrlSchema() + getHost() + ":" + getPort() + "/" + getName() + queryString;
   }
 
+  /**
+   * Clone a new builder with the current MysqlParameters state.
+   *
+   * @return Builder
+   */
+  public Builder toBuilder() {
+    Builder builder =
+        new Builder()
+            .setHost(dbHost)
+            .setName(dbName)
+            .setUser(dbUser)
+            .setPassword(dbPassword)
+            .setPort(dbPort);
+
+    if (dbProperties != null) {
+      dbProperties
+          .entrySet()
+          .forEach(e -> builder.setProperties((String) e.getKey(), (String) e.getValue()));
+    }
+
+    return builder;
+  }
+
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
   /** MysqlParameters. */
   public static class Builder {
     private String dbHost;

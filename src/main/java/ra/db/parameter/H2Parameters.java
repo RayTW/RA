@@ -104,6 +104,10 @@ public class H2Parameters implements DatabaseParameters, Accountable {
     return url;
   }
 
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
   /** MysqlParameters. */
   public static class Builder {
     private String dbHost;

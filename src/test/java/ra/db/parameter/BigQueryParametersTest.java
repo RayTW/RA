@@ -156,4 +156,23 @@ public class BigQueryParametersTest {
         "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId=projectId;OAuthType=0;",
         param.toString());
   }
+
+  @Test
+  public void testToBuilder() {
+    BigQueryParameters obj =
+        BigQueryParameters.newBuilder("projectId", 111)
+            .setHost("127.0.0.1")
+            .setProperties("test", "vvvv")
+            .setPort(1234)
+            .build();
+
+    BigQueryParameters newParam = obj.toBuilder().build();
+
+    assertEquals("127.0.0.1", newParam.getHost());
+    assertEquals(1234, newParam.getPort());
+    assertEquals("jdbc:bigquery:", newParam.getUrlSchema());
+    assertEquals(
+        "jdbc:bigquery://127.0.0.1:1234;ProjectId=projectId;OAuthType=111;test=vvvv;",
+        newParam.getDatabaseUrl());
+  }
 }

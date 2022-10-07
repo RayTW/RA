@@ -72,4 +72,31 @@ public class MysqlParametersTest {
 
     assertNotNull(obj.toString());
   }
+
+  @Test
+  public void testToBuilder() {
+    MysqlParameters obj =
+        new MysqlParameters.Builder()
+            .setHost("127.0.0.1")
+            .setName("dbName")
+            .setPassword("xxx")
+            .setProfileSql(false)
+            .setProperties("test", "vvvv")
+            .setUser("user")
+            .setPort(78)
+            .build();
+
+    MysqlParameters newParam = obj.toBuilder().build();
+
+    assertEquals("127.0.0.1", newParam.getHost());
+    assertEquals("dbName", newParam.getName());
+    assertEquals("xxx", newParam.getPassword());
+    assertEquals(78, newParam.getPort());
+    assertEquals("user", newParam.getUser());
+    assertEquals("jdbc:mysql://", newParam.getUrlSchema());
+    assertEquals(
+        "jdbc:mysql://127.0.0.1:78/dbName?useUnicode=true&profileSQL=false"
+            + "&characterEncoding=utf8&connectTimeout=180000&test=vvvv&socketTimeout=180000",
+        newParam.getDatabaseUrl());
+  }
 }

@@ -73,6 +73,28 @@ public class BigQueryParameters implements DatabaseParameters {
     return url;
   }
 
+  /**
+   * Clone a new builder with the current MysqlParameters state.
+   *
+   * @return Builder
+   */
+  public Builder toBuilder() {
+    Builder builder =
+        new Builder()
+            .setHost(dbHost)
+            .setOauthType(oauthType)
+            .setProjectId(projectId)
+            .setPort(dbPort);
+
+    if (dbProperties != null) {
+      dbProperties
+          .entrySet()
+          .forEach(e -> builder.setProperties((String) e.getKey(), (String) e.getValue()));
+    }
+
+    return builder;
+  }
+
   public static Builder newBuilder(String projectId, Integer oauthType) {
     return new Builder().setProjectId(projectId).setOauthType(oauthType);
   }
