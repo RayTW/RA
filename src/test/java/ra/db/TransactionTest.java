@@ -24,7 +24,9 @@ public class TransactionTest {
   private static final H2Parameters.Builder H2_PARAM =
       new H2Parameters.Builder()
           .setProperties("DATABASE_TO_UPPER", "false")
-          .setProperties("MODE", "MYSQL");
+          .setProperties("MODE", "MYSQL")
+          .inMemory()
+          .setName("databaseName");
   private static final String CREATE_TABLE_SQL =
       "CREATE TABLE `test_table` ("
           + "  `id` bigint auto_increment,"
@@ -175,8 +177,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareInsertRollback() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -208,8 +209,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareInsertCommit() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -241,8 +241,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareQuery() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -270,8 +269,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareInsertLastId() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -295,8 +293,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareInsertThrowException() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -322,8 +319,7 @@ public class TransactionTest {
 
   @Test
   public void testTransactionPrepareQueryThrowException() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 

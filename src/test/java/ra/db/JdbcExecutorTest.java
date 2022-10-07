@@ -25,7 +25,9 @@ public class JdbcExecutorTest {
   private static final H2Parameters.Builder H2_PARAM =
       new H2Parameters.Builder()
           .setProperties("DATABASE_TO_UPPER", "false")
-          .setProperties("MODE", "MYSQL");
+          .setProperties("MODE", "MYSQL")
+          .inMemory()
+          .setName("databaseName");
 
   @Test
   public void testExecuteWhenIsLiveFalse() {
@@ -157,8 +159,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeInt() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -190,8 +191,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeLong() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -223,8 +223,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeFloat() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -256,8 +255,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeDouble() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -289,8 +287,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeString() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -322,8 +319,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeByte() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -355,8 +351,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeBoolean() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -388,8 +383,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeBlob() throws SerialException, SQLException {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -421,8 +415,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteFromeDecimal() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -454,8 +447,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteUnsupportType() {
-    try (OnceConnection connection =
-        new OnceConnection(H2_PARAM.inMemory().setName("databaseName").build())) {
+    try (OnceConnection connection = new OnceConnection(H2_PARAM.build())) {
       connection.connect();
       StatementExecutor executor = connection.createStatementExecutor();
 
@@ -493,8 +485,7 @@ public class JdbcExecutorTest {
 
   @Test
   public void testExecuteQueryThrowException() {
-    MockOriginalConnection connection =
-        new MockOriginalConnection(H2_PARAM.inMemory().setName("databaseName").build());
+    MockOriginalConnection connection = new MockOriginalConnection(H2_PARAM.build());
     connection
         .getMockConnection()
         .setThrowExceptionAnyExecute(new SQLException("testExecuteQueryThrowException"));
