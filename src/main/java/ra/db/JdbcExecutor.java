@@ -46,20 +46,9 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int executeUpdate(String sql) throws RaConnectException, RaSqlException {
-    int ret = 0;
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + sql;
+    checkConnectionStatus(sql);
 
-      throw new RaConnectException(msg);
-    }
-
-    ret =
+    int ret =
         this.connection.getConnection(
             dbConnection -> {
               try {
@@ -84,17 +73,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int tryExecuteUpdate(String sql) throws RaConnectException, RaSqlException {
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + sql;
-
-      throw new RaConnectException(msg);
-    }
+    checkConnectionStatus(sql);
 
     return connection.getConnection(
         dbConnection -> {
@@ -127,17 +106,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int prepareExecuteUpdate(Prepared prepared) throws RaConnectException, RaSqlException {
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + prepared.getSql();
-
-      throw new RaConnectException(msg);
-    }
+    checkConnectionStatus(prepared.getSql());
 
     int ret =
         this.connection.getConnection(
@@ -175,17 +144,8 @@ public class JdbcExecutor implements StatementExecutor {
   @Override
   public RecordCursor prepareExecuteQuery(Prepared prepared)
       throws RaConnectException, RaSqlException {
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + prepared.getSql();
+    checkConnectionStatus(prepared.getSql());
 
-      throw new RaConnectException(msg);
-    }
     Record record = buildRecord();
 
     connection.getConnection(
@@ -311,17 +271,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public LastInsertId insert(String sql) {
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + sql;
-
-      throw new RaConnectException(msg);
-    }
+    checkConnectionStatus(sql);
     try {
       return lastInsertId(sql);
     } catch (Exception e) {
@@ -360,17 +310,8 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public RecordCursor executeQuery(String sql) throws RaConnectException, RaSqlException {
-    if (!isLive()) {
-      String msg =
-          "Connect to database failed, param :"
-              + connection.getParam()
-              + ",connect="
-              + connection.getConnection()
-              + ",sql="
-              + sql;
+    checkConnectionStatus(sql);
 
-      throw new RaConnectException(msg);
-    }
     Record record = buildRecord();
     try {
       connection.getConnection(
@@ -393,6 +334,20 @@ public class JdbcExecutor implements StatementExecutor {
     }
 
     return record;
+  }
+
+  private void checkConnectionStatus(String sql) throws RaConnectException {
+    if (!isLive()) {
+      String msg =
+          "Connect to database failed, param :"
+              + connection.getParam()
+              + ",connect="
+              + connection.getConnection()
+              + ",sql="
+              + sql;
+
+      throw new RaConnectException(msg);
+    }
   }
 
   /**
