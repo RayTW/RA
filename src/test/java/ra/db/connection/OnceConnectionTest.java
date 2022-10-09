@@ -741,7 +741,7 @@ public class OnceConnectionTest {
               executor.insert(sql);
 
             } catch (Exception e) {
-              assertThat(e, instanceOf(RaSqlException.class));
+              assertThat(e, instanceOf(UnsupportedOperationException.class));
             }
           });
     }

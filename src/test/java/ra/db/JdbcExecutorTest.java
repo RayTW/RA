@@ -101,6 +101,21 @@ public class JdbcExecutorTest {
   }
 
   @Test
+  public void testInsertLastIdThrowException() {
+    MockOriginalConnection connection = new MockOriginalConnection(null);
+    StatementExecutor executor = new JdbcExecutor(connection);
+    connection
+        .getMockConnection()
+        .setThrowExceptionAnyExecute(new SQLException("testInsertLastIdThrowException"));
+
+    try {
+      executor.insert("INSERT INTO 表格名 (欄位1, 欄位2, ...) VALUES (值1, 值2, ...);");
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
   public void testPrepareUpdateWhenIsLiveFalse() {
     MockOriginalConnection connection = new MockOriginalConnection(MYSQL_PARAM.build());
     StatementExecutor executor = new JdbcExecutor(connection);

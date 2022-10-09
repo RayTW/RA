@@ -272,14 +272,7 @@ public class JdbcExecutor implements StatementExecutor {
   @Override
   public LastInsertId insert(String sql) {
     checkConnectionStatus(sql);
-    try {
-      return lastInsertId(sql);
-    } catch (Exception e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
-  }
 
-  private LastInsertId lastInsertId(String sql) throws SQLException, RaConnectException {
     Reference<LastInsertId> ref = new Reference<>();
 
     this.connection.getConnection(

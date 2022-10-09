@@ -36,4 +36,17 @@ public class PreparedTest {
       assertNotNull(ex);
     }
   }
+
+  @Test
+  public void testToBuildValues() {
+    Prepared obj =
+        Prepared.newBuilder("SELECT * FROM table;").set(1, ParameterValue.string("value")).build();
+
+    Prepared.Builder builder = obj.toBuilder();
+
+    Prepared result = builder.build();
+
+    assertEquals("SELECT * FROM table;", result.getSql());
+    assertEquals("value", result.getValues().get(1).getValue());
+  }
 }
