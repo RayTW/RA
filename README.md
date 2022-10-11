@@ -17,7 +17,22 @@ repositories {
 }
 
 dependencies {
-  implementation 'io.github.raytw:ra:0.5.3'
+  implementation 'io.github.raytw:ra:0.6.0'
+}
+```
+
+### How to use BigQuery JDBC?
+#### Setp 1 
+Download the BigQuery [JDBC 4.2-compatible](https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.3.0.1001.zip) file.
+
+#### Setp 2
+Import the library(GoogleBigQueryJDBC42.jar) to the java build path.
+
+#### Setp 3
+```gradle
+dependencies {
+  implementation 'io.github.raytw:ra:0.6.0'
+  implementation 'com.google.cloud:google-cloud-bigquery:2.16.1'
 }
 ```
 
