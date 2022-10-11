@@ -29,52 +29,104 @@ public class ParameterValue {
     return new Builder();
   }
 
-  /** Creates a {@code ParameterValue} object with the given value and type. */
+  /**
+   * Creates a {@code ParameterValue} object with the given value and type.
+   *
+   * @param <T> T
+   * @param value value value
+   * @param type type type
+   * @return ParameterValue
+   */
   public static <T> ParameterValue of(T value, Class<?> type) {
     return ParameterValue.newBuilder().setType(type).setValue(value).build();
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Boolean. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Boolean.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue bool(Boolean value) {
     return of(value, Boolean.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of String. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of String.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue string(String value) {
     return of(value, String.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Long. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Long.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue int64(Long value) {
     return of(value, Long.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Integer. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Integer.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue int64(Integer value) {
     return of(value, Integer.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Double. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Double.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue float64(Double value) {
     return of(value, Double.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Float. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Float.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue float64(Float value) {
     return of(value, Float.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of BigDecimal. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of BigDecimal.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue bigNumeric(BigDecimal value) {
     return of(value, BigDecimal.class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of byte[]. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of byte[].
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue bytes(byte[] value) {
     return of(value, byte[].class);
   }
 
-  /** Creates a {@code ParameterValue} object with a type of Blob. */
+  /**
+   * Creates a {@code ParameterValue} object with a type of Blob.
+   *
+   * @param value value
+   * @return ParameterValue
+   */
   public static ParameterValue blob(Blob value) {
     return of(value, Blob.class);
   }

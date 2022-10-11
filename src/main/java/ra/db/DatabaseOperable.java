@@ -20,6 +20,8 @@ public interface DatabaseOperable<T, R> {
    *
    * @param input input
    * @return result
+   * @throws RaConnectException RaConnectException
+   * @throws SQLException SQLException
    */
   public R apply(T input) throws RaConnectException, SQLException;
 }
