@@ -28,55 +28,53 @@ dependencies {
 ### Connection to MySQL database
 #### Once connection ([OnceConnection](https://raytw.github.io/RA/ra/db/connection/OnceConnection.html))
 ```java
-  MysqlParameters.Builder builder = new MysqlParameters.Builder();
+    MysqlParameters.Builder builder =
+        MysqlParameters.newBuilder()
+            .setHost("127.0.0.1")
+            .setName("test")
+            .setPort(3306)
+            .setUser("ray")
+            .setPassword("raypwd");
 
-  builder.setHost("127.0.0.1").setName("test").setPort(3306).setUser("ray").setPassword("raypwd");
+    try (DatabaseConnection connection =
+        new OnceConnection(builder.build())) { // auto close connection.
+      RecordCursor record =
+          connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
 
-  DatabaseConnection connection = new OnceConnection(builder.build());
-
-  if (!connection.connect()) {
-    return;
-  }
-
-  RecordCursor record =
-    connection.createStatementExecutor().executeQuery("SELECT * FROM `test_table`");
-
-  record
-    .stream()
-    .forEach(
-      row -> {
-        System.out.println("name = " + row.getInt("id") + row.getString("name"));
-      });
-
-  // Require to close when uses once connection.
-  try {
-    connection.close();
-  } catch (Exception e) {
-    e.printStackTrace();
-  }
+      record
+          .stream()
+          .forEach(
+              row -> {
+                System.out.println("name = " + row.getInt("id") + row.getString("name"));
+              });
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 ```
 
 #### Keep-alive connection and connection pool. ([DatabaseConnections](https://raytw.github.io/RA/ra/db/DatabaseConnections.html))
 ```java
-  MysqlParameters.Builder builder = new MysqlParameters.Builder();
+    MysqlParameters.Builder builder =
+        MysqlParameters.newBuilder()
+            .setHost("127.0.0.1")
+            .setName("test")
+            .setPort(3306)
+            .setUser("ray")
+            .setPassword("raypwd");
 
-  builder.setHost("127.0.0.1").setName("test").setPort(3306).setUser("ray").setPassword("raypwd");
+    DatabaseConnections pool = new DatabaseConnections();
+    int connectionSize = 5;
 
-  DatabaseConnections pool = new DatabaseConnections();
-  int connectionSize = 5;
+    pool.connectOriginalConnection(builder.build(), connectionSize);
 
-  pool.connectOriginalConnection(builder.build(), connectionSize);
+    for (int i = 0; i < connectionSize; i++) {
+      RecordCursor record = pool.next().executeQuery("SELECT * FROM `test_table` LIMIT 1");
 
-  for (int i = 0; i < connectionSize; i++) {
-    RecordCursor record = pool.next().executeQuery("SELECT * FROM `test_table`");
+      long id = record.fieldLong("id");
+      String name = record.field("name");
 
-    record
-      .stream()
-      .forEach(
-        row -> {
-        System.out.println("name = " + row.getInt("id") + row.getString("name"));
-        });
-  }
+      System.out.println("id = " + id + ", name" + name);
+    }
 ```
 
 ### Connection to H2 database(in-memory mode)
@@ -88,17 +86,10 @@ dependencies {
             new H2Parameters.Builder()
                 .inMemory()
                 .setName("databaseName")
-                .setProperties(
-                    () -> {
-                      Properties properties = new Properties();
-
-                      // default is true
-                      properties.put("DATABASE_TO_UPPER", false);
-                      properties.put("MODE", "MYSQL");
-
-                      return properties;
-                    })
+                .setProperties("DATABASE_TO_UPPER", "false")
+                .setProperties("MODE", "MYSQL")
                 .build())) {
+
       connection.connect();
 
       StatementExecutor executor = connection.createStatementExecutor();
@@ -118,7 +109,7 @@ dependencies {
               + "ON UPDATE current_timestamp()"
               + ");";
 
-      executor.execute(createTableSql);
+      executor.executeUpdate(createTableSql);
 
       String sql =
           "INSERT INTO test_table SET col_int=1"
@@ -130,10 +121,9 @@ dependencies {
               + ",col_varchar='col_varchar'"
               + ",created_at=NOW();";
 
-      executor.execute(sql);
+      executor.executeUpdate(sql);
 
-      RecordCursor record =
-          executor.executeQuery("SELECT * FROM `test_table`");
+      RecordCursor record = executor.executeQuery("SELECT * FROM `test_table`");
 
       record
           .stream()
@@ -142,9 +132,58 @@ dependencies {
                 System.out.println("col_int=" + row.getInt("col_int"));
               });
 
-      executor.execute("DROP TABLE test_table");
-      // Require to close when uses once connection.
-      connection.close();
+      executor.executeUpdate("DROP TABLE test_table");
+    }
+```
+
+### The database uses the prepare statement.
+
+```java
+    try (OnceConnection connection =
+        new OnceConnection(
+            new H2Parameters.Builder()
+                .inMemory()
+                .setName("databaseName")
+                .setProperties("DATABASE_TO_UPPER", "false")
+                .setProperties("MODE", "MYSQL")
+                .build())) {
+
+      connection.connect();
+
+      StatementExecutor executor = connection.createStatementExecutor();
+
+      String createTableSql =
+          "CREATE TABLE `test_table` ("
+              + "  `id` bigint auto_increment,"
+              + "  `age` int(10) UNSIGNED NOT NULL,"
+              + "  `name` VARCHAR(100) DEFAULT NULL"
+              + ");";
+
+      executor.executeUpdate(createTableSql);
+
+      String sql = "INSERT INTO test_table SET age=?" + ",name=?;";
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder(sql)
+              .set(1, ParameterValue.int64(18))
+              .set(2, ParameterValue.string("ray"))
+              .build());
+
+      executor.prepareExecuteUpdate(
+          Prepared.newBuilder(sql)
+              .set(1, ParameterValue.int64(22))
+              .set(2, ParameterValue.string("name test"))
+              .build());
+
+      RecordCursor record =
+          executor.prepareExecuteQuery(
+              Prepared.newBuilder("SELECT * FROM `test_table` WHERE name = ? LIMIT 1;")
+                  .set(1, ParameterValue.string("ray"))
+                  .build());
+
+      System.out.println("name=" + record.field("name") + ", age=" + record.fieldInt("age"));
+
+      executor.executeUpdate("DROP TABLE test_table");
     }
 ```
 
