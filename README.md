@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'io.github.raytw:ra:0.6.0'
+  implementation 'io.github.raytw:ra:0.6.1'
 }
 ```
 
@@ -31,7 +31,7 @@ Import the library(GoogleBigQueryJDBC42.jar) to the java build path.
 #### Setp 3
 ```gradle
 dependencies {
-  implementation 'io.github.raytw:ra:0.6.0'
+  implementation 'io.github.raytw:ra:0.6.1'
   implementation 'com.google.cloud:google-cloud-bigquery:2.16.1'
 }
 ```
