@@ -306,25 +306,21 @@ public class JdbcExecutor implements StatementExecutor {
     checkConnectionStatus(sql);
 
     Record record = buildRecord();
-    try {
-      connection.getConnection(
-          dbConnection -> {
-            try {
-              dbConnection.setAutoCommit(true);
+    connection.getConnection(
+        dbConnection -> {
+          try {
+            dbConnection.setAutoCommit(true);
 
-              try (Statement st = dbConnection.createStatement();
-                  ResultSet rs = st.executeQuery(sql)) {
-                record.convert(rs);
-              }
-            } catch (SQLException e) {
-              throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+            try (Statement st = dbConnection.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+              record.convert(rs);
             }
+          } catch (SQLException e) {
+            throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
+          }
 
-            return 0;
-          });
-    } catch (Exception e) {
-      throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
-    }
+          return 0;
+        });
 
     return record;
   }
