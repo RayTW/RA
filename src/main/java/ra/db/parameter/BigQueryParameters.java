@@ -99,7 +99,7 @@ public class BigQueryParameters implements DatabaseParameters {
     return new Builder().setProjectId(projectId).setOauthType(oauthType);
   }
 
-  /** MysqlParameters. */
+  /** Builder. */
   public static final class Builder {
     private String dbHost;
     private Integer oauthType;
@@ -194,8 +194,8 @@ public class BigQueryParameters implements DatabaseParameters {
      *
      * <pre>
      * Important:
-     *   ．Propertiesarecase-sensitive.
-     *   ．DonotduplicatepropertiesintheconnectionURL.
+     *   ．Properties are case-sensitive.
+     *   ．Do not duplicate properties in the connection URL.
      * </pre>
      *
      * @param key key
