@@ -104,6 +104,7 @@ dependencies {
   // https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java
   implementation group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.8.4'
   testImplementation 'com.google.cloud:google-cloud-bigquery:2.16.1'
+  implementation group: 'com.google.cloud', name: 'google-cloud-spanner-jdbc', version: '2.7.9'
 
   // Use JUnit test framework
   testImplementation 'junit:junit:4.12'

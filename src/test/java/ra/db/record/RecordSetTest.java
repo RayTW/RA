@@ -605,4 +605,71 @@ public class RecordSetTest {
       assertEquals(876, record.getLastInsertId(st).toInt());
     }
   }
+
+  @Test
+  public void testSpannerResultFromBigDecimalDouble() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result = new MockResultSet("id", "name")) {
+      result.addValue("id", 3.14);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(3.14, record.fieldBigDecimalDouble("id"), 2);
+
+      record.next();
+
+      assertEquals(3.22, record.fieldBigDecimalDouble("id"), 2);
+    }
+  }
+
+  @Test
+  public void testSpannerResultIsNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result = new MockResultSet("id", "name")) {
+
+      String name = null;
+
+      result.addValue("id", 1);
+      result.addValue("name", name);
+
+      record.convert(result);
+
+      assertEquals(1, record.getRecordCount());
+
+      assertTrue(record.isNull("name"));
+    }
+  }
+
+  @Test
+  public void testSpannerResultBlob() throws SQLException {
+    byte[] expecteds = new byte[] {0xf, 0xf};
+
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.BLOB), Arrays.asList("blobData"))) {
+      result.addValue("blobData", new byte[] {0xf, 0xf});
+
+      record.convert(result);
+
+      assertArrayEquals(expecteds, record.fieldBytes("blobData"));
+    }
+  }
+
+  @Test
+  public void testSpannerResultString() throws SQLException {
+
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.VARCHAR), Arrays.asList("stringColumn"))) {
+      result.addValue("stringColumn", "xxxxgggraea");
+
+      record.convert(result);
+
+      assertEquals("xxxxgggraea", record.field("stringColumn"));
+    }
+  }
 }

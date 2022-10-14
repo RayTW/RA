@@ -48,6 +48,9 @@ public class RecordSet implements Record {
       case BIGQUERY:
         resultConverter = new ResultBigQuery();
         break;
+      case SPANNER:
+        resultConverter = new ResultSpanner();
+        break;
       default:
         throw new UnsupportedOperationException("Unsupport category = " + category);
     }
@@ -412,6 +415,7 @@ public class RecordSet implements Record {
           buf.append("|");
         }
         value = field(columnName, cursor);
+
         // 'null' length is 4.
         length = (value == null) ? nullLength : value.length();
 
@@ -528,7 +532,7 @@ public class RecordSet implements Record {
     @Override
     public LastInsertId getLastInsertId(Statement statement) throws SQLException {
       try (ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID() AS lastid"); ) {
-        ResultMySql.this.convert(rs);
+        super.convert(rs);
         return new LastInsertId(field("lastid"));
       }
     }
@@ -572,7 +576,7 @@ public class RecordSet implements Record {
     @Override
     public LastInsertId getLastInsertId(Statement statement) throws SQLException {
       try (ResultSet rs = statement.getGeneratedKeys(); ) {
-        ResultH2.this.convert(rs);
+        super.convert(rs);
         String lastId = field(1);
 
         if (StringUtils.isNullOrEmpty(lastId)) {
@@ -618,6 +622,47 @@ public class RecordSet implements Record {
     public LastInsertId getLastInsertId(Statement statement) throws SQLException {
       throw new UnsupportedOperationException(
           "BigQuery does not support getting the last ID from a query.");
+    }
+  }
+
+  private class ResultSpanner extends AbstractResultConverter {
+    /**
+     * Convert the result of a query.
+     *
+     * @param result Result of query.
+     * @param columnIndex column index
+     * @param type type
+     * @throws SQLException SQLException
+     */
+    @Override
+    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
+      if (isBinaryType(type) || type == Types.BLOB) {
+
+        return result.getBytes(columnIndex);
+      }
+
+      Object obj = result.getObject(columnIndex);
+
+      if (obj != null) {
+        if (obj instanceof byte[]) {
+          return (byte[]) obj;
+        }
+        return obj.toString().getBytes();
+      }
+
+      return null;
+    }
+
+    /**
+     * Unsupported.
+     *
+     * @param statement statement
+     * @return id auto-increment id
+     * @throws SQLException SQLException
+     */
+    @Override
+    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
+      throw new UnsupportedOperationException("There is no auto-increment capability in Spanner.");
     }
   }
 }

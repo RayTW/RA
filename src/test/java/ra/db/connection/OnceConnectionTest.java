@@ -28,6 +28,7 @@ import ra.db.parameter.BigQueryParameters;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.parameter.SpannerParameters;
 import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
@@ -719,6 +720,51 @@ public class OnceConnectionTest {
           @Override
           public void loadDriveInstance(DatabaseParameters param) {
             assertEquals("com.simba.googlebigquery.jdbc42.Driver", param.getDriver());
+          }
+
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
+
+            connection.setExecuteUpdateListener(
+                actual -> {
+                  assertEquals(sql, actual);
+                  return 1;
+                });
+
+            return connection;
+          }
+        }; ) {
+
+      db.connectIf(
+          executor -> {
+            try {
+              executor.insert(sql);
+
+            } catch (Exception e) {
+              assertThat(e, instanceOf(UnsupportedOperationException.class));
+            }
+          });
+    }
+  }
+
+  @Test
+  public void testInsertSqlConnectedSpanner() throws RaSqlException {
+    String sql =
+        "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
+            + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
+    SpannerParameters param =
+        SpannerParameters.newBuilder()
+            .setProjectId("id")
+            .setDatabaseId("db")
+            .setInstanceId("instanceid")
+            .build();
+
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public void loadDriveInstance(DatabaseParameters param) {
+            assertEquals("com.google.cloud.spanner.jdbc.JdbcDriver", param.getDriver());
           }
 
           @Override
