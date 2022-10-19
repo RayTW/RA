@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -188,8 +189,11 @@ public class ConcurrentConnectionTest {
                   assertEquals(sql, actual);
                   return 1;
                 });
-            @SuppressWarnings("resource")
-            MockResultSet result = new MockResultSet("lastid");
+            MockResultSet result =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.VARCHAR)
+                    .build();
 
             result.addValue("lastid", 999);
 
@@ -229,8 +233,11 @@ public class ConcurrentConnectionTest {
                   return 1;
                 });
 
-            @SuppressWarnings("resource")
-            MockResultSet result = new MockResultSet("lastid");
+            MockResultSet result =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
 
             result.addValue("lastid", expected);
 
@@ -264,7 +271,11 @@ public class ConcurrentConnectionTest {
                 sql -> {
                   actual.set(sql);
 
-                  MockResultSet result = new MockResultSet("lastid");
+                  MockResultSet result =
+                      new MockResultSet.Builder()
+                          .setColumnLabel("lastid")
+                          .setColumnType(Types.INTEGER)
+                          .build();
 
                   result.addValue("lastid", 55);
 
@@ -277,9 +288,8 @@ public class ConcurrentConnectionTest {
       db.connectIf(
           executor -> {
             RecordCursor record = executor.executeQuery(sql);
-
             assertEquals(sql, actual.get());
-            assertEquals("55", record.field("lastid"));
+            assertEquals(55, record.fieldInt("lastid"));
           });
     }
   }
@@ -325,7 +335,7 @@ public class ConcurrentConnectionTest {
             connection.setExecuteQueryListener(
                 sql -> {
                   assertEquals("SELECT 1", sql);
-                  return new MockResultSet();
+                  return MockResultSet.newBuilder().build();
                 });
 
             return connection;

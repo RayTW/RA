@@ -1,6 +1,7 @@
 package ra.db;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import ra.db.record.RecordCursor;
 import ra.db.record.RecordSet;
 import ra.exception.RaConnectException;
 import ra.exception.RaSqlException;
+import ra.ref.BiReference;
 import ra.ref.Reference;
 
 /**
@@ -46,7 +48,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int executeUpdate(String sql) throws RaConnectException, RaSqlException {
-    checkConnectionStatus(sql);
+    checkClosed(sql);
 
     int ret =
         this.connection.getConnection(
@@ -73,18 +75,16 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int tryExecuteUpdate(String sql) throws RaConnectException, RaSqlException {
-    checkConnectionStatus(sql);
+    checkClosed(sql);
 
     return connection.getConnection(
         dbConnection -> {
           int ret = 0;
           try {
             dbConnection.setAutoCommit(false);
-
             try (Statement st = dbConnection.createStatement()) {
               ret = st.executeUpdate(sql);
             }
-
             dbConnection.rollback();
           } catch (SQLException e) {
             throw new RaSqlException("SQL Syntax Error, sql=" + sql, e);
@@ -106,7 +106,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public int prepareExecuteUpdate(Prepared prepared) throws RaConnectException, RaSqlException {
-    checkConnectionStatus(prepared.getSql());
+    checkClosed(prepared.getSql());
 
     int ret =
         this.connection.getConnection(
@@ -144,7 +144,7 @@ public class JdbcExecutor implements StatementExecutor {
   @Override
   public RecordCursor prepareExecuteQuery(Prepared prepared)
       throws RaConnectException, RaSqlException {
-    checkConnectionStatus(prepared.getSql());
+    checkClosed(prepared.getSql());
 
     Record record = buildRecord();
 
@@ -154,7 +154,6 @@ public class JdbcExecutor implements StatementExecutor {
             dbConnection.setAutoCommit(true);
 
             try (PreparedStatement st = dbConnection.prepareStatement(prepared.getSql())) {
-
               setParametersPreparedStatement(prepared, st);
 
               try (ResultSet rs = st.executeQuery()) {
@@ -184,9 +183,7 @@ public class JdbcExecutor implements StatementExecutor {
     for (Entry<Integer, ParameterValue> element : prepared.getValues().entrySet()) {
       ParameterValue paramter = element.getValue();
 
-      if (Boolean.class.isAssignableFrom(paramter.getType())) {
-        statement.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
-      } else if (String.class.isAssignableFrom(paramter.getType())) {
+      if (String.class.isAssignableFrom(paramter.getType())) {
         statement.setString(element.getKey(), String.class.cast(paramter.getValue()));
       } else if (Integer.class.isAssignableFrom(paramter.getType())) {
         statement.setInt(element.getKey(), Integer.class.cast(paramter.getValue()));
@@ -198,10 +195,18 @@ public class JdbcExecutor implements StatementExecutor {
         statement.setFloat(element.getKey(), Float.class.cast(paramter.getValue()));
       } else if (BigDecimal.class.isAssignableFrom(paramter.getType())) {
         statement.setBigDecimal(element.getKey(), BigDecimal.class.cast(paramter.getValue()));
+      } else if (Boolean.class.isAssignableFrom(paramter.getType())) {
+        statement.setBoolean(element.getKey(), Boolean.class.cast(paramter.getValue()));
       } else if (byte[].class.isAssignableFrom(paramter.getType())) {
         statement.setBytes(element.getKey(), byte[].class.cast(paramter.getValue()));
       } else if (Blob.class.isAssignableFrom(paramter.getType())) {
         statement.setBlob(element.getKey(), Blob.class.cast(paramter.getValue()));
+      } else if (Array.class.isAssignableFrom(paramter.getType())) {
+        @SuppressWarnings("unchecked")
+        BiReference<String, Object[]> value = (BiReference<String, Object[]>) paramter.getValue();
+        Array array = statement.getConnection().createArrayOf(value.getLeft(), value.getRight());
+
+        statement.setArray(element.getKey(), array);
       } else {
         throw new IllegalArgumentException(
             "Unsupported object type for QueryParameter: " + paramter.getType());
@@ -271,7 +276,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public LastInsertId insert(String sql) {
-    checkConnectionStatus(sql);
+    checkClosed(sql);
 
     Reference<LastInsertId> ref = new Reference<>();
 
@@ -303,7 +308,7 @@ public class JdbcExecutor implements StatementExecutor {
    */
   @Override
   public RecordCursor executeQuery(String sql) throws RaConnectException, RaSqlException {
-    checkConnectionStatus(sql);
+    checkClosed(sql);
 
     Record record = buildRecord();
     connection.getConnection(
@@ -325,7 +330,7 @@ public class JdbcExecutor implements StatementExecutor {
     return record;
   }
 
-  private void checkConnectionStatus(String sql) throws RaConnectException {
+  private void checkClosed(String sql) throws RaConnectException {
     if (!isLive()) {
       String msg =
           "Connect to database failed, param :"

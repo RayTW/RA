@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
@@ -117,7 +118,7 @@ public class OnceConnectionTest {
           .setExecuteQueryListener(
               sql -> {
                 assertEquals("SELECT 1", sql);
-                return new MockResultSet();
+                return MockResultSet.newBuilder().build();
               });
 
       db.createStatementExecutor().executeQuery("SELECT 1");
@@ -141,7 +142,8 @@ public class OnceConnectionTest {
 
       MockStatementExecutor executor = new MockStatementExecutor(db);
 
-      executor.setFakeQueryColumnsName(new String[] {"name", "age"});
+      executor.setColumnsNames("name", "age");
+      executor.setColumnsTypes(Types.VARCHAR, Types.VARCHAR);
       executor.addFakeQuery(new String[] {"testUser", "1"});
 
       executor.setOpenListener(
@@ -299,8 +301,11 @@ public class OnceConnectionTest {
                   assertEquals(sql, actual);
                   return 1;
                 });
-            @SuppressWarnings("resource")
-            MockResultSet resultSet = new MockResultSet("lastid");
+            MockResultSet resultSet =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
 
             resultSet.addValue("lastid", 999);
             connection.setExecuteQueryListener(sql -> resultSet);
@@ -333,8 +338,11 @@ public class OnceConnectionTest {
           public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
-            @SuppressWarnings("resource")
-            MockResultSet resultSet = new MockResultSet("lastid");
+            MockResultSet resultSet =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
             resultSet.addValue("lastid", expected);
 
             connection.setExecuteUpdateListener(
@@ -372,7 +380,11 @@ public class OnceConnectionTest {
                 sql -> {
                   actual.set(sql);
 
-                  MockResultSet resultSet = new MockResultSet("lastid");
+                  MockResultSet resultSet =
+                      MockResultSet.newBuilder()
+                          .setColumnLabel("lastid")
+                          .setColumnType(Types.INTEGER)
+                          .build();
 
                   resultSet.addValue("lastid", 55);
 
@@ -920,8 +932,6 @@ public class OnceConnectionTest {
 
       RecordCursor record =
           connection.createStatementExecutor().executeQuery("SELECT * FROM test_table;");
-
-      System.out.println("record==" + record);
 
       assertEquals(
           "e4b8ade6968700000000000000000000",
