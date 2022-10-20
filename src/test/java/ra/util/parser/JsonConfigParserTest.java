@@ -11,7 +11,7 @@ public class JsonConfigParserTest {
   // example 1 : Load JSON file.
   @Test
   public void testInitConfigClass() {
-    new JsonConfigParser().fill(Config.class, "unittest/config.json", true);
+    new JsonConfigParser().fill(Config.class, "unittest/config.json");
 
     Assert.assertEquals("unitest", Config.serverAlias);
     Assert.assertTrue(Config.socketPort == 12345);
@@ -39,8 +39,7 @@ public class JsonConfigParserTest {
               }
               return null;
             },
-            "unittest/config2.json",
-            true);
+            "unittest/config2.json");
 
     Assert.assertEquals("myTest", Configs.Settings1.serverAlias);
     Assert.assertEquals(12345, Configs.Settings1.socketPort);
@@ -58,8 +57,7 @@ public class JsonConfigParserTest {
             key -> {
               return Config3.class;
             },
-            "unittest/config2.json",
-            true);
+            "unittest/config2.json");
 
     Assert.assertEquals("myTest", Config3.serverAlias);
     Assert.assertTrue(Config3.socketPort == 12345);
@@ -82,8 +80,7 @@ public class JsonConfigParserTest {
               }
               return null;
             },
-            "unittest/config2.json",
-            true);
+            "unittest/config2.json");
 
     Assert.assertEquals("myTest", ConfigSettings1.serverAlias);
     Assert.assertTrue(ConfigSettings1.socketPort == 12345);
@@ -110,8 +107,7 @@ public class JsonConfigParserTest {
               }
               return null;
             },
-            "unittest/config5.json",
-            true);
+            "unittest/config5.json");
 
     Assert.assertEquals("myTest", ServerSettings.serverAlias);
     Assert.assertTrue(ServerSettings.socketPort == 12345);
