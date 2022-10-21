@@ -22,7 +22,7 @@ public class JdbcTypeWrapper {
    * Get corresponding Java class from {@link java.sql.Types} code.
    *
    * @param sqlType sql type
-   * @return Class<?>
+   * @return Class
    */
   public static Class<?> getClass(int sqlType) {
     if (sqlType == Types.BOOLEAN) {

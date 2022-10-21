@@ -68,6 +68,7 @@ public interface RowSet {
   /**
    * Gets value uses the specific column name.
    *
+   * @param <T> list element
    * @param columnName column name
    * @param castClass class
    * @return the value of that column as a array.

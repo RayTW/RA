@@ -101,6 +101,7 @@ public interface RecordCursor extends Closeable {
   /**
    * Get value by specified field name. If field value is null will return null.
    *
+   * @param <T> list element
    * @param name Field name
    * @param castClass Cast class
    * @return List

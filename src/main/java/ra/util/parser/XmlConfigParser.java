@@ -37,6 +37,8 @@ public class XmlConfigParser {
    *
    * @param clazz plan to be used Class
    * @param path earmarked xml file path
+   * @throws IllegalArgumentException IllegalArgumentException
+   * @throws XMLStreamException XMLStreamException
    */
   public void fill(Class<?> clazz, String path)
       throws IllegalArgumentException, XMLStreamException {

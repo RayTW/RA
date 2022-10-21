@@ -11,7 +11,11 @@ import java.util.List;
 public class Row implements RowSet {
   private Record record;
 
-  /** Initialize. */
+  /**
+   * Initialize.
+   *
+   * @param record record
+   */
   public Row(Record record) {
     this.record = record;
   }
