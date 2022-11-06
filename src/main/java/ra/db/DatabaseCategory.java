@@ -13,7 +13,10 @@ public enum DatabaseCategory {
   H2("jdbc:h2:", "org.h2.Driver"),
 
   /** BigQuery driver. */
-  BIGQUERY("jdbc:bigquery:", "com.simba.googlebigquery.jdbc42.Driver");
+  BIGQUERY("jdbc:bigquery:", "com.simba.googlebigquery.jdbc42.Driver"),
+
+  /** Google Spanner driver. */
+  SPANNER("jdbc:cloudspanner:", "com.google.cloud.spanner.jdbc.JdbcDriver");
 
   private final String schema;
   private final String driver;

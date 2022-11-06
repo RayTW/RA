@@ -14,17 +14,26 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import ra.db.DatabaseCategory;
 import ra.db.MockResultSet;
 import ra.db.MockStatement;
-import test.mock.resultset.MockAllColumnTypeResultSet;
+import ra.exception.RaSqlException;
+import test.mock.resultset.MockArray;
 
 /** Test class. */
 public class RecordSetTest {
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
+
+  private static final MockResultSet.Builder BUILDER_LASTID =
+      MockResultSet.newBuilder().setColumnLabel("lastid").setColumnType(Types.VARCHAR);
+  private static final MockResultSet.Builder BUILDER_ID_NAME =
+      MockResultSet.newBuilder()
+          .setColumnLabel("id", "name")
+          .setColumnType(Types.INTEGER, Types.VARCHAR);
 
   @Test
   public void testCallNewColumnContainer() throws SQLException {
@@ -36,7 +45,7 @@ public class RecordSetTest {
   @Test
   public void testFieldNamesSetListenerUsingLastid() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("lastid")) {
+        MockResultSet result = BUILDER_LASTID.build()) {
 
       record.convert(result);
 
@@ -60,7 +69,7 @@ public class RecordSetTest {
   @Test
   public void testFieldUsingIndex() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("lastid")) {
+        MockResultSet result = BUILDER_LASTID.build()) {
 
       result.addValue("lastid", "100");
       record.convert(result);
@@ -71,29 +80,62 @@ public class RecordSetTest {
 
   @Test
   public void testExecuteQueryAllColumnType() throws SQLException {
+    MockResultSet result =
+        MockResultSet.newBuilder()
+            .setColumnLabel(
+                new String[] {
+                  "Blob",
+                  "String",
+                  "Short",
+                  "Int",
+                  "Long",
+                  "Float",
+                  "Double",
+                  "DoubleDecima",
+                  "BigDecimal"
+                })
+            .setColumnType(
+                Types.BLOB,
+                Types.VARCHAR,
+                Types.TINYINT,
+                Types.INTEGER,
+                Types.BIGINT,
+                Types.FLOAT,
+                Types.DOUBLE,
+                Types.NUMERIC,
+                Types.NUMERIC)
+            .build();
+    result.addValue("Blob", "blobValue".getBytes());
+    result.addValue("String", "StringValue");
+    result.addValue("Short", Short.MAX_VALUE);
+    result.addValue("Int", Integer.MAX_VALUE);
+    result.addValue("Long", Long.MAX_VALUE);
+    result.addValue("Float", Float.MAX_VALUE);
+    result.addValue("Double", Double.MAX_VALUE);
+    result.addValue("DoubleDecima", new BigDecimal("0.33333333333"));
+    result.addValue("BigDecimal", new BigDecimal(String.valueOf(Math.PI)));
+
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL)) {
-      record.convert(new MockAllColumnTypeResultSet());
+      record.convert(result);
 
       record.first();
-      record.forEach(
-          row -> {
-            assertArrayEquals("blobValue".getBytes(), row.getBlob("Blob"));
-            assertEquals("StringValue", row.getString("String"));
-            assertEquals(Short.MAX_VALUE, row.getShort("Short"));
-            assertEquals(Integer.MAX_VALUE, row.getInt("Int"));
-            assertEquals(Long.MAX_VALUE, row.getLong("Long"));
-            assertEquals(Float.MAX_VALUE, row.getFloat("Float"), 0);
-            assertEquals(Double.MAX_VALUE, row.getDouble("Double"), 0);
-            assertEquals(0.33333333333, row.getBigDecimalDouble("DoubleDecima"), 0);
-            assertEquals(new BigDecimal(String.valueOf(Math.PI)), row.getBigDecimal("BigDecimal"));
-          });
+      assertArrayEquals("blobValue".getBytes(), record.fieldBytes("Blob"));
+      assertEquals("StringValue", record.field("String"));
+      assertEquals(Integer.MAX_VALUE, record.fieldInt("Int"));
+      assertEquals(Long.MAX_VALUE, record.fieldLong("Long"));
+      assertEquals(Float.MAX_VALUE, record.fieldFloat("Float"), 0);
+      assertEquals(Double.MAX_VALUE, record.fieldDouble("Double"), 0);
+      assertEquals(new BigDecimal(String.valueOf(Math.PI)), record.fieldBigDecimal("BigDecimal"));
+
+      assertEquals("StringValue", record.fieldObject("String"));
+      assertThat(record.fieldObject("Blob"), instanceOf(Object.class));
     }
   }
 
   @Test
   public void testFieldUsingCursorOperations() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       result.addValue("id", 1);
       result.addValue("name", "aaa");
@@ -109,6 +151,7 @@ public class RecordSetTest {
 
       record.next();
 
+      assertFalse(record.isBof());
       assertEquals("2", record.field("id"));
       assertEquals("bbb", record.field("name"));
 
@@ -118,7 +161,7 @@ public class RecordSetTest {
 
       record.end();
       assertEquals("4", record.field("id"));
-      assertNull(record.field("name"));
+      assertTrue(record.isNull("name"));
 
       record.end();
       record.next();
@@ -132,6 +175,7 @@ public class RecordSetTest {
       record.previous();
 
       assertTrue(record.isBof());
+      assertFalse(record.isEof());
 
       record.move(2);
       assertEquals("2", record.field("id"));
@@ -142,7 +186,7 @@ public class RecordSetTest {
   @Test
   public void testGetRecordCount() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", "aaa");
 
@@ -158,10 +202,15 @@ public class RecordSetTest {
   @Test
   public void testGetFieldCount() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL)) {
-      MockResultSet result = new MockResultSet("id", "name", "age");
+      MockResultSet result =
+          MockResultSet.newBuilder()
+              .setColumnLabel("id", "name", "age")
+              .setColumnType(Types.BIGINT, Types.VARCHAR, Types.INTEGER)
+              .build();
 
       result.addValue("id", 1);
       result.addValue("name", "aaa");
+      result.addValue("age", 5);
 
       record.convert(result);
 
@@ -181,12 +230,19 @@ public class RecordSetTest {
   @Test
   public void testToString() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name", "age")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name", "age")
+                .setColumnType(Types.BIGINT, Types.VARCHAR, Types.INTEGER)
+                .build(); ) {
 
       result.addValue("id", 1);
       result.addValue("name", "aaa");
+      result.addValue("age", 33);
+
       result.addValue("id", 2);
       result.addValue("name", "aaabb");
+      result.addValue("age", 22);
 
       record.convert(result);
 
@@ -196,9 +252,9 @@ public class RecordSetTest {
           System.lineSeparator()
               + "|id|name |age|"
               + System.lineSeparator()
-              + "|1 |aaa  |   |"
+              + "|1 |aaa  |33 |"
               + System.lineSeparator()
-              + "|2 |aaabb|   |"
+              + "|2 |aaabb|22 |"
               + System.lineSeparator(),
           actual);
     }
@@ -209,7 +265,11 @@ public class RecordSetTest {
     byte[] expecteds = new byte[] {0xf, 0xf};
 
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("blobData")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("blobData")
+                .setColumnType(Types.BLOB)
+                .build()) {
       result.addValue("blobData", new byte[] {0xf, 0xf});
 
       record.convert(result);
@@ -221,7 +281,7 @@ public class RecordSetTest {
   @Test
   public void testGetFieldIsNull() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", (String) null);
       result.addValue("id", 2);
@@ -230,15 +290,14 @@ public class RecordSetTest {
       record.convert(result);
 
       record.first();
-      assertNull(record.field("name"));
-      assertNull(record.field("name", 0));
+      assertTrue(record.isNull("name"));
     }
   }
 
   @Test
   public void testGetFieldIsNullUseForeach() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       result.addValue("id", 1);
       result.addValue("name", (String) null);
@@ -256,7 +315,7 @@ public class RecordSetTest {
   @Test
   public void testStream() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       result.addValue("id", 1);
       result.addValue("name", "aaa");
@@ -284,7 +343,7 @@ public class RecordSetTest {
   @Test
   public void testParallelStream() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       result.addValue("id", 1);
       result.addValue("name", "aaa");
@@ -312,7 +371,7 @@ public class RecordSetTest {
   @Test
   public void testBigQueryConvert() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", "aaa");
       result.addValue("id", 2);
@@ -325,17 +384,24 @@ public class RecordSetTest {
       record.convert(result);
 
       assertEquals(4, record.getRecordCount());
-      assertEquals("aaa", record.field("name", 0));
-      assertEquals("bbb", record.field("name", 1));
-      assertEquals("ccc", record.field("name", 2));
-      assertEquals("ddd", record.field("name", 3));
+      assertEquals("aaa", record.field("name"));
+
+      record.next();
+
+      assertEquals("bbb", record.field("name"));
+      record.next();
+
+      assertEquals("ccc", record.field("name"));
+
+      record.next();
+      assertEquals("ddd", record.field("name"));
     }
   }
 
   @Test
   public void testH2ResultFromInt() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.H2);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", "aaa");
       result.addValue("id", 2);
@@ -355,7 +421,7 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromInt() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", "aaa");
       result.addValue("id", 2);
@@ -375,7 +441,7 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromLong() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1L);
       result.addValue("name", "aaa");
       result.addValue("id", 2L);
@@ -395,7 +461,7 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromShort() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
       result.addValue("id", 1);
       result.addValue("name", "aaa");
       result.addValue("id", 2);
@@ -404,18 +470,22 @@ public class RecordSetTest {
       record.convert(result);
 
       assertEquals(2, record.getRecordCount());
-      assertEquals(1, record.fieldShort("id"));
+      assertEquals(1, record.fieldInt("id"));
 
       record.next();
 
-      assertEquals(2, record.fieldShort("id"));
+      assertEquals(2, record.fieldInt("id"));
     }
   }
 
   @Test
   public void testBigQueryResultFromFloat() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name")
+                .setColumnType(Types.FLOAT, Types.VARCHAR)
+                .build()) {
       result.addValue("id", 3.14f);
       result.addValue("name", "aaa");
       result.addValue("id", 3.22f);
@@ -435,7 +505,11 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromDouble() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name")
+                .setColumnType(Types.DOUBLE, Types.VARCHAR)
+                .build()) {
       result.addValue("id", 3.14d);
       result.addValue("name", "aaa");
       result.addValue("id", 3.22d);
@@ -455,7 +529,11 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromBigDecimal() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name")
+                .setColumnType(Types.DOUBLE, Types.VARCHAR)
+                .build()) {
       result.addValue("id", 3.14);
       result.addValue("name", "aaa");
       result.addValue("id", 3.22);
@@ -475,7 +553,11 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultFromBigDecimalDouble() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name")
+                .setColumnType(Types.DOUBLE, Types.VARCHAR)
+                .build()) {
       result.addValue("id", 3.14);
       result.addValue("name", "aaa");
       result.addValue("id", 3.22);
@@ -484,18 +566,18 @@ public class RecordSetTest {
       record.convert(result);
 
       assertEquals(2, record.getRecordCount());
-      assertEquals(3.14, record.fieldBigDecimalDouble("id"), 2);
+      assertEquals(3.14, record.fieldBigDecimal("id").doubleValue(), 2);
 
       record.next();
 
-      assertEquals(3.22, record.fieldBigDecimalDouble("id"), 2);
+      assertEquals(3.22, record.fieldBigDecimal("id").doubleValue(), 2);
     }
   }
 
   @Test
   public void testH2ResultIsNull() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.H2);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       String name = null;
 
@@ -513,7 +595,7 @@ public class RecordSetTest {
   @Test
   public void testMySqlResultIsNull() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.MYSQL);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       String name = null;
 
@@ -531,7 +613,7 @@ public class RecordSetTest {
   @Test
   public void testBigQueryResultIsNull() throws SQLException {
     try (RecordSet record = new RecordSet(DatabaseCategory.BIGQUERY);
-        MockResultSet result = new MockResultSet("id", "name")) {
+        MockResultSet result = BUILDER_ID_NAME.build()) {
 
       String name = null;
 
@@ -579,9 +661,9 @@ public class RecordSetTest {
     try (RecordSet record = new RecordSet(DatabaseCategory.H2)) {
 
       MockStatement st = new MockStatement();
-      MockResultSet result = new MockResultSet("h2lastId");
+      MockResultSet result = BUILDER_LASTID.build();
 
-      result.addValue("h2lastId", "");
+      result.addValue("lastid", "");
       st.setGeneratedKeys(result);
 
       record.getLastInsertId(st).toInt();
@@ -596,13 +678,166 @@ public class RecordSetTest {
 
       st.setExecuteQueryListener(
           sql -> {
-            MockResultSet result = new MockResultSet("lastid");
+            MockResultSet result = BUILDER_LASTID.build();
 
             result.addValue("lastid", "876");
             return result;
           });
 
       assertEquals(876, record.getLastInsertId(st).toInt());
+    }
+  }
+
+  @Test
+  public void testSpannerResultFromBigDecimalDouble() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            MockResultSet.newBuilder()
+                .setColumnLabel("id", "name")
+                .setColumnType(Types.DOUBLE, Types.VARCHAR)
+                .build()) {
+      result.addValue("id", 3.14);
+      result.addValue("name", "aaa");
+      result.addValue("id", 3.22);
+      result.addValue("name", "bbb");
+
+      record.convert(result);
+
+      assertEquals(2, record.getRecordCount());
+      assertEquals(3.14, record.fieldBigDecimal("id").doubleValue(), 2);
+
+      record.next();
+
+      assertEquals(3.22, record.fieldBigDecimal("id").doubleValue(), 2);
+    }
+  }
+
+  @Test
+  public void testSpannerResultIsNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result = BUILDER_ID_NAME.build()) {
+
+      String name = null;
+
+      result.addValue("id", 1);
+      result.addValue("name", name);
+
+      record.convert(result);
+
+      assertEquals(1, record.getRecordCount());
+
+      assertTrue(record.isNull("name"));
+    }
+  }
+
+  @Test
+  public void testSpannerColumnNameUseNullThrowException() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result = BUILDER_ID_NAME.build()) {
+
+      result.addValue("id", 1);
+      result.addValue("name", "name");
+
+      record.convert(result);
+      record.fieldObject(null);
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
+  public void testSpannerGetColumnName() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result = BUILDER_ID_NAME.build()) {
+
+      result.addValue("id", 1);
+      result.addValue("name", "name");
+
+      record.convert(result);
+
+      assertEquals("id", record.getColumnName(1));
+      assertEquals("name", record.getColumnName(2));
+    }
+  }
+
+  @Test
+  public void testSpannerResultBlob() throws SQLException {
+    byte[] expecteds = new byte[] {0xf, 0xf};
+
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.BLOB), Arrays.asList("blobData"))) {
+      result.addValue("blobData", new byte[] {0xf, 0xf});
+
+      record.convert(result);
+
+      assertArrayEquals(expecteds, record.fieldBytes("blobData"));
+    }
+  }
+
+  @Test
+  public void testSpannerResultArray() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.ARRAY), Arrays.asList("blobData"))) {
+
+      result.addValue("blobData", new MockArray("aaa", "bbb"));
+      result.addValue("blobData", new MockArray(111, 222));
+
+      record.convert(result);
+
+      List<Object> list = record.fieldArray("blobData", Object[].class);
+
+      assertEquals(2, record.getRecordCount());
+      assertArrayEquals(new String[] {"aaa", "bbb"}, list.toArray());
+    }
+  }
+
+  @Test
+  public void testSpannerResultArrayThrowException() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.ARRAY), Arrays.asList("blobData"))) {
+
+      result.addValue("blobData", new MockArray("aaa", "bbb"));
+      result.addValue("blobData", new MockArray(111, 222));
+
+      record.convert(result);
+
+      record.fieldArray("blobData", Long[].class);
+    } catch (Exception e) {
+      assertThat(e, instanceOf(RaSqlException.class));
+    }
+  }
+
+  @Test
+  public void testSpannerResultArrayUseNull() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet(Arrays.asList(Types.ARRAY), Arrays.asList("blobData"))) {
+
+      result.addValue("blobData", null);
+
+      record.convert(result);
+
+      List<Object> object = record.fieldArray("blobData", Object[].class);
+
+      assertNull(object);
+    }
+  }
+
+  @Test
+  public void testSpannerResultString() throws SQLException {
+    try (RecordSet record = new RecordSet(DatabaseCategory.SPANNER);
+        MockResultSet result =
+            new MockResultSet.Builder()
+                .setColumnType(Types.VARCHAR)
+                .setColumnLabel("stringColumn")
+                .build()) {
+      result.addValue("stringColumn", "xxxxgggraea");
+      record.convert(result);
+
+      assertEquals("xxxxgggraea", record.field("stringColumn"));
     }
   }
 }

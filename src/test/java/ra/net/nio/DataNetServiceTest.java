@@ -197,7 +197,6 @@ public class DataNetServiceTest {
     socket.write(expected);
     letch.await();
     NetServerApplication.getApplication().close();
-    System.out.println("expected[" + expected + "],resultRef.get()[" + resultRef.get() + "]");
     assertEquals(expected, resultRef.get());
   }
 

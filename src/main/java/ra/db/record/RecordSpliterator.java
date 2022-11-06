@@ -1,10 +1,7 @@
 package ra.db.record;
 
-import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import ra.db.Row;
-import ra.db.RowSet;
 
 /**
  * Parallel processing record.
@@ -42,24 +39,12 @@ public class RecordSpliterator<T extends Record> implements Spliterator<RowSet> 
   @Override
   public boolean tryAdvance(Consumer<? super RowSet> action) {
     if (origin < fence) {
-      int fieldCount = record.getFieldCount();
-      Row row = new Row();
-      String columnName = null;
-      byte[] value = null;
+      Row row = new Row(record);
 
-      for (int j = 1; j < fieldCount; j++) {
-        columnName = record.getColumnName(j);
-        List<byte[]> v = record.getColumn(columnName);
-
-        if (v == null) {
-          value = null;
-        } else {
-          value = v.get(origin);
-        }
-        row.put(columnName, value);
+      synchronized (record) {
+        record.move(origin + 1);
+        action.accept(row);
       }
-
-      action.accept(row);
       origin++;
 
       return true;

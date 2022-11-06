@@ -1,7 +1,9 @@
 package ra.db;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Blob;
+import ra.ref.BiReference;
 
 /**
  * Parameter value.
@@ -129,6 +131,17 @@ public class ParameterValue {
    */
   public static ParameterValue blob(Blob value) {
     return of(value, Blob.class);
+  }
+
+  /**
+   * Creates a {@code ParameterValue} object with a type of Array.
+   *
+   * @param typeName value type
+   * @param elements value
+   * @return ParameterValue
+   */
+  public static ParameterValue array(String typeName, Object[] elements) {
+    return of(new BiReference<>(typeName, elements), Array.class);
   }
 
   /** Builder. */

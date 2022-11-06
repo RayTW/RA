@@ -1,8 +1,7 @@
-package ra.db;
+package ra.db.record;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Row of query result.
@@ -10,21 +9,15 @@ import java.util.Map;
  * @author Ray Li
  */
 public class Row implements RowSet {
-  private Map<String, byte[]> data;
-
-  /** Initialize. */
-  public Row() {
-    data = new HashMap<>();
-  }
+  private Record record;
 
   /**
-   * Put the value specifies key in single rows.
+   * Initialize.
    *
-   * @param key column name
-   * @param value data
+   * @param record record
    */
-  public void put(String key, byte[] value) {
-    data.put(key, value);
+  public Row(Record record) {
+    this.record = record;
   }
 
   /**
@@ -34,8 +27,8 @@ public class Row implements RowSet {
    * @return the value of that column as a byte array.
    */
   @Override
-  public byte[] getBlob(String columnName) {
-    return data.get(columnName);
+  public byte[] getBytes(String columnName) {
+    return record.fieldBytes(columnName);
   }
 
   /**
@@ -46,28 +39,7 @@ public class Row implements RowSet {
    */
   @Override
   public String getString(String columnName) {
-    try {
-      byte[] v = data.get(columnName);
-
-      return (v == null) ? "" : new String(v);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
-  /**
-   * Take the value of that column`s value as a short by the column`s name.
-   *
-   * @param columnName column`s name
-   * @return the value of that column as a short.
-   */
-  @Override
-  public short getShort(String columnName) {
-    String v = getString(columnName);
-
-    return Short.parseShort(v);
+    return record.field(columnName);
   }
 
   /**
@@ -78,9 +50,7 @@ public class Row implements RowSet {
    */
   @Override
   public int getInt(String columnName) {
-    String v = getString(columnName);
-
-    return Integer.parseInt(v);
+    return record.fieldInt(columnName);
   }
 
   /**
@@ -91,9 +61,7 @@ public class Row implements RowSet {
    */
   @Override
   public long getLong(String columnName) {
-    String v = getString(columnName);
-
-    return Long.parseLong(v);
+    return record.fieldLong(columnName);
   }
 
   /**
@@ -104,9 +72,7 @@ public class Row implements RowSet {
    */
   @Override
   public float getFloat(String columnName) {
-    String v = getString(columnName);
-
-    return Float.parseFloat(v);
+    return record.fieldFloat(columnName);
   }
 
   /**
@@ -117,23 +83,7 @@ public class Row implements RowSet {
    */
   @Override
   public double getDouble(String columnName) {
-    String v = getString(columnName);
-
-    return Double.parseDouble(v);
-  }
-
-  /**
-   * Take the value of that column`s value as a double by the column`s name. Using the BigDecimal
-   * transform the double value.
-   *
-   * @param columnName column`s name
-   * @return the value of that column as a {@link BigDecimal#doubleValue()}
-   */
-  @Override
-  public double getBigDecimalDouble(String columnName) {
-    String v = getString(columnName);
-
-    return new BigDecimal(v).doubleValue();
+    return record.fieldDouble(columnName);
   }
 
   /**
@@ -144,9 +94,29 @@ public class Row implements RowSet {
    */
   @Override
   public BigDecimal getBigDecimal(String columnName) {
-    String v = getString(columnName);
+    return record.fieldBigDecimal(columnName);
+  }
 
-    return new BigDecimal(v);
+  /**
+   * Take the value of that column`s value as a BigDecimal by the column`s name.
+   *
+   * @param columnName column`s name
+   * @return the value of that column as a array.
+   */
+  @Override
+  public <T> List<T> getArray(String columnName, Class<T[]> castClass) {
+    return record.fieldArray(columnName, castClass);
+  }
+
+  /**
+   * Take the value of that column`s value as a Object by the column`s name.
+   *
+   * @param columnName column`s name
+   * @return the value of that column as a big decimal.
+   */
+  @Override
+  public Object getObject(String columnName) {
+    return record.fieldObject(columnName);
   }
 
   /**
@@ -156,11 +126,6 @@ public class Row implements RowSet {
    */
   @Override
   public boolean isNull(String columnName) {
-    return data.get(columnName) == null;
-  }
-
-  /** Clear all value of a single row. */
-  public void clear() {
-    data.clear();
+    return record.isNull(columnName);
   }
 }

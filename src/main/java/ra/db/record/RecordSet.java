@@ -2,12 +2,14 @@ package ra.db.record;
 
 import com.mysql.cj.util.StringUtils;
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +19,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import ra.db.DatabaseCategory;
-import ra.db.Row;
-import ra.db.RowSet;
+import ra.exception.RaSqlException;
 
 /**
  * The record of query database.
@@ -28,9 +29,10 @@ import ra.db.RowSet;
 public class RecordSet implements Record {
   private int cursor = 0;
   private int count = 0;
-  private Map<String, List<byte[]>> table;
+  private Map<String, List<Object>> table;
   private String[] columnName;
-  private ResultConverter resultConverter;
+  private Map<String, Integer> columnTypes;
+  private DatabaseCategory dbCategory;
 
   /**
    * Initialize.
@@ -38,19 +40,8 @@ public class RecordSet implements Record {
    * @param category database mode
    */
   public RecordSet(DatabaseCategory category) {
-    switch (category) {
-      case MYSQL:
-        resultConverter = new ResultMySql();
-        break;
-      case H2:
-        resultConverter = new ResultH2();
-        break;
-      case BIGQUERY:
-        resultConverter = new ResultBigQuery();
-        break;
-      default:
-        throw new UnsupportedOperationException("Unsupport category = " + category);
-    }
+    dbCategory = category;
+    columnTypes = new ConcurrentHashMap<>();
     table = newTable();
   }
 
@@ -59,8 +50,8 @@ public class RecordSet implements Record {
    *
    * @return map
    */
-  protected Map<String, List<byte[]>> newTable() {
-    return new ConcurrentHashMap<String, List<byte[]>>();
+  protected Map<String, List<Object>> newTable() {
+    return new ConcurrentHashMap<>();
   }
 
   /**
@@ -68,8 +59,8 @@ public class RecordSet implements Record {
    *
    * @return list
    */
-  protected List<byte[]> newColumnContainer() {
-    return Collections.synchronizedList(new ArrayList<byte[]>());
+  protected List<Object> newColumnContainer() {
+    return Collections.synchronizedList(new ArrayList<Object>());
   }
 
   /**
@@ -99,19 +90,9 @@ public class RecordSet implements Record {
    */
   @Override
   public boolean isNull(String name) {
-    List<byte[]> v = table.get(name);
+    Object obj = getObject(name, cursor);
 
-    if (v == null) {
-      return true;
-    }
-
-    byte[] b = v.get(cursor);
-
-    if (b == null) {
-      return true;
-    }
-
-    return false;
+    return obj == null;
   }
 
   /**
@@ -122,7 +103,29 @@ public class RecordSet implements Record {
    */
   @Override
   public void convert(ResultSet result) throws SQLException {
-    resultConverter.convert(result);
+    ResultSetMetaData meta = result.getMetaData();
+    int columnNum = meta.getColumnCount();
+    String[] name = new String[columnNum + 1];
+    int[] types = new int[columnNum + 1];
+
+    for (int i = 1; i <= columnNum; i++) {
+      name[i] = meta.getColumnLabel(i);
+      types[i] = meta.getColumnType(i);
+      columnTypes.put(name[i], types[i]);
+
+      table.put(name[i], newColumnContainer());
+    }
+
+    while (result.next()) {
+      count++;
+      for (int i = 1; i <= columnNum; i++) {
+        List<Object> tmp = table.get(name[i]);
+        Object value = JdbcTypeWrapper.getValue(result, types[i], i);
+
+        tmp.add(value);
+      }
+    }
+    columnName = name;
   }
 
   /**
@@ -136,37 +139,21 @@ public class RecordSet implements Record {
   }
 
   /**
-   * Take the column value of the name and the earmark row index， Return "", if the value is null.
-   *
-   * @param name column`s name
-   * @param cursor row index
-   */
-  @Override
-  public String field(String name, int cursor) {
-    byte[] b = fieldBytes(name, cursor);
-
-    if (b == null) {
-      return null;
-    }
-
-    return new String(b);
-  }
-
-  /**
-   * Take the column value of the name and the current index， Return Object null, if the value is
-   * null.
+   * Take the column value of the name and the current index. Returns null if the value in the
+   * database is null.
    *
    * @param name column`s name
    * @return String || null
    */
   @Override
   public String field(String name) {
-    byte[] v = fieldBytes(name);
+    Object ret = getObject(name, cursor);
 
-    if (v == null) {
+    if (ret == null) {
       return null;
     }
-    return new String(v);
+
+    return String.valueOf(ret);
   }
 
   /**
@@ -178,66 +165,123 @@ public class RecordSet implements Record {
    */
   @Override
   public byte[] fieldBytes(String name) {
-    return fieldBytes(name, cursor);
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      return null;
+    }
+    if (obj instanceof byte[]) {
+      return (byte[]) obj;
+    }
+
+    throw new RaSqlException("fieldName '" + name + "' can't cast to byte[].");
   }
 
-  private byte[] fieldBytes(String name, int c) {
-    List<byte[]> v = table.get(name);
+  @Override
+  public long fieldLong(String name) {
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      throw new RaSqlException(
+          "The value is null, fieldName '" + name + "' cannot be converted to a Long.");
+    }
+
+    if (obj instanceof Long) {
+      return (long) obj;
+    }
+
+    return Long.parseLong(obj.toString());
+  }
+
+  @Override
+  public int fieldInt(String name) throws NumberFormatException {
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      throw new RaSqlException(
+          "The value is null, fieldName '" + name + "' cannot be converted to an Integer.");
+    }
+
+    return Integer.parseInt(obj.toString());
+  }
+
+  @Override
+  public float fieldFloat(String name) {
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      throw new RaSqlException(
+          "The value is null, fieldName '" + name + "' cannot be converted to a Float.");
+    }
+
+    return Float.parseFloat(obj.toString());
+  }
+
+  @Override
+  public double fieldDouble(String name) {
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      throw new RaSqlException(
+          "The value is null, fieldName '" + name + "' cannot be converted to a Double.");
+    }
+
+    if (obj instanceof Double) {
+      return (double) obj;
+    }
+
+    return Double.parseDouble(obj.toString());
+  }
+
+  @Override
+  public BigDecimal fieldBigDecimal(String name) {
+    Object obj = getObject(name, cursor);
+
+    if (obj == null) {
+      return null;
+    }
+
+    if (obj instanceof BigDecimal) {
+      return (BigDecimal) obj;
+    }
+
+    return new BigDecimal(obj.toString());
+  }
+
+  @Override
+  public <T> List<T> fieldArray(String name, Class<T[]> castClass) {
+    Array obj = (Array) getObject(name, cursor);
+
+    if (obj == null) {
+      return null;
+    }
+
+    try {
+      Object array = obj.getArray();
+
+      return Arrays.asList(castClass.cast(array));
+    } catch (Exception e) {
+      throw new RaSqlException("fieldName '" + name + "' can't cast to " + castClass + ".", e);
+    }
+  }
+
+  @Override
+  public Object fieldObject(String name) {
+    return getObject(name, cursor);
+  }
+
+  private Object getObject(String fieldName, int c) {
+    if (fieldName == null) {
+      throw new RaSqlException("fieldName can't be null");
+    }
+
+    List<Object> v = table.get(fieldName);
 
     if (v == null) {
       return null;
     }
 
     return v.get(c);
-  }
-
-  @Override
-  public long fieldLong(String name) {
-    String ret = field(name);
-
-    return Long.parseLong(ret);
-  }
-
-  @Override
-  public int fieldInt(String name) {
-    String ret = field(name);
-
-    return Integer.parseInt(ret);
-  }
-
-  @Override
-  public short fieldShort(String name) {
-    String ret = field(name);
-
-    return Short.parseShort(ret);
-  }
-
-  @Override
-  public float fieldFloat(String name) {
-    String ret = field(name);
-
-    return Float.parseFloat(ret);
-  }
-
-  @Override
-  public double fieldDouble(String name) {
-    String ret = field(name);
-
-    return Double.parseDouble(ret);
-  }
-
-  @Override
-  public BigDecimal fieldBigDecimal(String name) {
-    String ret = field(name);
-
-    return new BigDecimal(ret);
-  }
-
-  @Override
-  public double fieldBigDecimalDouble(String name) {
-    String ret = field(name);
-
-    return new BigDecimal(ret).doubleValue();
   }
 
   /** Add one up the current row index. */
@@ -318,24 +362,11 @@ public class RecordSet implements Record {
   public void forEach(Consumer<RowSet> action) {
     Objects.requireNonNull(action);
     int count = this.count;
-    int fieldCount = getFieldCount();
-    Row row = new Row();
-    String columnName = null;
-    byte[] value = null;
+    Row row = new Row(this);
 
     for (int i = 0; i < count; i++) {
-      for (int j = 1; j < fieldCount; j++) {
-        columnName = this.columnName[j];
-        List<byte[]> v = table.get(columnName);
-        if (v == null) {
-          value = null;
-        } else {
-          value = v.get(i);
-        }
-        row.put(columnName, value);
-      }
       action.accept(row);
-      row.clear();
+      next();
     }
   }
 
@@ -357,7 +388,6 @@ public class RecordSet implements Record {
     String columnName = null;
     int[] columnsMaxLength = new int[this.columnName.length];
     int valueLength = 0;
-    int nullLength = 4;
     StringBuilder lackBuilder = new StringBuilder();
     java.util.function.BiFunction<Integer, StringBuilder, String> doLack =
         (lackLength, builder) -> {
@@ -377,9 +407,9 @@ public class RecordSet implements Record {
     // Take the greater of column`s data length.
     for (int i = 1; i < columnsMaxLength.length; i++) {
       for (int j = 0; j < recordCount; j++) {
-        String value = field(this.columnName[i], j);
+        String value = String.valueOf(getObject(this.columnName[i], j));
 
-        valueLength = value == null ? nullLength : value.length();
+        valueLength = value.length();
 
         if (columnsMaxLength[i] < valueLength) {
           columnsMaxLength[i] = valueLength;
@@ -411,9 +441,10 @@ public class RecordSet implements Record {
         if (i == 1) {
           buf.append("|");
         }
-        value = field(columnName, cursor);
+        value = String.valueOf(getObject(columnName, cursor));
+
         // 'null' length is 4.
-        length = (value == null) ? nullLength : value.length();
+        length = value.length();
 
         buf.append(value);
         buf.append(doLack.apply(columnsMaxLength[i] - length, lackBuilder));
@@ -444,16 +475,6 @@ public class RecordSet implements Record {
   }
 
   /**
-   * Returns column.
-   *
-   * @param columnName columnName
-   */
-  @Override
-  public List<byte[]> getColumn(String columnName) {
-    return table.get(columnName);
-  }
-
-  /**
    * Returns last insert id.
    *
    * @param statement statement
@@ -462,162 +483,33 @@ public class RecordSet implements Record {
    */
   @Override
   public LastInsertId getLastInsertId(Statement statement) throws SQLException {
-    return resultConverter.getLastInsertId(statement);
-  }
-
-  private boolean isBinaryType(int n) {
-    return n == Types.BINARY || n == Types.VARBINARY || n == Types.LONGVARBINARY;
-  }
-
-  private abstract class AbstractResultConverter implements ResultConverter {
-    /**
-     * Convert the result of a query.
-     *
-     * @param result Result of query.
-     * @throws SQLException SQLException
-     */
-    @Override
-    public void convert(ResultSet result) throws SQLException {
-      int columnNum = result.getMetaData().getColumnCount();
-      String[] name = new String[columnNum + 1];
-      int[] types = new int[columnNum + 1];
-
-      for (int i = 1; i <= columnNum; i++) {
-        name[i] = result.getMetaData().getColumnLabel(i);
-        types[i] = result.getMetaData().getColumnType(i);
-        table.put(name[i], newColumnContainer());
-      }
-
-      while (result.next()) {
-        count++;
-        for (int i = 1; i <= columnNum; i++) {
-          List<byte[]> tmp = table.get(name[i]);
-          byte[] value = convertElement(result, i, types[i]);
-          tmp.add((value == null) ? null : value);
-        }
-      }
-      columnName = name;
+    if (dbCategory == DatabaseCategory.MYSQL) {
+      return getLastInsertIdFromMySql(statement);
     }
-
-    public abstract byte[] convertElement(ResultSet result, int columnIndex, int type)
-        throws SQLException;
+    if (dbCategory == DatabaseCategory.H2) {
+      return getLastInsertIdFromH2(statement);
+    }
+    throw new UnsupportedOperationException(
+        "There is no auto-increment capability in " + dbCategory + ".");
   }
 
-  private class ResultMySql extends AbstractResultConverter {
-
-    /**
-     * Convert the result of a query.
-     *
-     * @param result Result of query.
-     * @param columnIndex column index
-     * @param type type
-     * @throws SQLException SQLException
-     */
-    @Override
-    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
-      return result.getBytes(columnIndex);
-    }
-
-    /**
-     * Returns last insert id.
-     *
-     * @param statement statement
-     * @return id auto-increment id
-     * @throws SQLException SQLException
-     */
-    @Override
-    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
-      try (ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID() AS lastid"); ) {
-        ResultMySql.this.convert(rs);
-        return new LastInsertId(field("lastid"));
-      }
+  private LastInsertId getLastInsertIdFromMySql(Statement statement) throws SQLException {
+    try (ResultSet rs = statement.executeQuery("SELECT LAST_INSERT_ID() AS lastid"); ) {
+      this.convert(rs);
+      return new LastInsertId(field("lastid"));
     }
   }
 
-  private class ResultH2 extends AbstractResultConverter {
+  private LastInsertId getLastInsertIdFromH2(Statement statement) throws SQLException {
+    try (ResultSet rs = statement.getGeneratedKeys()) {
+      this.convert(rs);
 
-    /**
-     * Convert the result of a query.
-     *
-     * @param result Result of query.
-     * @param columnIndex column index
-     * @param type type
-     * @throws SQLException SQLException
-     */
-    @Override
-    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
-      if (isBinaryType(type) || type == Types.BLOB) {
-        return result.getBytes(columnIndex);
+      String lastId = field(1);
+
+      if (StringUtils.isNullOrEmpty(lastId)) {
+        throw new SQLWarning("Failed to get last insert ID.");
       }
-
-      Object obj = result.getObject(columnIndex);
-
-      if (obj != null) {
-        if (obj instanceof byte[]) {
-          return (byte[]) obj;
-        }
-        return obj.toString().getBytes();
-      }
-
-      return null;
-    }
-
-    /**
-     * Returns last insert id.
-     *
-     * @param statement statement
-     * @return id auto-increment id
-     * @throws SQLException SQLException
-     */
-    @Override
-    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
-      try (ResultSet rs = statement.getGeneratedKeys(); ) {
-        ResultH2.this.convert(rs);
-        String lastId = field(1);
-
-        if (StringUtils.isNullOrEmpty(lastId)) {
-          throw new SQLWarning("Failed to get last insert ID.");
-        }
-        return new LastInsertId(lastId);
-      }
-    }
-  }
-
-  private class ResultBigQuery extends AbstractResultConverter {
-
-    /**
-     * Convert the result of a query.
-     *
-     * @param result Result of query.
-     * @param columnIndex column index
-     * @param type type
-     * @throws SQLException SQLException
-     */
-    @Override
-    public byte[] convertElement(ResultSet result, int columnIndex, int type) throws SQLException {
-      if (isBinaryType(type)) {
-        return result.getBytes(columnIndex);
-      }
-
-      String value = result.getString(columnIndex);
-
-      if (value != null) {
-        return value.getBytes();
-      }
-      return null;
-    }
-
-    /**
-     * Unsupported.
-     *
-     * @param statement statement
-     * @return id auto-increment id
-     * @throws SQLException SQLException
-     */
-    @Override
-    public LastInsertId getLastInsertId(Statement statement) throws SQLException {
-      throw new UnsupportedOperationException(
-          "BigQuery does not support getting the last ID from a query.");
+      return new LastInsertId(lastId);
     }
   }
 }

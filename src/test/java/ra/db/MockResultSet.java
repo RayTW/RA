@@ -5,9 +5,14 @@ import com.mysql.cj.jdbc.StatementImpl;
 import com.mysql.cj.jdbc.result.ResultSetImpl;
 import com.mysql.cj.protocol.a.NativePacketPayload;
 import com.mysql.cj.protocol.a.result.OkPacket;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.Date;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.sql.rowset.RowSetMetaDataImpl;
+import ra.db.record.JdbcTypeWrapper;
 
 /**
  * Mock query result.
@@ -28,26 +34,15 @@ public class MockResultSet extends ResultSetImpl {
   private List<String> columnTypeName;
   private List<String> columnLabel;
   private Map<Integer, String> columnMapping;
-  private Map<String, List<byte[]>> data;
-  private static final byte[] ZERO_BYTE = new byte[0];
+  private Map<String, List<Object>> data;
   private int cursor;
 
+  /** Initialize. */
   private MockResultSet() {
     super(
         OkPacket.parse(new NativePacketPayload(NativePacketPayload.TYPE_ID_ERROR), "utf-8"),
         (JdbcConnection) null,
         (StatementImpl) null);
-  }
-
-  /**
-   * Initialize.
-   *
-   * @param columnLabel column label
-   */
-  public MockResultSet(String... columnLabel) {
-    this();
-
-    setColumnTypeLabel(null, null, Arrays.asList(columnLabel));
   }
 
   /**
@@ -59,7 +54,7 @@ public class MockResultSet extends ResultSetImpl {
   public MockResultSet(List<Integer> columnType, List<String> columnLabel) {
     this();
 
-    setColumnTypeLabel(columnType, null, columnLabel);
+    setColumnTypeLabel(columnType, typeParseToName(columnType), columnLabel);
   }
 
   /**
@@ -83,7 +78,7 @@ public class MockResultSet extends ResultSetImpl {
 
     for (int i = 0; i < this.columnLabel.size(); i++) {
       String columnName = this.columnLabel.get(i);
-      data.put(columnName, new CopyOnWriteArrayList<byte[]>());
+      data.put(columnName, new CopyOnWriteArrayList<Object>());
       columnMapping.put(Integer.valueOf(i), columnName);
     }
 
@@ -127,67 +122,110 @@ public class MockResultSet extends ResultSetImpl {
     return true;
   }
 
+  @Override
+  public String getString(int columnIndex) throws SQLException {
+    return checkedCastToString(columnIndex);
+  }
+
+  @Override
+  public long getLong(int columnIndex) throws SQLException {
+    return Long.parseLong(checkedCastToString(columnIndex));
+  }
+
+  @Override
+  public boolean getBoolean(int columnIndex) throws SQLException {
+    return Boolean.parseBoolean(checkedCastToString(columnIndex));
+  }
+
+  @Override
+  public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
+    return new BigDecimal(checkedCastToString(columnIndex));
+  }
+
+  @Override
+  public Timestamp getTimestamp(int columnIndex) throws SQLException {
+    return Timestamp.valueOf(checkedCastToString(columnIndex));
+  }
+
+  @Override
+  public Array getArray(int columnIndex) throws SQLException {
+    Object ret = getObject(columnIndex);
+
+    if (checkedCastType(columnIndex, Array.class)) {
+      return (Array) ret;
+    }
+
+    return null;
+  }
+
   /**
    * Returns the data byte of the specified index field.
    *
    * @param columnIndex column index
    */
   @Override
-  public byte[] getBytes(int columnIndex) {
-    return getBytes(columnIndex - 1, cursor - 1);
+  public byte[] getBytes(int columnIndex) throws SQLException {
+    Object ret = getObject(columnIndex);
+
+    if (checkedCastType(columnIndex, byte[].class)) {
+      return (byte[]) ret;
+    }
+
+    return ret == null ? null : ret.toString().getBytes();
+  }
+
+  @Override
+  public byte getByte(int columnIndex) throws SQLException {
+    Object ret = getObject(columnIndex);
+
+    if (checkedCastType(columnIndex, Byte.class)) {
+      return (byte) ret;
+    }
+
+    return 0;
+  }
+
+  @Override
+  public double getDouble(int columnIndex) throws SQLException {
+    return Double.parseDouble(checkedCastToString(columnIndex));
+  }
+
+  @Override
+  public Date getDate(int columnIndex) throws SQLException {
+    return Date.valueOf(checkedCastToString(columnIndex));
   }
 
   /**
    * Returns the data from the specified index field.
    *
    * @param columnIndex column index
-   * @param cursor cursor
    */
-  private byte[] getBytes(int columnIndex, int cursor) {
-    String columnName = columnMapping.get(columnIndex);
-    List<byte[]> columnData = data.get(columnName);
-
-    if (cursor < columnData.size()) {
-      return columnData.get(cursor);
-    }
-
-    return ZERO_BYTE;
-  }
-
-  @Override
-  public String getString(int columnIndex) throws SQLException {
-    String columnName = columnMapping.get(columnIndex - 1);
-    List<byte[]> columnData = data.get(columnName);
-    int c = cursor - 1;
-    byte[] bytes = columnData.get(c);
-
-    if (bytes != null && c < columnData.size()) {
-      return new String(bytes);
-    }
-    return null;
-  }
-
   @Override
   public Object getObject(int columnIndex) throws SQLException {
     String columnName = columnMapping.get(columnIndex - 1);
-    List<byte[]> columnData = data.get(columnName);
+    List<Object> columnData = data.get(columnName);
     int c = cursor - 1;
-    byte[] bytes = columnData.get(c);
 
-    if (bytes != null && c < columnData.size()) {
-      return bytes;
+    if (c < columnData.size()) {
+      Object ret = columnData.get(c);
+
+      return ret;
     }
+
     return null;
   }
 
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, String value) {
-    addValue(columnName, value == null ? null : value.getBytes());
+  private String checkedCastToString(int columnIndex) throws SQLException {
+    Object ret = getObject(columnIndex);
+
+    return ret == null ? null : String.valueOf(ret);
+  }
+
+  private boolean checkedCastType(int columnIndex, Class<?> checkedClass) throws SQLException {
+    int sqlType = metaData.getColumnType(columnIndex);
+    Class<?> cls = JdbcTypeWrapper.getClass(sqlType);
+
+    return checkedClass.isAssignableFrom(cls);
   }
 
   /**
@@ -196,58 +234,8 @@ public class MockResultSet extends ResultSetImpl {
    * @param columnName column name
    * @param value value
    */
-  public void addValue(String columnName, long value) {
-    addValue(columnName, String.valueOf(value).getBytes());
-  }
-
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, short value) {
-    addValue(columnName, String.valueOf(value).getBytes());
-  }
-
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, float value) {
-    addValue(columnName, String.valueOf(value).getBytes());
-  }
-
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, double value) {
-    addValue(columnName, String.valueOf(value).getBytes());
-  }
-
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, BigDecimal value) {
-    addValue(columnName, value == null ? ZERO_BYTE : value.toString().getBytes());
-  }
-
-  /**
-   * Add specified field data.
-   *
-   * @param columnName column name
-   * @param value value
-   */
-  public void addValue(String columnName, byte[] value) {
-    List<byte[]> list = data.get(columnName);
+  public void addValue(String columnName, Object value) {
+    List<Object> list = data.get(columnName);
 
     if (list == null) {
       throw new IllegalArgumentException(
@@ -262,6 +250,31 @@ public class MockResultSet extends ResultSetImpl {
 
   public static Builder newBuilder() {
     return new Builder();
+  }
+
+  static List<String> typeParseToName(List<Integer> types) {
+    List<String> names = new CopyOnWriteArrayList<>();
+
+    types.forEach(
+        type -> {
+          Field[] fields = Types.class.getFields();
+
+          for (Field f : fields) {
+
+            try {
+              if (type == f.getInt(f)) {
+                names.add(f.getName());
+                break;
+              }
+            } catch (IllegalArgumentException e) {
+              e.printStackTrace();
+            } catch (IllegalAccessException e) {
+              e.printStackTrace();
+            }
+          }
+        });
+
+    return names;
   }
 
   /**
@@ -284,17 +297,22 @@ public class MockResultSet extends ResultSetImpl {
       return this;
     }
 
-    public Builder setColumnTypeName(String... name) {
-      columnTypeName = Arrays.asList(name);
-      return this;
-    }
-
     /**
      * build.
      *
      * @return MockResultSet
      */
     public MockResultSet build() {
+      if (columnType == null) {
+        columnType = Collections.emptyList();
+      }
+
+      columnTypeName = typeParseToName(columnType);
+
+      if (columnLabel == null) {
+        columnLabel = Collections.emptyList();
+      }
+
       MockResultSet obj = new MockResultSet();
 
       obj.setColumnTypeLabel(columnType, columnTypeName, columnLabel);

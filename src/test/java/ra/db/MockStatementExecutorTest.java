@@ -3,7 +3,7 @@ package ra.db;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
+import java.sql.Types;
 import org.junit.Test;
 import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
@@ -15,7 +15,8 @@ public class MockStatementExecutorTest {
   public void testFakeQuery() {
     MockStatementExecutor executor = new MockStatementExecutor();
 
-    executor.setFakeQueryColumnsNameList(Arrays.asList("id", "name"));
+    executor.setColumnsNames("id", "name");
+    executor.setColumnsTypes(Types.BIGINT, Types.VARCHAR);
     executor.addFakeQuery(new String[] {"1", "testUser"});
     RecordCursor record = executor.executeQuery("SELECT * FROM table;");
 
@@ -28,7 +29,8 @@ public class MockStatementExecutorTest {
   public void testClearFakeQuery() {
     MockStatementExecutor executor = new MockStatementExecutor();
 
-    executor.setFakeQueryColumnsNameList(Arrays.asList("id", "name"));
+    executor.setColumnsNames("id", "name");
+    executor.setColumnsTypes(Types.BIGINT, Types.VARCHAR);
     executor.addFakeQuery(new String[] {"1", "testUser"});
     executor.clearFakeQuery();
     RecordCursor record = executor.executeQuery("SELECT * FROM table;");

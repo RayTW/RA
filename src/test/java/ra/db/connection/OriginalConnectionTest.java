@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -207,7 +208,11 @@ public class OriginalConnectionTest {
 
             connection.setExecuteQueryListener(
                 sql -> {
-                  MockResultSet result = new MockResultSet("lastid");
+                  MockResultSet result =
+                      MockResultSet.newBuilder()
+                          .setColumnLabel("lastid")
+                          .setColumnType(Types.INTEGER)
+                          .build();
 
                   result.addValue("lastid", expected);
                   return result;
@@ -238,7 +243,11 @@ public class OriginalConnectionTest {
           @Override
           public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             @SuppressWarnings("resource")
-            MockResultSet result = new MockResultSet("lastid");
+            MockResultSet result =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
 
             result.addValue("lastid", 11);
             MockConnection connection = new MockConnection();
@@ -277,7 +286,11 @@ public class OriginalConnectionTest {
             connection.setExecuteQueryListener(
                 sql -> {
                   actual.set(sql);
-                  MockResultSet result = new MockResultSet("lastid");
+                  MockResultSet result =
+                      MockResultSet.newBuilder()
+                          .setColumnLabel("lastid")
+                          .setColumnType(Types.INTEGER)
+                          .build();
 
                   result.addValue("lastid", 55);
 
@@ -337,7 +350,7 @@ public class OriginalConnectionTest {
             connection.setExecuteQueryListener(
                 sql -> {
                   assertEquals("SELECT 1", sql);
-                  return new MockResultSet();
+                  return MockResultSet.newBuilder().build();
                 });
 
             return connection;

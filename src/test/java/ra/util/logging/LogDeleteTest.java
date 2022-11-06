@@ -8,6 +8,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -65,6 +66,7 @@ public class LogDeleteTest {
 
   @Test
   public void testAutomaticDeleteLog() throws InterruptedException {
+    AtomicInteger count = new AtomicInteger();
     String path = loadFile.getPath();
     LogSettings settings = new LogSettings();
 
@@ -73,7 +75,13 @@ public class LogDeleteTest {
     settings.setPath(path);
 
     LogEveryDay log = new LogEveryDay(true, settings, "utf-8");
-    LogDelete obj = new LogDelete(path, settings.getKeepDays());
+    LogDelete obj =
+        new LogDelete(path, settings.getKeepDays()) {
+          public void requestDelete() {
+            super.requestDelete();
+            count.incrementAndGet();
+          }
+        };
 
     log.setLogEnable(true);
     obj.start();
@@ -82,11 +90,9 @@ public class LogDeleteTest {
     log.close();
 
     obj.requestDelete();
-
-    Thread.sleep(20);
     obj.close();
 
-    assertEquals(0, loadFile.list().length);
+    assertEquals(2, count.get());
   }
 
   @Test

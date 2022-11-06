@@ -13,7 +13,7 @@ import ra.util.Utility;
  *
  * @author Ray Li
  */
-public class JsonConfigParser implements ConfigParser {
+public class JsonConfigParser {
 
   /**
    * A lightweight set of re-usable functions for general purpose parsing. support JSON parsing
@@ -36,13 +36,7 @@ public class JsonConfigParser implements ConfigParser {
    * @param clazz plan to be used Class
    * @param path earmarked JSON file path
    */
-  @Override
-  public void fill(Class<?> clazz, String path) {
-    fill(clazz, path, false);
-  }
-
-  @Override
-  public void fill(Class<?> clazz, String path, boolean igonreException) {
+  public void fill(Class<?> clazz, String path) throws IllegalArgumentException {
     fill(
         key -> {
           if ("config".equals(key)) {
@@ -50,8 +44,7 @@ public class JsonConfigParser implements ConfigParser {
           }
           return null;
         },
-        path,
-        igonreException);
+        path);
   }
 
   /**
@@ -67,12 +60,10 @@ public class JsonConfigParser implements ConfigParser {
    * <p>.
    *
    * @param listener Provider the Class which was earmarked by key word in JSON file
-   * @param path earmarked JSON file path
-   * @param igonreException Skip reading the variable which was tag true, or throw an Exception when
-   *     it´s exists any error and was tag false
+   * @param path earmarked JSON file path it´s exists any error and was tag false
    */
-  @Override
-  public void fill(Function<String, Class<?>> listener, String path, boolean igonreException) {
+  public void fill(Function<String, Class<?>> listener, String path)
+      throws IllegalArgumentException {
     if (path.isEmpty()) {
       path = "./";
     }
@@ -82,54 +73,53 @@ public class JsonConfigParser implements ConfigParser {
         .forEach(
             key -> {
               JSONObject json = root.getJSONObject(key);
+              Class<?> clazz = listener.apply(key);
 
-              try {
-                Class<?> clazz = listener.apply(key);
+              if (clazz == null) {
+                return;
+              }
 
-                if (clazz == null) {
-                  return;
+              Field[] fields = clazz.getDeclaredFields();
+
+              for (Field f : fields) {
+                if (Modifier.isFinal(f.getModifiers()) || Modifier.isPrivate(f.getModifiers())) {
+                  continue;
                 }
 
-                Field[] fields = clazz.getDeclaredFields();
-
-                for (Field f : fields) {
-                  if (Modifier.isFinal(f.getModifiers())) {
-                    continue;
-                  }
-
-                  if (json.isNull(f.getName())) {
-                    System.out.println("key[" + key + "],Config欄位[" + f.getName() + "]=null");
-                    continue;
-                  }
-
-                  try {
-                    if (f.getType() == String.class) {
-                      f.set(clazz, json.getString(f.getName()));
-                    } else if (f.getType() == Integer.TYPE) {
-                      f.setInt(clazz, json.getInt(f.getName()));
-                    } else if (f.getType() == Long.TYPE) {
-                      f.setLong(clazz, json.getLong(f.getName()));
-                    } else if (f.getType() == Boolean.TYPE) {
-                      f.setBoolean(clazz, json.getBoolean(f.getName()));
-                    } else if (f.getType() == Double.TYPE) {
-                      f.setDouble(clazz, json.getDouble(f.getName()));
-                    } else if (f.getType() == Float.TYPE) {
-                      f.setFloat(clazz, Float.parseFloat(json.get(f.getName()).toString()));
-                    } else if (f.getType() == Short.TYPE) {
-                      f.setShort(clazz, Short.parseShort(json.get(f.getName()).toString()));
-                    } else if (f.getType() == JSONObject.class) {
-                      f.set(clazz, json.getJSONObject(f.getName()));
-                    } else if (f.getType() == JSONArray.class) {
-                      f.set(clazz, json.getJSONArray(f.getName()));
-                    }
-                  } catch (Exception e) {
-                    if (!igonreException) {
-                      throw e;
-                    }
-                  }
+                if (json.isNull(f.getName())) {
+                  System.out.println("key[" + key + "],Config欄位[" + f.getName() + "]=null");
+                  continue;
                 }
-              } catch (Exception e) {
-                e.printStackTrace();
+
+                try {
+                  if (f.getType() == String.class) {
+                    f.set(clazz, json.getString(f.getName()));
+                  } else if (f.getType() == Integer.TYPE) {
+                    f.setInt(clazz, json.getInt(f.getName()));
+                  } else if (f.getType() == Long.TYPE) {
+                    f.setLong(clazz, json.getLong(f.getName()));
+                  } else if (f.getType() == Boolean.TYPE) {
+                    f.setBoolean(clazz, json.getBoolean(f.getName()));
+                  } else if (f.getType() == Double.TYPE) {
+                    f.setDouble(clazz, json.getDouble(f.getName()));
+                  } else if (f.getType() == Float.TYPE) {
+                    f.setFloat(clazz, Float.parseFloat(json.get(f.getName()).toString()));
+                  } else if (f.getType() == Short.TYPE) {
+                    f.setShort(clazz, Short.parseShort(json.get(f.getName()).toString()));
+                  } else if (f.getType() == JSONObject.class) {
+                    f.set(clazz, json.getJSONObject(f.getName()));
+                  } else if (f.getType() == JSONArray.class) {
+                    f.set(clazz, json.getJSONArray(f.getName()));
+                  }
+                } catch (Exception e) {
+                  throw new IllegalArgumentException(
+                      "parser error, field["
+                          + f.getName()
+                          + "],value["
+                          + json.get(f.getName())
+                          + "]",
+                      e);
+                }
               }
             });
   }

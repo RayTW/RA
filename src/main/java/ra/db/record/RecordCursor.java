@@ -2,9 +2,9 @@ package ra.db.record;
 
 import java.io.Closeable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import ra.db.RowSet;
 
 /**
  * The result of query when executes SQL statement via statement executor.
@@ -51,15 +51,6 @@ public interface RecordCursor extends Closeable {
   public String field(String name);
 
   /**
-   * Get value by specified name.
-   *
-   * @param name Field name
-   * @param cursor Record cursor
-   * @return value
-   */
-  public String field(String name, int cursor);
-
-  /**
    * Get value by specified field name. If field value is null will return null.
    *
    * @param name Field name
@@ -89,14 +80,6 @@ public interface RecordCursor extends Closeable {
    * @param name Field name
    * @return bytes
    */
-  public short fieldShort(String name);
-
-  /**
-   * Get value by specified field name. If field value is null will return null.
-   *
-   * @param name Field name
-   * @return bytes
-   */
   public float fieldFloat(String name);
 
   /**
@@ -118,10 +101,20 @@ public interface RecordCursor extends Closeable {
   /**
    * Get value by specified field name. If field value is null will return null.
    *
+   * @param <T> list element
    * @param name Field name
-   * @return bytes
+   * @param castClass Cast class
+   * @return List
    */
-  public double fieldBigDecimalDouble(String name);
+  public <T> List<T> fieldArray(String name, Class<T[]> castClass);
+
+  /**
+   * Get value by specified field name. If field value is null will return null.
+   *
+   * @param name Field name
+   * @return Object
+   */
+  public Object fieldObject(String name);
 
   /** Next row. */
   public void next();

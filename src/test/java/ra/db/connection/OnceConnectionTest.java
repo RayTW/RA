@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import org.h2.tools.Server;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import ra.db.parameter.BigQueryParameters;
 import ra.db.parameter.DatabaseParameters;
 import ra.db.parameter.H2Parameters;
 import ra.db.parameter.MysqlParameters;
+import ra.db.parameter.SpannerParameters;
 import ra.db.record.LastInsertId;
 import ra.db.record.RecordCursor;
 import ra.exception.RaConnectException;
@@ -116,7 +118,7 @@ public class OnceConnectionTest {
           .setExecuteQueryListener(
               sql -> {
                 assertEquals("SELECT 1", sql);
-                return new MockResultSet();
+                return MockResultSet.newBuilder().build();
               });
 
       db.createStatementExecutor().executeQuery("SELECT 1");
@@ -140,7 +142,8 @@ public class OnceConnectionTest {
 
       MockStatementExecutor executor = new MockStatementExecutor(db);
 
-      executor.setFakeQueryColumnsName(new String[] {"name", "age"});
+      executor.setColumnsNames("name", "age");
+      executor.setColumnsTypes(Types.VARCHAR, Types.VARCHAR);
       executor.addFakeQuery(new String[] {"testUser", "1"});
 
       executor.setOpenListener(
@@ -298,8 +301,11 @@ public class OnceConnectionTest {
                   assertEquals(sql, actual);
                   return 1;
                 });
-            @SuppressWarnings("resource")
-            MockResultSet resultSet = new MockResultSet("lastid");
+            MockResultSet resultSet =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
 
             resultSet.addValue("lastid", 999);
             connection.setExecuteQueryListener(sql -> resultSet);
@@ -332,8 +338,11 @@ public class OnceConnectionTest {
           public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
             MockConnection connection = new MockConnection();
 
-            @SuppressWarnings("resource")
-            MockResultSet resultSet = new MockResultSet("lastid");
+            MockResultSet resultSet =
+                MockResultSet.newBuilder()
+                    .setColumnLabel("lastid")
+                    .setColumnType(Types.INTEGER)
+                    .build();
             resultSet.addValue("lastid", expected);
 
             connection.setExecuteUpdateListener(
@@ -371,7 +380,11 @@ public class OnceConnectionTest {
                 sql -> {
                   actual.set(sql);
 
-                  MockResultSet resultSet = new MockResultSet("lastid");
+                  MockResultSet resultSet =
+                      MockResultSet.newBuilder()
+                          .setColumnLabel("lastid")
+                          .setColumnType(Types.INTEGER)
+                          .build();
 
                   resultSet.addValue("lastid", 55);
 
@@ -748,6 +761,51 @@ public class OnceConnectionTest {
   }
 
   @Test
+  public void testInsertSqlConnectedSpanner() throws RaSqlException {
+    String sql =
+        "INSERT INTO `user` (`number`, `name`, `age`, `birthday`, `money`) "
+            + "VALUES ('1', 'abc', '22', '2019-12-11', '66');";
+    SpannerParameters param =
+        SpannerParameters.newBuilder()
+            .setProjectId("id")
+            .setDatabaseId("db")
+            .setInstanceId("instanceid")
+            .build();
+
+    try (OnceConnection db =
+        new OnceConnection(param) {
+          @Override
+          public void loadDriveInstance(DatabaseParameters param) {
+            assertEquals("com.google.cloud.spanner.jdbc.JdbcDriver", param.getDriver());
+          }
+
+          @Override
+          public Connection tryGetConnection(DatabaseParameters param) throws RaSqlException {
+            MockConnection connection = new MockConnection();
+
+            connection.setExecuteUpdateListener(
+                actual -> {
+                  assertEquals(sql, actual);
+                  return 1;
+                });
+
+            return connection;
+          }
+        }; ) {
+
+      db.connectIf(
+          executor -> {
+            try {
+              executor.insert(sql);
+
+            } catch (Exception e) {
+              assertThat(e, instanceOf(UnsupportedOperationException.class));
+            }
+          });
+    }
+  }
+
+  @Test
   public void testConnectToH2DatabaseUsePrepared() throws ConnectException, SQLException {
     try (OnceConnection connection =
         new OnceConnection(H2_MYSQL_BUILDER.inMemory().setName("databaseName").build())) {
@@ -874,8 +932,6 @@ public class OnceConnectionTest {
 
       RecordCursor record =
           connection.createStatementExecutor().executeQuery("SELECT * FROM test_table;");
-
-      System.out.println("record==" + record);
 
       assertEquals(
           "e4b8ade6968700000000000000000000",

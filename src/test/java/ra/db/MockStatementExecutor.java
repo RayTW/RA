@@ -21,6 +21,7 @@ public class MockStatementExecutor extends JdbcExecutor {
   private boolean isLive = true;
 
   private String[] fakeQueryColumnsName;
+  private Integer[] fakeQueryColumnsType;
   private List<String[]> fakeQueryData = new CopyOnWriteArrayList<String[]>();
   private Function<String, String> insertListener;
   private Function<String, Integer> tryExecuteListener;
@@ -114,7 +115,11 @@ public class MockStatementExecutor extends JdbcExecutor {
         "fakeQueryColumnsName == null,"
             + " must invoke setFakeQueryColumnsName(List<String> columnsName)");
 
-    MockResultSet result = new MockResultSet(fakeQueryColumnsName);
+    MockResultSet result =
+        MockResultSet.newBuilder()
+            .setColumnLabel(fakeQueryColumnsName)
+            .setColumnType(fakeQueryColumnsType)
+            .build();
 
     fakeQueryData
         .stream()
@@ -142,12 +147,17 @@ public class MockStatementExecutor extends JdbcExecutor {
    *
    * @param columnsName The list contains all the column names in the fake table.
    */
-  public void setFakeQueryColumnsNameList(List<String> columnsName) {
-    if (columnsName != null) {
-      fakeQueryColumnsName = columnsName.toArray(new String[columnsName.size()]);
-    } else {
-      columnsName = null;
-    }
+  public void setColumnsNames(String... columnsName) {
+    fakeQueryColumnsName = columnsName;
+  }
+
+  /**
+   * Setting all column type into the fake table.
+   *
+   * @param columnsType The list contains all the column names in the fake table.
+   */
+  public void setColumnsTypes(Integer... columnsType) {
+    fakeQueryColumnsType = columnsType;
   }
 
   /**
@@ -166,15 +176,6 @@ public class MockStatementExecutor extends JdbcExecutor {
    */
   public void addFakeQuery(String[] data) {
     fakeQueryData.add(data);
-  }
-
-  /**
-   * Set column name.
-   *
-   * @param columnsName column name
-   */
-  public void setFakeQueryColumnsName(String[] columnsName) {
-    fakeQueryColumnsName = columnsName;
   }
 
   /** Clear all fake data. */

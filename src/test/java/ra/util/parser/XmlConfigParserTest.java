@@ -1,8 +1,11 @@
 package ra.util.parser;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
+import javax.xml.stream.XMLStreamException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,7 +15,7 @@ public class XmlConfigParserTest {
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
 
   @Test
-  public void testInitConfigClass() {
+  public void testInitConfigClass() throws IllegalArgumentException, XMLStreamException {
     new XmlConfigParser().fill(ConfigXml.class, "unittest/config.xml");
 
     assertEquals("單元測試", ConfigXml.SERVER_ALIAS);
@@ -27,8 +30,9 @@ public class XmlConfigParserTest {
   }
 
   @Test
-  public void testInitConfigClassUsingIgonreException() {
-    new XmlConfigParser().fill(ConfigXml.class, "unittest/config.xml", true);
+  public void testInitConfigClassUsingIgonreException()
+      throws IllegalArgumentException, XMLStreamException {
+    new XmlConfigParser().fill(ConfigXml.class, "unittest/config.xml");
 
     assertEquals("單元測試", ConfigXml.SERVER_ALIAS);
     assertEquals(12345, ConfigXml.SOCKET_PORT);
@@ -44,21 +48,13 @@ public class XmlConfigParserTest {
   @Test
   public void testInitConfigClassInvalidValue() {
     ConfigErrorXml.longValue = 1;
-    new XmlConfigParser().fill(ConfigErrorXml.class, "unittest/configError.xml", false);
+    try {
+      new XmlConfigParser().fill(ConfigErrorXml.class, "unittest/configError.xml");
+    } catch (Exception e) {
+      assertThat(e, instanceOf(IllegalArgumentException.class));
+    }
 
     assertEquals(1, ConfigErrorXml.longValue);
-  }
-
-  @Test
-  public void testFillThrowUnsupportedOperationException() {
-    exceptionRule.expect(UnsupportedOperationException.class);
-    new XmlConfigParser()
-        .fill(
-            (clazz) -> {
-              return null;
-            },
-            "unittest/config.xml",
-            false);
   }
 
   static class ConfigXml {

@@ -13,9 +13,7 @@ public class Iso8601Test {
   public void testNowNoColon() {
     String now = Iso8601.now(false);
 
-    System.out.println(now);
-
-    Assert.assertTrue(now != null);
+    Assert.assertNotNull(now);
   }
 
   @Test

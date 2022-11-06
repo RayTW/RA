@@ -1,6 +1,7 @@
-package ra.db;
+package ra.db.record;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Query row.
@@ -14,7 +15,7 @@ public interface RowSet {
    * @param columnName column name
    * @return the value of that column as a byte array.
    */
-  public byte[] getBlob(String columnName);
+  public byte[] getBytes(String columnName);
 
   /**
    * Gets value uses the specific column name.
@@ -23,14 +24,6 @@ public interface RowSet {
    * @return the value of that column as a String.
    */
   public String getString(String columnName);
-
-  /**
-   * Gets value uses the specific column name.
-   *
-   * @param columnName column name
-   * @return the value of that column as a short.
-   */
-  public short getShort(String columnName);
 
   /**
    * Gets value uses the specific column name.
@@ -68,17 +61,27 @@ public interface RowSet {
    * Gets value uses the specific column name.
    *
    * @param columnName column name
-   * @return the value of that column as a {@link BigDecimal#doubleValue()}
+   * @return the value of that column as a big decimal.
    */
-  public double getBigDecimalDouble(String columnName);
+  public BigDecimal getBigDecimal(String columnName);
+
+  /**
+   * Gets value uses the specific column name.
+   *
+   * @param <T> list element
+   * @param columnName column name
+   * @param castClass class
+   * @return the value of that column as a array.
+   */
+  public <T> List<T> getArray(String columnName, Class<T[]> castClass);
 
   /**
    * Gets value uses the specific column name.
    *
    * @param columnName column name
-   * @return the value of that column as a big decimal.
+   * @return the value of that column as a object.
    */
-  public BigDecimal getBigDecimal(String columnName);
+  public Object getObject(String columnName);
 
   /**
    * Gets value uses the specific column name.
